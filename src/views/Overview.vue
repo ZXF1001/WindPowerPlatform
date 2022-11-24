@@ -12,38 +12,54 @@
             <div class="row">
               <el-card>
                 <p class="label">运行中台数</p>
-                <p class="num">45</p>
+                <p class="num">{{numData[0]}}</p>
               </el-card>
               <el-card>
                 <p class="label">总台数</p>
-                <p class="num">60</p>
+                <p class="num">{{numData[1]}}</p>
               </el-card>
             </div>
             <div class="row">
               <el-card>
                 <p class="label">优化前功率</p>
-                <p class="num">48.98MW</p>
+                <p class="num">{{numData[2]}}MW</p>
               </el-card>
               <el-card>
                 <p class="label">优化后功率</p>
-                <p class="num">53.71MW</p>
+                <p class="num">{{numData[3]}}MW</p>
               </el-card>
             </div>
           </div>
-          <el-card>
+          <el-card style="height:500px">
             <!-- 左下的表格 -->
-
+            <el-table :data="tableData"
+                      style="width: 100%">
+              <el-table-column prop="cluster"
+                               label="集群">
+              </el-table-column>
+              <el-table-column prop="power"
+                               label="功率/MW">
+              </el-table-column>
+              <el-table-column prop="perpower"
+                               label="台均功率/MW">
+              </el-table-column>
+            </el-table>
           </el-card>
         </div>
       </el-col>
       <el-col :span="16">
         <div class="grid-content bg-purple-light">
           <!-- 右栏 -->
-          <el-card>
+          <el-card style="margin-bottom:10px">
             <!-- 右上的地图 -->
+            <div style="height:390px">
+              右上的地图
+            </div>
           </el-card>
           <el-card>
             <!-- 右下的线图 -->
+            <div ref="echarts1"
+                 style="height:280px"></div>
           </el-card>
         </div>
       </el-col>
@@ -64,6 +80,7 @@
       .label {
         text-align: center;
         margin-top: 0;
+        font-weight: bold;
       }
       .num {
         text-align: center;
@@ -76,9 +93,60 @@
 }
 </style>
 <script>
+//import tab from '@/store/tab'
+import { getData } from '../api/'
+import * as echarts from 'echarts'
 export default {
   data() {
-    return {}
+    return {
+      numData: [],
+      tableData: [],
+    }
+  },
+  mounted() {
+    getData().then(({ data }) => {
+      console.log(data)
+      const { tableData } = data.data
+      this.tableData = tableData
+      this.numData = [
+        data.data.runNum,
+        data.data.totalNum,
+        data.data.noOptPower,
+        data.data.optPower,
+      ]
+      // 准备画折线图
+      const echarts1 = echarts.init(this.$refs.echarts1)
+      const { lineData } = data.data
+
+      var echarts1Option = {
+        xAxis: {
+          type: 'category',
+          data: lineData.date,
+        },
+        yAxis: {
+          type: 'value',
+          scale: true,
+        },
+        tooltip: {
+          trigger: 'item',
+        },
+        legend: {},
+        title: {
+          text: '功率',
+        },
+        series: [],
+      }
+      const legend1 = Object.keys(lineData.data[0])
+      legend1.forEach((key) => {
+        echarts1Option.series.push({
+          name: key,
+          type: 'line',
+          data: lineData.data.map((item) => item[key]),
+          smooth: true,
+        })
+      })
+      echarts1.setOption(echarts1Option)
+    })
   },
 }
 </script>
