@@ -2,13 +2,12 @@
   <div>
     <h1>总览</h1>
     <el-row>
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="grid-content bg-purple"
              style="margin-right:10px">
           <!-- 左栏 -->
-
           <div class="num-info">
-            <!-- 左上的数字 -->
+            <!-- 左上的四块数字 -->
             <div class="row">
               <el-card>
                 <p class="label">运行中台数</p>
@@ -30,7 +29,7 @@
               </el-card>
             </div>
           </div>
-          <el-card style="height:500px">
+          <el-card style="height:600px">
             <!-- 左下的表格 -->
             <el-table :data="tableData"
                       style="width: 100%">
@@ -47,19 +46,19 @@
           </el-card>
         </div>
       </el-col>
-      <el-col :span="16">
-        <div class="grid-content bg-purple-light">
+      <el-col :span="18">
+        <div class="right">
           <!-- 右栏 -->
-          <el-card style="margin-bottom:10px">
+          <el-card class="map">
             <!-- 右上的地图 -->
-            <div style="height:390px">
+            <div>
               右上的地图
             </div>
           </el-card>
           <el-card>
             <!-- 右下的线图 -->
-            <div ref="echarts1"
-                 style="height:280px"></div>
+            <div class="linechart"
+                 ref="echarts1"></div>
           </el-card>
         </div>
       </el-col>
@@ -72,11 +71,11 @@
     display: flex;
     justify-content: space-between;
     .el-card {
-      width: 48%;
+      display: flex;
       align-items: center;
       justify-content: center;
+      width: 48%;
       margin-bottom: 10px;
-      padding: 1px;
       .label {
         text-align: center;
         margin-top: 0;
@@ -89,6 +88,15 @@
         margin-top: 0px;
       }
     }
+  }
+}
+.right {
+  .map {
+    margin-bottom: 10px;
+    height: 460px;
+  }
+  .linechart {
+    height: 350px;
   }
 }
 </style>

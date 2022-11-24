@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-container>
-      <el-aside width="auto">
+      <el-aside width="190px">
         <common-aside></common-aside>
       </el-aside>
       <el-container>
@@ -19,6 +19,10 @@
 <style lang="less" scoped>
 .el-header {
   padding: 0;
+}
+.el-container,
+.el-main {
+  height: 100vh;
 }
 </style>
 

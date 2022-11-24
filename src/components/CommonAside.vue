@@ -4,7 +4,9 @@
     <el-menu default-active="overview"
              class="el-menu-vertical-demo"
              :collapse="isCollapse">
-      <h4>{{isCollapse?'平台':'风电大数据管理平台'}}</h4>
+      <div class="logo">
+        <span>加入LOGO</span>
+      </div>
       <el-menu-item v-for="item in menuData"
                     :key="item.name"
                     :index="item.name"
@@ -16,6 +18,11 @@
   </el-col>
 </template>
 <style lang="less" scoped>
+.logo {
+  height: 60px;
+
+  text-align: center;
+}
 .el-menu {
   height: 100vh;
   h4 {

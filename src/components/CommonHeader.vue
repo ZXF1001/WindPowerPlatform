@@ -6,7 +6,7 @@
                  size="mini"
                  @click="handleMenu"></el-button> -->
       <!-- 面包屑 -->
-      <span class="text">headerContent</span>
+      <h2 style="color:#fff">虚拟激光雷达区域化风电场优化云计算平台</h2>
     </div>
     <div class="r-content">
       <el-dropdown>
