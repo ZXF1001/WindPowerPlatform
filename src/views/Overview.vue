@@ -51,9 +51,9 @@
           <!-- 右栏 -->
           <el-card class="map">
             <!-- 右上的地图 -->
-            <div>
-              右上的地图
-            </div>
+
+            <map-container></map-container>
+
           </el-card>
           <el-card>
             <!-- 右下的线图 -->
@@ -102,9 +102,11 @@
 </style>
 <script>
 //import tab from '@/store/tab'
+import MapContainer from '../components/MapContainer.vue'
 import { getData } from '../api/'
 import * as echarts from 'echarts'
 export default {
+  components: { MapContainer },
   data() {
     return {
       numData: [],
