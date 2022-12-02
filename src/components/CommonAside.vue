@@ -5,7 +5,8 @@
              class="el-menu-vertical-demo"
              :collapse="isCollapse">
       <div class="logo">
-        <span>加入LOGO</span>
+        <img class="logoimg"
+             src="../assets/images/wind.png">
       </div>
       <el-menu-item v-for="item in menuData"
                     :key="item.name"
@@ -22,6 +23,9 @@
   height: 60px;
 
   text-align: center;
+  .logoimg {
+    height: 50px;
+  }
 }
 .el-menu {
   height: 100vh;
