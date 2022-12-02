@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
@@ -11,6 +12,7 @@ export default {
   data() {
     return {
       map: null,
+      position: [],
     }
   },
   methods: {
@@ -30,17 +32,14 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
-
-          var marker1 = new AMap.Marker({
-            position: [120.124, 30.265], //位置
+          var markerList = []
+          this.position.forEach((element) => {
+            var marker = new AMap.Marker({
+              position: element.turbine_position, //位置
+            })
+            markerList.push(marker)
           })
-          var marker2 = new AMap.Marker({
-            position: [120.125, 30.266], //位置
-          })
-          var marker3 = new AMap.Marker({
-            position: [120.122, 30.263], //位置
-          })
-          this.map.add([marker1, marker2, marker3])
+          this.map.add(markerList)
         })
         .catch((e) => {
           console.log(e)
@@ -48,6 +47,18 @@ export default {
     },
   },
   mounted() {
+    axios
+      .get(
+        'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
+      )
+      .then((res) => {
+        console.log(res.data.position)
+        this.position = res.data.position
+        console.log(this.position)
+      })
+      .catch((e) => {
+        console.log(e)
+      })
     //DOM初始化完成进行地图初始化
     this.initMap()
   },
