@@ -11,21 +11,21 @@
             <div class="row">
               <el-card>
                 <p class="label">运行中台数</p>
-                <p class="num">{{numData[0]}}</p>
+                <p class="num">{{numData.runNum}}</p>
               </el-card>
               <el-card>
                 <p class="label">总台数</p>
-                <p class="num">{{numData[1]}}</p>
+                <p class="num">{{numData.totalNum}}</p>
               </el-card>
             </div>
             <div class="row">
               <el-card>
-                <p class="label">优化前功率</p>
-                <p class="num">{{numData[2]}}MW</p>
+                <p class="label">优化前功率/MW</p>
+                <p class="num">{{numData.noOptPower}}</p>
               </el-card>
               <el-card>
-                <p class="label">优化后功率</p>
-                <p class="num">{{numData[3]}}MW</p>
+                <p class="label">优化后功率/MW</p>
+                <p class="num">{{numData.optPower}}</p>
               </el-card>
             </div>
           </div>
@@ -51,9 +51,7 @@
           <!-- 右栏 -->
           <el-card class="map">
             <!-- 右上的地图 -->
-
             <map-container></map-container>
-
           </el-card>
           <el-card>
             <!-- 右下的线图 -->
@@ -76,14 +74,14 @@
       justify-content: center;
       width: 48%;
       margin-bottom: 10px;
+      font-weight: bold;
       .label {
         text-align: center;
         margin-top: 0;
-        font-weight: bold;
       }
       .num {
         text-align: center;
-        font-size: 30px;
+        font-size: 25px;
         margin-bottom: 0px;
         margin-top: 0px;
       }
@@ -102,61 +100,71 @@
 </style>
 <script>
 //import tab from '@/store/tab'
+import axios from 'axios'
 import MapContainer from '../components/MapContainer.vue'
-import { getData } from '../api/'
 import * as echarts from 'echarts'
 export default {
   components: { MapContainer },
   data() {
     return {
-      numData: [],
+      numData: {
+        runNum: '加载中',
+        totalNum: '加载中',
+        noOptPower: '加载中',
+        optPower: '加载中',
+      },
       tableData: [],
+      lineData: {},
     }
   },
-  mounted() {
-    getData().then(({ data }) => {
-      console.log(data)
-      const { tableData } = data.data
-      this.tableData = tableData
-      this.numData = [
-        data.data.runNum,
-        data.data.totalNum,
-        data.data.noOptPower,
-        data.data.optPower,
-      ]
-      // 准备画折线图
-      const echarts1 = echarts.init(this.$refs.echarts1)
-      const { lineData } = data.data
-
-      var echarts1Option = {
-        xAxis: {
-          type: 'category',
-          data: lineData.date,
-        },
-        yAxis: {
-          type: 'value',
-          scale: true,
-        },
-        tooltip: {
-          trigger: 'item',
-        },
-        legend: {},
-        title: {
-          text: '功率',
-        },
-        series: [],
-      }
-      const legend1 = Object.keys(lineData.data[0])
-      legend1.forEach((key) => {
-        echarts1Option.series.push({
-          name: key,
-          type: 'line',
-          data: lineData.data.map((item) => item[key]),
-          smooth: true,
+  methods: {
+    fetchdata() {
+      axios
+        .get(
+          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
+        )
+        .then((res) => {
+          this.numData = res.data.numData
+          this.tableData = res.data.tableData
+          this.lineData = res.data.lineData
+          //在这里画图
+          const echarts1 = echarts.init(this.$refs.echarts1)
+          var echarts1Option = {
+            xAxis: {
+              type: 'category',
+              data: res.data.lineData.date,
+            },
+            yAxis: {
+              type: 'value',
+              scale: true,
+            },
+            tooltip: {
+              trigger: 'item',
+            },
+            legend: {},
+            title: {
+              text: '功率',
+            },
+            series: [],
+          }
+          const legend1 = Object.keys(res.data.lineData.data[0])
+          legend1.forEach((key) => {
+            echarts1Option.series.push({
+              name: key,
+              type: 'line',
+              data: res.data.lineData.data.map((item) => item[key]),
+              smooth: true,
+            })
+          })
+          echarts1.setOption(echarts1Option)
         })
-      })
-      echarts1.setOption(echarts1Option)
-    })
+        .catch((error) => {
+          console.log(error)
+        })
+    },
+  },
+  mounted() {
+    this.fetchdata()
   },
 }
 </script>

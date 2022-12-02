@@ -5,7 +5,7 @@
 <script>
 import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
-  securityJsCode: 'dbe7e12dd1b14b5d02d0d10a5f88342a',
+  securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
 export default {
   data() {
@@ -16,16 +16,31 @@ export default {
   methods: {
     initMap() {
       AMapLoader.load({
-        key: '82e8831a74714291264c1f0318ebfd6c',
+        key: 'f9cb65dd9831f33581c66e88ec5881a6',
         version: '2.0',
         plugins: [''],
       })
-        .then((Amap) => {
-          this.map = new Amap.Map('container', {
+        .then((AMap) => {
+          this.map = new AMap.Map('container', {
             viewMode: '3D',
-            zoom: 5,
-            center: [121, 30],
+            zoom: 16,
+            center: [120.124, 30.265],
+            layers: [
+              //使用多个图层
+              //new AMap.TileLayer.Satellite(),
+            ],
           })
+
+          var marker1 = new AMap.Marker({
+            position: [120.124, 30.265], //位置
+          })
+          var marker2 = new AMap.Marker({
+            position: [120.125, 30.266], //位置
+          })
+          var marker3 = new AMap.Marker({
+            position: [120.122, 30.263], //位置
+          })
+          this.map.add([marker1, marker2, marker3])
         })
         .catch((e) => {
           console.log(e)

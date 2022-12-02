@@ -1,7 +1,6 @@
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 import Vue from "vue";
-import "./api/mock";
 import App from "./App.vue";
 import router from "./router/index";
 import store from "./store";
