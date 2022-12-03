@@ -3,6 +3,7 @@
 </template>
 
 <script>
+//准备工作
 import axios from 'axios'
 import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
@@ -32,6 +33,7 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
+          //读取标记点位置并显示
           var markerList = []
           this.position.forEach((element) => {
             var marker = new AMap.Marker({
@@ -52,15 +54,14 @@ export default {
         'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
       )
       .then((res) => {
-        console.log(res.data.position)
         this.position = res.data.position
-        console.log(this.position)
+        //DOM初始化完成进行地图初始化
+        this.initMap()
       })
       .catch((e) => {
         console.log(e)
+        alert('地图模块调用失败！')
       })
-    //DOM初始化完成进行地图初始化
-    this.initMap()
   },
 }
 </script>

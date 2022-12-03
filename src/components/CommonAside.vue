@@ -32,6 +32,9 @@
   h4 {
     text-align: center;
   }
+  .logo {
+    padding-top: 10px;
+  }
 }
 .el-col {
   width: 100%;

@@ -166,5 +166,10 @@ export default {
   mounted() {
     this.fetchdata()
   },
+  // beforeRouteLeave(to, from, next) {
+  //   this.map && this.map.destroy()
+  //   console.log('地图已销毁')
+  //   next()
+  // },
 }
 </script>
