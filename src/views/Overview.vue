@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>总览</h1>
+    <h1 class="title">总览</h1>
     <el-row>
       <el-col :span="6">
         <div class="grid-content bg-purple"
@@ -64,6 +64,9 @@
   </div>
 </template>
 <style lang="less" scoped>
+.title {
+  margin-top: 0;
+}
 .num-info {
   .row {
     display: flex;
@@ -91,7 +94,6 @@
 .right {
   .map {
     margin-bottom: 10px;
-    height: 460px;
   }
   .linechart {
     height: 350px;
