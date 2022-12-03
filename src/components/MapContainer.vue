@@ -33,10 +33,24 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
+          this.getMarker(AMap)
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
+    getMarker(m_aMap) {
+      // 传入AMap对象，读取点位数据并渲染在地图上
+      axios
+        .get(
+          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
+        )
+        .then((res) => {
+          this.position = res.data.position
           //读取标记点位置并显示
           var markerList = []
           this.position.forEach((element) => {
-            var marker = new AMap.Marker({
+            var marker = new m_aMap.Marker({
               position: element.turbine_position, //位置
             })
             markerList.push(marker)
@@ -45,23 +59,12 @@ export default {
         })
         .catch((e) => {
           console.log(e)
+          alert('地图模块调用失败！')
         })
     },
   },
   mounted() {
-    axios
-      .get(
-        'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
-      )
-      .then((res) => {
-        this.position = res.data.position
-        //DOM初始化完成进行地图初始化
-        this.initMap()
-      })
-      .catch((e) => {
-        console.log(e)
-        alert('地图模块调用失败！')
-      })
+    this.initMap()
   },
 }
 </script>
