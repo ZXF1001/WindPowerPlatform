@@ -40,7 +40,7 @@ export default {
     return {
       //多选框相关变量
       checkAll: true,
-      checkedClusters: clusterOptions, //这是选中的集群数组
+      checkedClusters: clusterOptions, //这是选中的集群Array
       clusters: clusterOptions,
       isIndeterminate: false,
       // 地图相关变量
@@ -56,6 +56,7 @@ export default {
     },
     //多选框相关方法
     handleCheckedClustersChange(value) {
+      // 传入的是一个选中项目的Array
       let checkedCount = value.length
       this.checkAll = checkedCount === this.clusters.length
       this.isIndeterminate =
