@@ -44,7 +44,7 @@ export default {
       clusters: clusterOptions,
       isIndeterminate: false,
       // 地图相关变量
-      globalAMap: null,
+      globalAMap: null, //用于全局调用的AMap对象
       map: null,
       markerList: [],
       infoWindow: null, //地图标记弹窗
