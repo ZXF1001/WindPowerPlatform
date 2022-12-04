@@ -38,7 +38,7 @@ export default {
           })
           //初始化信息窗口对象
           this.infoWindow = new AMap.InfoWindow({
-            // isCustom: true, //使用自定义窗体
+            //isCustom: true, //使用自定义窗体
             closeWhenClickMap: true, //点击地图隐藏窗体
             content: '',
             offset: new AMap.Pixel(0, -32),
@@ -70,7 +70,7 @@ export default {
               //给每个标记注册一个点击事件
               var infoWindowContent = [
                 '<h1>风力机编号：' + element.turbine_id + '</h1>',
-                '<p>风力机点位：[' + element.turbine_position + ']</p>',
+                '<p>风力机坐标：[' + element.turbine_position + ']</p>',
               ]
 
               this.infoWindow.setContent(infoWindowContent.join(''))
