@@ -40,7 +40,7 @@ export default {
           this.infoWindow = new AMap.InfoWindow({
             // isCustom: true, //使用自定义窗体
             closeWhenClickMap: true, //点击地图隐藏窗体
-            content: 'this is a info window',
+            content: '',
             offset: new AMap.Pixel(0, -32),
           })
           this.map.on('complete', () => {
@@ -61,12 +61,19 @@ export default {
           this.position = res.data.position
           //读取标记点位置并显示
           var markerList = []
+          console.log(res.data.position)
           this.position.forEach((element) => {
             var marker = new m_AMap.Marker({
               position: element.turbine_position, //位置
             })
             marker.on('click', (e) => {
               //给每个标记注册一个点击事件
+              var infoWindowContent = [
+                '<h1>风力机编号：' + element.turbine_id + '</h1>',
+                '<p>风力机点位：[' + element.turbine_position + ']</p>',
+              ]
+
+              this.infoWindow.setContent(infoWindowContent.join(''))
               this.infoWindow.open(this.map, marker.getPosition())
             })
             markerList.push(marker)
