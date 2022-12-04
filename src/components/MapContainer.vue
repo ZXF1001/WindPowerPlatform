@@ -9,6 +9,7 @@ import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
+
 export default {
   data() {
     return {
@@ -65,9 +66,16 @@ export default {
           alert('地图模块调用失败！')
         })
     },
+    listenClick(m_AMap) {
+      //监听Marker点击事件
+      m_AMap.event.addListener(marker, 'click', function () {
+        infoWindow.open(map, marker.getPosition())
+      })
+    },
   },
   mounted() {
     this.initMap()
+    this.listenClick()
   },
 }
 </script>
