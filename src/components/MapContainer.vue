@@ -34,7 +34,7 @@ import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
-const clusterOptions = ['No.1', 'No.2'] //这些数据应该从数据库中获得
+const clusterOptions = [] //这些数据应该从数据库中获得
 export default {
   data() {
     return {
@@ -79,8 +79,8 @@ export default {
           this.map = new AMap.Map('container', {
             viewMode: '3D', // 地图模式
             terrain: true, // 开启地形图
-            zoom: 1,
-            center: [114.824031, 41.489795],
+            zoom: 8,
+            center: [114.88072, 41.275698],
             layers: [
               //使用多个图层
               //new AMap.TileLayer.Satellite(),
@@ -146,6 +146,7 @@ export default {
           // console.log(res.data)
           this.positionData = res.data
           res.data.forEach((cluster) => {
+            clusterOptions.push(cluster.cluster_id)
             cluster.turbine.forEach((element) => {
               var marker = new m_AMap.Marker({
                 map: this.map,
@@ -181,8 +182,7 @@ export default {
       this.map.remove(this.markerList)
       this.markerList = []
       this.positionData.forEach((cluster) => {
-        if (this.checkedClusters.indexOf(cluster.cluster_id) == -1) {
-        } else {
+        if (this.checkedClusters.indexOf(cluster.cluster_id) !== -1) {
           cluster.turbine.forEach((element) => {
             var marker = new this.globalAMap.Marker({
               map: this.map,
