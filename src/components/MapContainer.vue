@@ -38,27 +38,30 @@ const clusterOptions = ['No.1', 'No.2'] //这些数据应该从数据库中获�
 export default {
   data() {
     return {
+      //多选框相关变量
       checkAll: true,
       checkedClusters: clusterOptions, //这是选中的集群数组
       clusters: clusterOptions,
       isIndeterminate: false,
-
+      // 地图相关变量
       map: null,
-
-      infoWindow: null,
+      infoWindow: null, //地图标记弹窗
     }
   },
   methods: {
+    //多选框相关方法
     handleCheckAllChange(val) {
       this.checkedClusters = val ? clusterOptions : []
       this.isIndeterminate = false
     },
+    //多选框相关方法
     handleCheckedClustersChange(value) {
       let checkedCount = value.length
       this.checkAll = checkedCount === this.clusters.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusters.length
     },
+    //高德地图初始化，包括了画边界和画标记
     initMap() {
       AMapLoader.load({
         key: 'f9cb65dd9831f33581c66e88ec5881a6',
@@ -92,6 +95,7 @@ export default {
           console.log(e)
         })
     },
+    //画边界的方法
     drawBounds(m_AMap) {
       // 传入AMap对象，绘制区域边界
       m_AMap.plugin('AMap.DistrictSearch', () => {
@@ -123,6 +127,7 @@ export default {
         })
       })
     },
+    //画标记点的方法
     getMarker(m_AMap) {
       // 传入AMap对象，读取点位数据并渲染在AMap对象上
       axios
@@ -169,6 +174,7 @@ export default {
   mounted() {
     this.initMap()
   },
+  // 跳转前销毁实例释放内存
   beforeRouteLeave() {
     this.map.destroy()
     this.map.clear()
