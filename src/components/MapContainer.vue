@@ -106,7 +106,7 @@ export default {
         // 搜索所有省/直辖市信息
         districtSearch.search('张北县', (status, result) => {
           // 查询成功时，result即为对应的行政区信息
-          if (status == 'complete') {
+          if (status === 'complete') {
             const bounds = result.districtList[0].boundaries
             for (let i = 0, l = bounds.length; i < l; i++) {
               var polygon = new m_AMap.Polygon({
@@ -137,17 +137,18 @@ export default {
             cluster.turbine.forEach((element) => {
               var marker = new m_AMap.Marker({
                 map: this.map,
-                position: [
-                  element.turbine_position[1],
-                  element.turbine_position[0],
-                ],
+                position: [element.lon, element.lat],
               })
               marker.on('click', (e) => {
                 //给每个标记注册一个点击事件
                 var infoWindowContent = [
                   '<p>集群编号：' + cluster.cluster_id + '</p>',
                   '<p>风力机编号：' + element.turbine_id + '</p>',
-                  '<p>风力机坐标：[' + element.turbine_position + ']</p>',
+                  '<p>风力机坐标：(' +
+                    element.lat +
+                    ',' +
+                    element.lon +
+                    ')</p>',
                   '<p>风力机高程：' + element.height + '</p>',
                 ]
                 this.infoWindow.setContent(infoWindowContent.join(''))
