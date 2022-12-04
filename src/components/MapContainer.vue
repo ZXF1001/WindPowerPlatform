@@ -25,7 +25,8 @@ export default {
       })
         .then((AMap) => {
           this.map = new AMap.Map('container', {
-            viewMode: '3D',
+            viewMode: '3D', // 地图模式
+            terrain: true, // 开启地形图
             zoom: 16,
             center: [120.124, 30.265],
             layers: [
@@ -33,7 +34,9 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
-          this.getMarker(AMap)
+          this.map.on('complete', () => {
+            this.getMarker(AMap)
+          })
         })
         .catch((e) => {
           console.log(e)
