@@ -44,8 +44,11 @@ export default {
       clusters: clusterOptions,
       isIndeterminate: false,
       // 地图相关变量
+      globalAMap: null,
       map: null,
+      markerList: [],
       infoWindow: null, //地图标记弹窗
+      positionData: [],
     }
   },
   methods: {
@@ -53,6 +56,7 @@ export default {
     handleCheckAllChange(val) {
       this.checkedClusters = val ? clusterOptions : []
       this.isIndeterminate = false
+      this.redrawMarker()
     },
     //多选框相关方法
     handleCheckedClustersChange(value) {
@@ -61,6 +65,7 @@ export default {
       this.checkAll = checkedCount === this.clusters.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusters.length
+      this.redrawMarker()
     },
     //高德地图初始化，包括了画边界和画标记
     initMap() {
@@ -70,6 +75,7 @@ export default {
         plugins: [''],
       })
         .then((AMap) => {
+          this.globalAMap = AMap
           this.map = new AMap.Map('container', {
             viewMode: '3D', // 地图模式
             terrain: true, // 开启地形图
@@ -138,7 +144,7 @@ export default {
         )
         .then((res) => {
           // console.log(res.data)
-          var markerList = []
+          this.positionData = res.data
           res.data.forEach((cluster) => {
             cluster.turbine.forEach((element) => {
               var marker = new m_AMap.Marker({
@@ -160,16 +166,45 @@ export default {
                 this.infoWindow.setContent(infoWindowContent.join(''))
                 this.infoWindow.open(this.map, marker.getPosition())
               })
-              markerList.push(marker)
-              this.map.setFitView()
+              this.markerList.push(marker)
             })
           })
-          this.map.add(markerList)
+          this.map.add(this.markerList)
         })
         .catch((e) => {
           console.log(e)
           alert('地图模块调用失败！')
         })
+    },
+    // 重绘多选框选定集群的Marker
+    redrawMarker() {
+      this.map.remove(this.markerList)
+      this.markerList = []
+      this.positionData.forEach((cluster) => {
+        if (this.checkedClusters.indexOf(cluster.cluster_id) == -1) {
+        } else {
+          cluster.turbine.forEach((element) => {
+            var marker = new this.globalAMap.Marker({
+              map: this.map,
+              position: [element.lon, element.lat],
+            })
+            marker.on('click', (e) => {
+              //给每个标记注册一个点击事件
+              var infoWindowContent = [
+                '<p>集群编号：' + cluster.cluster_id + '</p>',
+                '<p>风力机编号：' + element.turbine_id + '</p>',
+                '<p>风力机坐标：(' + element.lat + ',' + element.lon + ')</p>',
+                '<p>风力机高程：' + element.height + '</p>',
+              ]
+              this.infoWindow.setContent(infoWindowContent.join(''))
+              this.infoWindow.open(this.map, marker.getPosition())
+            })
+            this.markerList.push(marker)
+          })
+        }
+        this.map.add(this.markerList)
+        // this.map.setFitView()
+      })
     },
   },
   mounted() {
