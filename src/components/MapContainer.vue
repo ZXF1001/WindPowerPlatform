@@ -15,6 +15,7 @@ export default {
     return {
       map: null,
       position: [],
+      infoWindow: null,
     }
   },
   methods: {
@@ -34,6 +35,13 @@ export default {
               //使用多个图层
               //new AMap.TileLayer.Satellite(),
             ],
+          })
+          //初始化信息窗口对象
+          this.infoWindow = new AMap.InfoWindow({
+            // isCustom: true, //使用自定义窗体
+            closeWhenClickMap: true, //点击地图隐藏窗体
+            content: 'this is a info window',
+            offset: new AMap.Pixel(0, -32),
           })
           this.map.on('complete', () => {
             this.getMarker(AMap)
@@ -57,6 +65,10 @@ export default {
             var marker = new m_AMap.Marker({
               position: element.turbine_position, //位置
             })
+            marker.on('click', (e) => {
+              //给每个标记注册一个点击事件
+              this.infoWindow.open(this.map, marker.getPosition())
+            })
             markerList.push(marker)
           })
           this.map.add(markerList)
@@ -66,16 +78,9 @@ export default {
           alert('地图模块调用失败！')
         })
     },
-    listenClick(m_AMap) {
-      //监听Marker点击事件
-      m_AMap.event.addListener(marker, 'click', function () {
-        infoWindow.open(map, marker.getPosition())
-      })
-    },
   },
   mounted() {
     this.initMap()
-    this.listenClick()
   },
 }
 </script>
