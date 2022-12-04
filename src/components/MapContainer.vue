@@ -43,8 +43,8 @@ export default {
           console.log(e)
         })
     },
-    getMarker(m_aMap) {
-      // 传入AMap对象，读取点位数据并渲染在地图上
+    getMarker(m_AMap) {
+      // 传入AMap对象，读取点位数据并渲染在AMap对象上
       axios
         .get(
           'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
@@ -54,7 +54,7 @@ export default {
           //读取标记点位置并显示
           var markerList = []
           this.position.forEach((element) => {
-            var marker = new m_aMap.Marker({
+            var marker = new m_AMap.Marker({
               position: element.turbine_position, //位置
             })
             markerList.push(marker)
