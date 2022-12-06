@@ -111,7 +111,7 @@ export default {
               //isCustom: true, //使用自定义窗体
               closeWhenClickMap: true, //点击地图隐藏窗体
               content: '',
-              offset: new AMap.Pixel(0, -32),
+              offset: new AMap.Pixel(0, -15),
             })
             // 选择画标记点的方式
             this.getMassLabel(AMap) //可以考虑
