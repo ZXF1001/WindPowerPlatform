@@ -284,33 +284,33 @@ export default {
       // this.labelsLayerList[0].layerData.show()
     },
     // 重绘多选框选定集群的Marker
-    redrawMarker() {
-      this.map.remove(this.markerList)
-      this.markerList = []
-      this.positionData.forEach((cluster) => {
-        if (this.checkedClusters.indexOf(cluster.cluster_id) !== -1) {
-          cluster.turbine.forEach((element) => {
-            var marker = new this.globalAMap.Marker({
-              map: this.map,
-              position: [element.lon, element.lat],
-            })
-            marker.on('click', (e) => {
-              //给每个标记注册一个点击事件
-              var infoWindowContent = [
-                '<p>集群编号：' + cluster.cluster_id + '</p>',
-                '<p>风力机编号：' + element.turbine_id + '</p>',
-                '<p>风力机坐标：(' + element.lat + ',' + element.lon + ')</p>',
-                '<p>风力机高程：' + element.height + '</p>',
-              ]
-              this.infoWindow.setContent(infoWindowContent.join(''))
-              this.infoWindow.open(this.map, marker.getPosition())
-            })
-            this.markerList.push(marker)
-          })
-        }
-        this.map.add(this.markerList)
-      })
-    },
+    // redrawMarker() {
+    //   this.map.remove(this.markerList)
+    //   this.markerList = []
+    //   this.positionData.forEach((cluster) => {
+    //     if (this.checkedClusters.indexOf(cluster.cluster_id) !== -1) {
+    //       cluster.turbine.forEach((element) => {
+    //         var marker = new this.globalAMap.Marker({
+    //           map: this.map,
+    //           position: [element.lon, element.lat],
+    //         })
+    //         marker.on('click', (e) => {
+    //           //给每个标记注册一个点击事件
+    //           var infoWindowContent = [
+    //             '<p>集群编号：' + cluster.cluster_id + '</p>',
+    //             '<p>风力机编号：' + element.turbine_id + '</p>',
+    //             '<p>风力机坐标：(' + element.lat + ',' + element.lon + ')</p>',
+    //             '<p>风力机高程：' + element.height + '</p>',
+    //           ]
+    //           this.infoWindow.setContent(infoWindowContent.join(''))
+    //           this.infoWindow.open(this.map, marker.getPosition())
+    //         })
+    //         this.markerList.push(marker)
+    //       })
+    //     }
+    //     this.map.add(this.markerList)
+    //   })
+    // },
   },
   mounted() {
     this.initMap()
