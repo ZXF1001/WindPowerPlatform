@@ -34,7 +34,8 @@ import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
-const clusterOptions = [] //这些数据应该从数据库中获得
+const clusterOptions = [] //从数据库中获取可选的集群
+
 export default {
   data() {
     return {
@@ -47,16 +48,41 @@ export default {
       globalAMap: null, //用于全局调用的AMap对象
       map: null,
       markerList: [],
+      labelsLayerList: [],
       infoWindow: null, //地图标记弹窗
       positionData: [],
     }
   },
   methods: {
+    // getClusterList() {
+    //   axios
+    //     .get(
+    //       'https://mock.presstime. cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+    //     )
+    //     .then((res) => {
+    //       var temp = []
+    //       res.data.forEach((cluster) => {
+    //         temp.push(cluster.cluster_id)
+    //       })
+    //       clusterOptions = temp
+    //     })
+    //     .catch((e) => {
+    //       console.log(e)
+    //     })
+    // },
     //多选框相关方法
     handleCheckAllChange(val) {
       this.checkedClusters = val ? clusterOptions : []
       this.isIndeterminate = false
-      this.redrawMarker()
+      if (val) {
+        this.labelsLayerList.forEach((ele) => {
+          ele.layerData.show()
+        })
+      } else {
+        this.labelsLayerList.forEach((ele) => {
+          ele.layerData.hide()
+        })
+      }
     },
     //多选框相关方法
     handleCheckedClustersChange(value) {
@@ -65,7 +91,8 @@ export default {
       this.checkAll = checkedCount === this.clusters.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusters.length
-      this.redrawMarker()
+      this.newRedraw()
+      // this.redrawMarker()
     },
     //高德地图初始化，包括了画边界和画标记
     initMap() {
@@ -86,16 +113,19 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
-          this.drawBounds(AMap) //绘制区域边界
-          //初始化信息窗口对象
-          this.infoWindow = new AMap.InfoWindow({
-            //isCustom: true, //使用自定义窗体
-            closeWhenClickMap: true, //点击地图隐藏窗体
-            content: '',
-            offset: new AMap.Pixel(0, -32),
-          })
+
           this.map.on('complete', () => {
-            this.getMarker(AMap)
+            this.drawBounds(AMap) //绘制区域边界
+            //初始化信息窗口对象
+            this.infoWindow = new AMap.InfoWindow({
+              //isCustom: true, //使用自定义窗体
+              closeWhenClickMap: true, //点击地图隐藏窗体
+              content: '',
+              offset: new AMap.Pixel(0, -32),
+            })
+            // 选择画标记点的方式
+            this.getMassLabel(AMap) //可以考虑
+            // this.getMarker(AMap) //最原始的方法，太慢
           })
         })
         .catch((e) => {
@@ -134,26 +164,35 @@ export default {
         })
       })
     },
-    //画标记点的方法
-    getMarker(m_AMap) {
-      // 传入AMap对象，读取点位数据并渲染在AMap对象上
+
+    //画大量Label
+    getMassLabel(m_AMap) {
       axios
         .get(
           //'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
           'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
         )
         .then((res) => {
-          // console.log(res.data)
-          this.positionData = res.data
+          var icon = {
+            //标注的icon实例
+            type: 'image',
+            image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+            size: [8, 12],
+            anchor: 'bottom-center',
+          }
           res.data.forEach((cluster) => {
             clusterOptions.push(cluster.cluster_id)
+            var labelMarkers = []
             cluster.turbine.forEach((element) => {
-              var marker = new m_AMap.Marker({
-                map: this.map,
+              // 创建labelMarker实例
+              var labelMarker = new m_AMap.LabelMarker({
+                id: element.turbine_id, // 此属性非绘制文字内容，仅最为标识使用
                 position: [element.lon, element.lat],
+                zIndex: 16,
+                // 将第一步创建的 icon 对象传给 icon 属性
+                icon: icon,
               })
-              marker.on('click', (e) => {
-                //给每个标记注册一个点击事件
+              labelMarker.on('click', (e) => {
                 var infoWindowContent = [
                   '<p>集群编号：' + cluster.cluster_id + '</p>',
                   '<p>风力机编号：' + element.turbine_id + '</p>',
@@ -165,17 +204,84 @@ export default {
                   '<p>风力机高程：' + element.height + '</p>',
                 ]
                 this.infoWindow.setContent(infoWindowContent.join(''))
-                this.infoWindow.open(this.map, marker.getPosition())
+                this.infoWindow.open(this.map, labelMarker.getPosition())
               })
-              this.markerList.push(marker)
+
+              labelMarkers.push(labelMarker)
+            })
+            // 创建 AMap.LabelsLayer 图层
+            var labelsLayer = new m_AMap.LabelsLayer({
+              zIndex: 1000,
+              collision: false,
+            })
+            labelsLayer.add(labelMarkers)
+            // 将图层添加到地图
+            this.map.add(labelsLayer)
+            this.labelsLayerList.push({
+              cluster: cluster.cluster_id,
+              layerData: labelsLayer,
             })
           })
-          this.map.add(this.markerList)
         })
         .catch((e) => {
           console.log(e)
           alert('地图模块调用失败！')
         })
+    },
+    //画标记点的方法
+    // getMarker(m_AMap) {
+    //   // 传入AMap对象，读取点位数据并渲染在AMap对象上
+    //   axios
+    //     .get(
+    //       //'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
+    //       'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+    //     )
+    //     .then((res) => {
+    //       this.positionData = res.data
+    //       res.data.forEach((cluster) => {
+    //         clusterOptions.push(cluster.cluster_id)
+    //         cluster.turbine.forEach((element) => {
+    //           var marker = new m_AMap.Marker({
+    //             map: this.map,
+    //             position: [element.lon, element.lat],
+    //           })
+    //           marker.on('click', (e) => {
+    //             //给每个标记注册一个点击事件
+    //             var infoWindowContent = [
+    //               '<p>集群编号：' + cluster.cluster_id + '</p>',
+    //               '<p>风力机编号：' + element.turbine_id + '</p>',
+    //               '<p>风力机坐标：(' +
+    //                 element.lat +
+    //                 ',' +
+    //                 element.lon +
+    //                 ')</p>',
+    //               '<p>风力机高程：' + element.height + '</p>',
+    //             ]
+    //             this.infoWindow.setContent(infoWindowContent.join(''))
+    //             this.infoWindow.open(this.map, marker.getPosition())
+    //           })
+    //           this.markerList.push(marker)
+    //         })
+    //       })
+    //       this.map.add(this.markerList)
+    //     })
+    //     .catch((e) => {
+    //       console.log(e)
+    //       alert('地图模块调用失败！')
+    //     })
+    // },
+
+    newRedraw() {
+      this.labelsLayerList.forEach((layer) => {
+        if (this.checkedClusters.indexOf(layer.cluster) !== -1) {
+          layer.layerData.show()
+        } else {
+          layer.layerData.hide()
+        }
+      })
+      //根据多选框的选择与取消选择分类
+      // this.labelsLayerList.hide()
+      // this.labelsLayerList[0].layerData.show()
     },
     // 重绘多选框选定集群的Marker
     redrawMarker() {
@@ -203,17 +309,11 @@ export default {
           })
         }
         this.map.add(this.markerList)
-        // this.map.setFitView()
       })
     },
   },
   mounted() {
     this.initMap()
-  },
-  // 跳转前销毁实例释放内存
-  beforeRouteLeave() {
-    this.map.destroy()
-    this.map.clear()
   },
 }
 </script>
