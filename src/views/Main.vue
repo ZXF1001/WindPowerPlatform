@@ -9,9 +9,9 @@
           <common-header></common-header>
         </el-header>
         <el-main>
-          <keep-alive>
-            <router-view></router-view>
-          </keep-alive>
+          <!-- <keep-alive> -->
+          <router-view></router-view>
+          <!-- </keep-alive> -->
         </el-main>
       </el-container>
     </el-container>

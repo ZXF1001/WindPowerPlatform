@@ -9,7 +9,7 @@
           <div style="margin: 15px 0;"></div>
           <el-checkbox-group v-model="checkedClusters"
                              @change="handleCheckedClustersChange">
-            <el-checkbox v-for="cluster in clusters"
+            <el-checkbox v-for="cluster in clusterOptions"
                          :label="cluster"
                          :key="cluster"
                          style="display: block; padding-top: 10px;">{{cluster}}</el-checkbox>
@@ -34,15 +34,16 @@ import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
-const clusterOptions = [] //从数据库中获取可选的集群
+// const clusterOptions = [] //从数据库中获取可选的集群
 
 export default {
   data() {
     return {
       //多选框相关变量
       checkAll: true,
-      checkedClusters: clusterOptions, //这是选中的集群Array
-      clusters: clusterOptions,
+      clusterOptions: [],
+      checkedClusters: [], //这是选中的集群Array
+      // clusters: [],
       isIndeterminate: false,
       // 地图相关变量
       globalAMap: null, //用于全局调用的AMap对象
@@ -72,7 +73,7 @@ export default {
     // },
     //多选框相关方法
     handleCheckAllChange(val) {
-      this.checkedClusters = val ? clusterOptions : []
+      this.checkedClusters = val ? this.clusterOptions : []
       this.isIndeterminate = false
       if (val) {
         this.labelsLayerList.forEach((ele) => {
@@ -88,9 +89,9 @@ export default {
     handleCheckedClustersChange(value) {
       // 传入的是一个选中项目的Array
       let checkedCount = value.length
-      this.checkAll = checkedCount === this.clusters.length
+      this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
-        checkedCount > 0 && checkedCount < this.clusters.length
+        checkedCount > 0 && checkedCount < this.clusterOptions.length
       this.newRedraw()
       // this.redrawMarker()
     },
@@ -180,8 +181,9 @@ export default {
             size: [8, 12],
             anchor: 'bottom-center',
           }
+          var tmp = []
           res.data.forEach((cluster) => {
-            clusterOptions.push(cluster.cluster_id)
+            tmp.push(cluster.cluster_id)
             var labelMarkers = []
             cluster.turbine.forEach((element) => {
               // 创建labelMarker实例
@@ -222,6 +224,9 @@ export default {
               layerData: labelsLayer,
             })
           })
+          this.clusterOptions = tmp
+          this.checkedClusters = tmp
+          // this.clusters = tmp
         })
         .catch((e) => {
           console.log(e)
