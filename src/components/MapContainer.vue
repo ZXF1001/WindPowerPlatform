@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-row>
-      <el-col :span="2">
+      <el-col :span="3">
         <div class="left">
           <el-checkbox :indeterminate="isIndeterminate"
                        v-model="checkAll"
@@ -17,7 +17,7 @@
           </el-checkbox-group>
         </div>
       </el-col>
-      <el-col :span="22">
+      <el-col :span="21">
         <div class="right">
           <div id="container"></div>
         </div>
@@ -34,8 +34,6 @@ import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
-// const clusterOptions = [] //从数据库中获取可选的集群
-
 export default {
   data() {
     return {
@@ -43,7 +41,6 @@ export default {
       checkAll: true,
       clusterOptions: [],
       checkedClusters: [], //这是选中的集群Array
-      // clusters: [],
       isIndeterminate: false,
       // 地图相关变量
       globalAMap: null, //用于全局调用的AMap对象
@@ -55,22 +52,6 @@ export default {
     }
   },
   methods: {
-    // getClusterList() {
-    //   axios
-    //     .get(
-    //       'https://mock.presstime. cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
-    //     )
-    //     .then((res) => {
-    //       var temp = []
-    //       res.data.forEach((cluster) => {
-    //         temp.push(cluster.cluster_id)
-    //       })
-    //       clusterOptions = temp
-    //     })
-    //     .catch((e) => {
-    //       console.log(e)
-    //     })
-    // },
     //多选框相关方法
     handleCheckAllChange(val) {
       this.checkedClusters = val ? this.clusterOptions : []
@@ -92,8 +73,7 @@ export default {
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
-      this.newRedraw()
-      // this.redrawMarker()
+      this.redrawMarker()
     },
     //高德地图初始化，包括了画边界和画标记
     initMap() {
@@ -114,7 +94,16 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
-
+          this.map.on('movestart', () => {
+            this.labelsLayerList.forEach((ele) => {
+              ele.layerData.hide()
+            })
+          })
+          this.map.on('moveend', () => {
+            this.labelsLayerList.forEach((ele) => {
+              ele.layerData.show()
+            })
+          })
           this.map.on('complete', () => {
             this.drawBounds(AMap) //绘制区域边界
             //初始化信息窗口对象
@@ -170,7 +159,6 @@ export default {
     getMassLabel(m_AMap) {
       axios
         .get(
-          //'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
           'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
         )
         .then((res) => {
@@ -196,14 +184,21 @@ export default {
               })
               labelMarker.on('click', (e) => {
                 var infoWindowContent = [
-                  '<p>集群编号：' + cluster.cluster_id + '</p>',
-                  '<p>风力机编号：' + element.turbine_id + '</p>',
-                  '<p>风力机坐标：(' +
+                  '<h1 style="font-size; 18px;margin-top:0px">编号：' +
+                    element.turbine_id +
+                    '</p>',
+                  '<p style="font-size: 12px">集群编号：' +
+                    cluster.cluster_id +
+                    '</p>',
+
+                  '<p style="font-size: 12px">风力机坐标：(' +
                     element.lat +
                     ',' +
                     element.lon +
                     ')</p>',
-                  '<p>风力机高程：' + element.height + '</p>',
+                  '<p style="font-size: 12px">风力机高程：' +
+                    element.height +
+                    '</p>',
                 ]
                 this.infoWindow.setContent(infoWindowContent.join(''))
                 this.infoWindow.open(this.map, labelMarker.getPosition())
@@ -226,14 +221,13 @@ export default {
           })
           this.clusterOptions = tmp
           this.checkedClusters = tmp
-          // this.clusters = tmp
         })
         .catch((e) => {
           console.log(e)
           alert('地图模块调用失败！')
         })
     },
-    //画标记点的方法
+    //画最简单标记点的方法（大量数据时会更慢）
     // getMarker(m_AMap) {
     //   // 传入AMap对象，读取点位数据并渲染在AMap对象上
     //   axios
@@ -276,7 +270,7 @@ export default {
     //     })
     // },
 
-    newRedraw() {
+    redrawMarker() {
       this.labelsLayerList.forEach((layer) => {
         if (this.checkedClusters.indexOf(layer.cluster) !== -1) {
           layer.layerData.show()
@@ -284,38 +278,7 @@ export default {
           layer.layerData.hide()
         }
       })
-      //根据多选框的选择与取消选择分类
-      // this.labelsLayerList.hide()
-      // this.labelsLayerList[0].layerData.show()
     },
-    // 重绘多选框选定集群的Marker
-    // redrawMarker() {
-    //   this.map.remove(this.markerList)
-    //   this.markerList = []
-    //   this.positionData.forEach((cluster) => {
-    //     if (this.checkedClusters.indexOf(cluster.cluster_id) !== -1) {
-    //       cluster.turbine.forEach((element) => {
-    //         var marker = new this.globalAMap.Marker({
-    //           map: this.map,
-    //           position: [element.lon, element.lat],
-    //         })
-    //         marker.on('click', (e) => {
-    //           //给每个标记注册一个点击事件
-    //           var infoWindowContent = [
-    //             '<p>集群编号：' + cluster.cluster_id + '</p>',
-    //             '<p>风力机编号：' + element.turbine_id + '</p>',
-    //             '<p>风力机坐标：(' + element.lat + ',' + element.lon + ')</p>',
-    //             '<p>风力机高程：' + element.height + '</p>',
-    //           ]
-    //           this.infoWindow.setContent(infoWindowContent.join(''))
-    //           this.infoWindow.open(this.map, marker.getPosition())
-    //         })
-    //         this.markerList.push(marker)
-    //       })
-    //     }
-    //     this.map.add(this.markerList)
-    //   })
-    // },
   },
   mounted() {
     this.initMap()
@@ -324,6 +287,12 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.left {
+  height: 400px;
+
+  overflow: scroll;
+  overflow-x: hidden;
+}
 #container {
   padding: 0px;
   margin: 0px;
