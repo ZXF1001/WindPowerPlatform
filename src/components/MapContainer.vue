@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-loading="loading">
     <el-row>
       <el-col :span="3">
         <div class="left">
@@ -39,6 +39,7 @@ window._AMapSecurityConfig = {
 export default {
   data() {
     return {
+      loading: true,
       //多选框相关变量
       checkAll: true,
       clusterOptions: [],
@@ -244,6 +245,7 @@ export default {
           })
           this.clusterOptions = tmp
           this.checkedClusters = tmp
+          this.loading = false
         })
         .catch((e) => {
           console.log(e)
