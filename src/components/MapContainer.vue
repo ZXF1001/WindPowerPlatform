@@ -3,8 +3,8 @@
     <el-row>
       <el-col :span="3">
         <div class="left">
-          <!-- <el-button @click="conventGPS"
-                     size="mini">执行gps转化</el-button> -->
+          <el-button @click="conventGPS"
+                     size="mini">执行gps转化</el-button>
           <el-checkbox :indeterminate="isIndeterminate"
                        v-model="checkAll"
                        @change="handleCheckAllChange">全选</el-checkbox>
@@ -183,7 +183,7 @@ export default {
           //   "turbine": [{
           //     "turbine_id": "WT17-16",
           //     "lat": "41.489795",
-          //     "lon": "114.824031",
+          //     "lng": "114.824031",
           //     "AMapPosition": [114.830369,41.491712],
           //     "height": "1404.563873"},
           //       ...,
@@ -217,7 +217,7 @@ export default {
                   '<p style="font-size: 12px">风力机坐标：(' +
                     element.lat +
                     ',' +
-                    element.lon +
+                    element.lng +
                     ')</p>',
                   '<p style="font-size: 12px">风力机高程：' +
                     element.height +
@@ -260,47 +260,47 @@ export default {
         }
       })
     },
-    // conventGPS() {
-    //   axios
-    //     .get(
-    //       'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
-    //     )
-    //     .then((res) => {
-    //       //接收点位数据，加入转化后的高德坐标数据并输出
-    //       // console.log(res.data)
-    //       var tempjson = []
+    conventGPS() {
+      axios
+        .get(
+          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+        )
+        .then((res) => {
+          //接收点位数据，加入转化后的高德坐标数据并输出
+          // console.log(res.data)
+          var tempjson = []
+          res.data.forEach((cluster) => {
+            var temp_turbine = []
+            cluster.turbine.forEach((turbine) => {
+              this.globalAMap.convertFrom(
+                [turbine.lng, turbine.lat],
+                'gps',
+                function (status, result) {
+                  if (result.info === 'ok') {
+                    var lnglats = result.locations // Array.<LngLat>
 
-    //       res.data.forEach((cluster) => {
-    //         var temp_turbine = []
-    //         cluster.turbine.forEach((turbine) => {
-    //           this.globalAMap.convertFrom(
-    //             [turbine.lon, turbine.lat],
-    //             'gps',
-    //             function (status, result) {
-    //               if (result.info === 'ok') {
-    //                 var lnglats = result.locations // Array.<LngLat>
-
-    //                 temp_turbine.push({
-    //                   turbine_id: turbine.turbine_id,
-    //                   lat: turbine.lat,
-    //                   lon: turbine.lon,
-    //                   AMapPosition: lnglats[0],
-    //                   height: turbine.height,
-    //                 })
-    //               }
-    //             }
-    //           )
-    //         })
-    //         tempjson.push({
-    //           cluster_id: cluster.cluster_id,
-    //           turbine: temp_turbine,
-    //         })
-    //       })
-    //       console.log(tempjson)
-    //     })
-    //     .catch((e) => {
-    //       console.log(e)
-    //     })
+                    temp_turbine.push({
+                      turbine_id: turbine.turbine_id,
+                      lat: turbine.lat,
+                      lng: turbine.lon,
+                      AMapPosition: lnglats[0],
+                      height: turbine.height,
+                    })
+                  }
+                }
+              )
+            })
+            tempjson.push({
+              cluster_id: cluster.cluster_id,
+              turbine: temp_turbine,
+            })
+          })
+          console.log(tempjson)
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
   },
   mounted() {
     this.initMap()
