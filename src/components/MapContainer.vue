@@ -118,6 +118,7 @@ export default {
             this.drawBounds(AMap) //绘制区域边界
             //初始化信息窗口对象
             this.infoWindow = new AMap.InfoWindow({
+              autoMove: false,
               closeWhenClickMap: true, //点击地图隐藏窗体
               content: '',
               offset: new AMap.Pixel(0, -15),
@@ -201,7 +202,7 @@ export default {
               var labelMarker = new m_AMap.LabelMarker({
                 id: element.turbine_id, // 此属性非绘制文字内容，仅最为标识使用
                 position: element.AMapPosition,
-                zIndex: 16,
+                // zIndex: 16,
                 // 将第一步创建的 icon 对象传给 icon 属性
                 icon: icon,
               })
@@ -232,7 +233,7 @@ export default {
             })
             // 创建 AMap.LabelsLayer 图层
             var labelsLayer = new m_AMap.LabelsLayer({
-              zIndex: 1000,
+              // zIndex: 1000,
               collision: false,
             })
             labelsLayer.add(labelMarkers)
@@ -262,47 +263,49 @@ export default {
         }
       })
     },
-    conventGPS() {
-      axios
-        .get(
-          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
-        )
-        .then((res) => {
-          //接收点位数据，加入转化后的高德坐标数据并输出
-          // console.log(res.data)
-          var tempjson = []
-          res.data.forEach((cluster) => {
-            var temp_turbine = []
-            cluster.turbine.forEach((turbine) => {
-              this.globalAMap.convertFrom(
-                [turbine.lng, turbine.lat],
-                'gps',
-                function (status, result) {
-                  if (result.info === 'ok') {
-                    var lnglats = result.locations // Array.<LngLat>
+    // conventGPS() {
+    //   axios
+    //     .get(
+    //       'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+    //     )
+    //     .then((res) => {
+    //       //接收点位数据，加入转化后的高德坐标数据并输出
+    //       // console.log(res.data)
+    //       var tempjson = []
+    //       res.data.forEach((cluster) => {
+    //         // console.log(cluster)
+    //         var temp_turbine = []
+    //         cluster.turbine.forEach((turbine) => {
+    //           // console.log(turbine)
+    //           this.globalAMap.convertFrom(
+    //             [turbine.lng, turbine.lat],
+    //             'gps',
+    //             function (status, result) {
+    //               if (result.info === 'ok') {
+    //                 var lnglats = result.locations // Array.<LngLat>
 
-                    temp_turbine.push({
-                      turbine_id: turbine.turbine_id,
-                      lat: turbine.lat,
-                      lng: turbine.lon,
-                      AMapPosition: lnglats[0],
-                      height: turbine.height,
-                    })
-                  }
-                }
-              )
-            })
-            tempjson.push({
-              cluster_id: cluster.cluster_id,
-              turbine: temp_turbine,
-            })
-          })
-          console.log(tempjson)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-    },
+    //                 temp_turbine.push({
+    //                   turbine_id: turbine.turbine_id,
+    //                   lat: turbine.lat,
+    //                   lng: turbine.lng,
+    //                   AMapPosition: lnglats[0],
+    //                   height: turbine.height,
+    //                 })
+    //               }
+    //             }
+    //           )
+    //         })
+    //         tempjson.push({
+    //           cluster_id: cluster.cluster_id,
+    //           turbine: temp_turbine,
+    //         })
+    //       })
+    //       console.log(tempjson)
+    //     })
+    //     .catch((e) => {
+    //       console.log(e)
+    //     })
+    // },
   },
   mounted() {
     this.initMap()
