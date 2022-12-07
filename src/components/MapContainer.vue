@@ -3,6 +3,8 @@
     <el-row>
       <el-col :span="3">
         <div class="left">
+          <el-button @click="conventGPS"
+                     size="mini">执行gps转化</el-button>
           <el-checkbox :indeterminate="isIndeterminate"
                        v-model="checkAll"
                        @change="handleCheckAllChange">全选</el-checkbox>
@@ -44,11 +46,9 @@ export default {
       isIndeterminate: false,
       // 地图相关变量
       globalAMap: null, //用于全局调用的AMap对象
-      map: null,
-      markerList: [],
-      labelsLayerList: [],
+      map: null, //全局map对象
+      labelsLayerList: [], //绘制不同集群数据的图层列表
       infoWindow: null, //地图标记弹窗
-      positionData: [],
     }
   },
   methods: {
@@ -57,19 +57,21 @@ export default {
       this.checkedClusters = val ? this.clusterOptions : []
       this.isIndeterminate = false
       if (val) {
-        this.labelsLayerList.forEach((ele) => {
-          ele.layerData.show()
+        //全选
+        this.labelsLayerList.forEach((element) => {
+          element.layerData.show()
         })
       } else {
-        this.labelsLayerList.forEach((ele) => {
-          ele.layerData.hide()
+        //全不选
+        this.labelsLayerList.forEach((element) => {
+          element.layerData.hide()
         })
       }
     },
     //多选框相关方法
     handleCheckedClustersChange(value) {
       // 传入的是一个选中项目的Array
-      let checkedCount = value.length
+      var checkedCount = value.length
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
@@ -94,28 +96,26 @@ export default {
               //new AMap.TileLayer.Satellite(),
             ],
           })
+          //拖动地图时不显示标记点以防卡顿
           this.map.on('movestart', () => {
-            this.labelsLayerList.forEach((ele) => {
-              ele.layerData.hide()
+            this.labelsLayerList.forEach((element) => {
+              element.layerData.hide()
             })
           })
           this.map.on('moveend', () => {
-            this.labelsLayerList.forEach((ele) => {
-              ele.layerData.show()
+            this.labelsLayerList.forEach((element) => {
+              element.layerData.show()
             })
           })
           this.map.on('complete', () => {
             this.drawBounds(AMap) //绘制区域边界
             //初始化信息窗口对象
             this.infoWindow = new AMap.InfoWindow({
-              //isCustom: true, //使用自定义窗体
               closeWhenClickMap: true, //点击地图隐藏窗体
               content: '',
               offset: new AMap.Pixel(0, -15),
             })
-            // 选择画标记点的方式
             this.getMassLabel(AMap) //可以考虑
-            // this.getMarker(AMap) //最原始的方法，太慢
           })
         })
         .catch((e) => {
@@ -127,7 +127,6 @@ export default {
       // 传入AMap对象，绘制区域边界
       m_AMap.plugin('AMap.DistrictSearch', () => {
         var districtSearch = new m_AMap.DistrictSearch({
-          // 关键字对应的行政区级别，共有5种级别
           level: 'district',
           //  是否显示下级行政区级数，1表示返回下一级行政区
           subdistrict: 0,
@@ -136,7 +135,6 @@ export default {
         })
         // 搜索所有省/直辖市信息
         districtSearch.search('张北县', (status, result) => {
-          // 查询成功时，result即为对应的行政区信息
           if (status === 'complete') {
             const bounds = result.districtList[0].boundaries
             for (let i = 0, l = bounds.length; i < l; i++) {
@@ -150,6 +148,8 @@ export default {
               })
             }
             this.map.setFitView()
+          } else {
+            console.log('未查询到张北县信息！')
           }
         })
       })
@@ -182,6 +182,7 @@ export default {
                 // 将第一步创建的 icon 对象传给 icon 属性
                 icon: icon,
               })
+              // 挂载标记点击事件
               labelMarker.on('click', (e) => {
                 var infoWindowContent = [
                   '<h1 style="font-size; 18px;margin-top:0px">编号：' +
@@ -212,7 +213,7 @@ export default {
               collision: false,
             })
             labelsLayer.add(labelMarkers)
-            // 将图层添加到地图
+            // 将图层添加到地图，一层表示一个集群
             this.map.add(labelsLayer)
             this.labelsLayerList.push({
               cluster: cluster.cluster_id,
@@ -227,48 +228,6 @@ export default {
           alert('地图模块调用失败！')
         })
     },
-    //画最简单标记点的方法（大量数据时会更慢）
-    // getMarker(m_AMap) {
-    //   // 传入AMap对象，读取点位数据并渲染在AMap对象上
-    //   axios
-    //     .get(
-    //       //'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/turbine_position'
-    //       'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
-    //     )
-    //     .then((res) => {
-    //       this.positionData = res.data
-    //       res.data.forEach((cluster) => {
-    //         clusterOptions.push(cluster.cluster_id)
-    //         cluster.turbine.forEach((element) => {
-    //           var marker = new m_AMap.Marker({
-    //             map: this.map,
-    //             position: [element.lon, element.lat],
-    //           })
-    //           marker.on('click', (e) => {
-    //             //给每个标记注册一个点击事件
-    //             var infoWindowContent = [
-    //               '<p>集群编号：' + cluster.cluster_id + '</p>',
-    //               '<p>风力机编号：' + element.turbine_id + '</p>',
-    //               '<p>风力机坐标：(' +
-    //                 element.lat +
-    //                 ',' +
-    //                 element.lon +
-    //                 ')</p>',
-    //               '<p>风力机高程：' + element.height + '</p>',
-    //             ]
-    //             this.infoWindow.setContent(infoWindowContent.join(''))
-    //             this.infoWindow.open(this.map, marker.getPosition())
-    //           })
-    //           this.markerList.push(marker)
-    //         })
-    //       })
-    //       this.map.add(this.markerList)
-    //     })
-    //     .catch((e) => {
-    //       console.log(e)
-    //       alert('地图模块调用失败！')
-    //     })
-    // },
 
     redrawMarker() {
       this.labelsLayerList.forEach((layer) => {
@@ -278,6 +237,29 @@ export default {
           layer.layerData.hide()
         }
       })
+    },
+    conventGPS() {
+      axios
+        .get(
+          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+        )
+        .then((res) => {
+          //接收点位数据，加入转化后的高德坐标数据并输出
+          console.log(res.data)
+          var tempjson = []
+          res.data.forEach((cluster) => {})
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+
+      // this.globalAMap.convertFrom(gpsList, 'gps', function (status, result) {
+      //   if (result.info === 'ok') {
+      //     var lnglats = result.locations // Array.<LngLat>
+      //     console.log(lnglats)
+      //     return lnglats
+      //   }
+      // })
     },
   },
   mounted() {
