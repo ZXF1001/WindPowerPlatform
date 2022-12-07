@@ -3,8 +3,8 @@
     <el-row>
       <el-col :span="3">
         <div class="left">
-          <el-button @click="conventGPS"
-                     size="mini">执行gps转化</el-button>
+          <!-- <el-button @click="conventGPS"
+                     size="mini">执行gps转化</el-button> -->
           <el-checkbox :indeterminate="isIndeterminate"
                        v-model="checkAll"
                        @change="handleCheckAllChange">全选</el-checkbox>
@@ -89,8 +89,8 @@ export default {
           this.map = new AMap.Map('container', {
             viewMode: '3D', // 地图模式
             terrain: true, // 开启地形图
-            zoom: 8,
-            center: [114.88072, 41.275698],
+            zoom: 9,
+            center: [114.88, 41.27565],
             layers: [
               //使用多个图层
               new AMap.TileLayer.Satellite(),
@@ -153,7 +153,7 @@ export default {
                 strokeColor: '#256edc', //线条颜色
               })
             }
-            this.map.setFitView()
+            // this.map.setFitView()
           } else {
             console.log('未查询到张北县信息！')
           }
@@ -205,7 +205,7 @@ export default {
                 icon: icon,
               })
               // 挂载标记点击事件
-              labelMarker.on('click', (e) => {
+              labelMarker.on('click', () => {
                 var infoWindowContent = [
                   '<h1 style="font-size; 18px;margin-top:0px">编号：' +
                     element.turbine_id +
