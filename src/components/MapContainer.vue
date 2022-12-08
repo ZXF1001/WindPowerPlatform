@@ -82,13 +82,15 @@ export default {
     initMap() {
       AMapLoader.load({
         key: 'f9cb65dd9831f33581c66e88ec5881a6',
-        version: '2.0',
+        // version: '2.0',
+        version: '2.1Beta',
         plugins: [''],
       })
         .then((AMap) => {
           this.globalAMap = AMap
           this.map = new AMap.Map('container', {
             viewMode: '3D', // 地图模式
+            // pitch: 75, // 地图俯仰角度，有效范围 0 度- 83 度
             terrain: true, // 开启地形图
             zoom: 9,
             center: [114.88, 41.27565],
@@ -98,12 +100,16 @@ export default {
               new AMap.TileLayer.RoadNet(),
             ],
           })
-          this.map.plugin(['AMap.MapType'], () => {
+          this.map.plugin(['AMap.MapType', 'AMap.Scale'], () => {
             //地图类型切换
             var type = new AMap.MapType({
               defaultType: 0,
             })
             this.map.addControl(type)
+            var scale = new AMap.Scale({
+              position: 'RB',
+            })
+            this.map.addControl(scale)
           })
           //拖动地图时不显示标记点以防卡顿
           this.map.on('movestart', () => {
