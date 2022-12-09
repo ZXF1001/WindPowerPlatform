@@ -117,18 +117,33 @@ export default {
       },
       tableData: [],
       lineData: {},
+      timer: null,
     }
   },
   methods: {
-    fetchdata() {
+    fetchNumData() {
+      this.timer = setInterval(() => {
+        axios
+          .get(
+            // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
+            'https://windplatform.usemock.com/overview_data'
+          )
+          .then((res) => {
+            this.numData = res.data.numData
+            this.tableData = res.data.tableData
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      }, 2000)
+    },
+    fetchLinedata() {
       axios
         .get(
           // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
           'https://windplatform.usemock.com/overview_data'
         )
         .then((res) => {
-          this.numData = res.data.numData
-          this.tableData = res.data.tableData
           this.lineData = res.data.lineData
           //在这里画图
           const echarts1 = echarts.init(this.$refs.echarts1)
@@ -167,7 +182,14 @@ export default {
     },
   },
   mounted() {
-    this.fetchdata()
+    this.fetchNumData()
+    this.fetchLinedata()
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
   },
   // beforeRouteLeave(to, from, next) {
   //   this.map && this.map.destroy()

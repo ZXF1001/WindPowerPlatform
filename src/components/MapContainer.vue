@@ -89,9 +89,8 @@ export default {
         .then((AMap) => {
           this.globalAMap = AMap
           this.map = new AMap.Map('container', {
-            viewMode: '3D', // 地图模式
-            // pitch: 75, // 地图俯仰角度，有效范围 0 度- 83 度
-            terrain: true, // 开启地形图
+            // viewMode: '3D', // 地图模式
+            // terrain: true, // 开启地形图
             zoom: 9,
             center: [114.88, 41.27565],
             layers: [
@@ -129,7 +128,7 @@ export default {
               content: '',
               offset: new AMap.Pixel(0, -15),
             })
-            this.getMassLabel(AMap) //可以考虑
+            this.getMassLabel(AMap)
           })
         })
         .catch((e) => {
@@ -316,6 +315,9 @@ export default {
   },
   mounted() {
     this.initMap()
+  },
+  beforeDestroy() {
+    this.map.destroy()
   },
 }
 </script>

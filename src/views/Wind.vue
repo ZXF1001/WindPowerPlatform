@@ -22,6 +22,53 @@ export default {
     }
   },
   methods: {
+    fetchData() {
+      axios
+        .get('https://windplatform.usemock.com/time_power')
+        .then((res) => {
+          console.log(res.data)
+          this.data = res.data
+          this.drawData()
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
+    drawData() {
+      const echarts1 = echarts.init(this.$refs.echarts)
+      var option = {
+        title: {
+          text: 'Dynamic Data Axis',
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            animation: false,
+          },
+        },
+        xAxis: {
+          type: 'time',
+          splitLine: {
+            show: false,
+          },
+        },
+        yAxis: {
+          type: 'value',
+          boundaryGap: [0, '100%'],
+          splitLine: {
+            show: false,
+          },
+        },
+        series: [
+          {
+            name: 'Fake Data',
+            type: 'line',
+            showSymbol: false,
+            data: this.data,
+          },
+        ],
+      }
+    },
     randomData() {
       this.now = new Date(+this.now + this.oneDay)
       // console.log(now.getMonth());
@@ -50,19 +97,6 @@ export default {
         },
         tooltip: {
           trigger: 'axis',
-          formatter: function (params) {
-            params = params[0]
-            var date = new Date(params.name)
-            return (
-              date.getDate() +
-              '/' +
-              (date.getMonth() + 1) +
-              '/' +
-              date.getFullYear() +
-              ' : ' +
-              params.value[1]
-            )
-          },
           axisPointer: {
             animation: false,
           },
@@ -101,6 +135,7 @@ export default {
             },
           ],
         })
+        console.log(this.data)
         echarts1.setOption(option)
       }, 1000)
     },
