@@ -157,7 +157,7 @@ export default {
               scale: true,
             },
             tooltip: {
-              trigger: 'item',
+              trigger: 'axis',
             },
             legend: {},
             title: {

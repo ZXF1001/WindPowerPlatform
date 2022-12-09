@@ -1,7 +1,6 @@
 <template>
   <div>
     <h1>这是Wind</h1>
-    <el-button @click="draw">运行</el-button>
     <el-card>
       <!-- 右下的线图 -->
       <div class="linechart"
@@ -15,10 +14,11 @@ import * as echarts from 'echarts'
 export default {
   data() {
     return {
-      data: [],
+      latestDate: null,
       now: new Date(1997, 9, 3),
       oneDay: 24 * 3600 * 1000,
       value: Math.random() * 1000,
+      timer: null,
     }
   },
   methods: {
@@ -26,119 +26,113 @@ export default {
       axios
         .get('https://windplatform.usemock.com/time_power')
         .then((res) => {
-          console.log(res.data)
-          this.data = res.data
-          this.drawData()
+          this.drawData(res.data)
         })
         .catch((e) => {
           console.log(e)
         })
     },
-    drawData() {
+    drawData(data) {
       const echarts1 = echarts.init(this.$refs.echarts)
-      var option = {
-        title: {
-          text: 'Dynamic Data Axis',
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            animation: false,
-          },
-        },
-        xAxis: {
-          type: 'time',
-          splitLine: {
-            show: false,
-          },
-        },
-        yAxis: {
-          type: 'value',
-          boundaryGap: [0, '100%'],
-          splitLine: {
-            show: false,
-          },
-        },
-        series: [
-          {
-            name: 'Fake Data',
-            type: 'line',
-            showSymbol: false,
-            data: this.data,
-          },
-        ],
-      }
-    },
-    randomData() {
-      this.now = new Date(+this.now + this.oneDay)
-      // console.log(now.getMonth());
-      this.value = this.value + Math.random() * 21 - 10
-      return {
-        name: this.now.toString(),
-        value: [
-          [
-            this.now.getFullYear(),
-            this.now.getMonth() + 1,
-            this.now.getDate(),
-          ].join('/'),
-          Math.round(this.value),
-        ],
-      }
-    },
-    draw() {
-      const echarts1 = echarts.init(this.$refs.echarts)
-      // console.log(this.randomData())
-      for (var i = 0; i < 1000; i++) {
-        this.data.push(this.randomData())
-      }
-      var option = {
-        title: {
-          text: 'Dynamic Data & Time Axis',
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            animation: false,
-          },
-        },
-        xAxis: {
-          type: 'time',
-          splitLine: {
-            show: false,
-          },
-        },
-        yAxis: {
-          type: 'value',
-          boundaryGap: [0, '100%'],
-          splitLine: {
-            show: false,
-          },
-        },
-        series: [
-          {
-            name: 'Fake Data',
-            type: 'line',
-            showSymbol: false,
-            data: this.data,
-          },
-        ],
-      }
-      setInterval(() => {
-        for (var i = 0; i < 5; i++) {
-          this.data.shift()
-          this.data.push(this.randomData())
-        }
-        echarts1.setOption({
-          series: [
-            {
-              data: this.data,
-            },
-          ],
+      var seriesData = []
+      var clusterList = Object.keys(data[0].value)
+      clusterList.forEach((cluster) => {
+        var lineData = []
+        data.forEach((dateItem) => {
+          var date = new Date(dateItem.date)
+          this.latestDate = date
+          lineData.push({
+            name: date.toString(),
+            value: [
+              [date.getFullYear(), date.getMonth() + 1, date.getDate()].join(
+                '/'
+              ),
+              dateItem.value[cluster],
+            ],
+          })
         })
-        console.log(this.data)
-        echarts1.setOption(option)
-      }, 1000)
+        seriesData.push({
+          animationDuration: 0,
+          name: cluster,
+          type: 'line',
+          showSymbol: false,
+          data: lineData,
+          smooth: true,
+        })
+      })
+
+      var option = {
+        title: {
+          text: '时变数据折线图',
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            animation: false,
+          },
+        },
+        xAxis: {
+          type: 'time',
+          splitLine: {
+            show: false,
+          },
+        },
+        yAxis: {
+          type: 'value',
+          boundaryGap: [0, '100%'],
+          splitLine: {
+            show: false,
+          },
+        },
+        series: seriesData,
+      }
+      echarts1.setOption(option)
+      this.updateData(seriesData, echarts1, option)
     },
+    updateData(seriesData, echartsObj, echartsOption) {
+      this.timer = setInterval(() => {
+        axios
+          .get('https://windplatform.usemock.com/timely_data')
+          .then((res) => {
+            this.latestDate = new Date(+this.latestDate + this.oneDay)
+            seriesData.forEach((clusterData) => {
+              clusterData.data.shift()
+              clusterData.data.push({
+                name: this.latestDate.toString(),
+                value: [
+                  [
+                    this.latestDate.getFullYear(),
+                    this.latestDate.getMonth() + 1,
+                    this.latestDate.getDate(),
+                  ].join('/'),
+                  res.data.value[clusterData.name],
+                ],
+              })
+            })
+
+            echartsObj.setOption(echartsOption)
+            // {"value":{
+            //   "cluster1|20-40":20,
+            //   "cluster2|20-40":20,
+            //   "cluster3|20-40":20,
+            //   "cluster4|20-40":20,
+            //   "cluster5|20-40":20,
+            // }}
+          })
+          .catch((e) => {
+            console.log(e)
+          })
+      }, 2000)
+    },
+  },
+  mounted() {
+    this.fetchData()
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
   },
 }
 </script>
