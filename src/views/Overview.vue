@@ -124,7 +124,7 @@ export default {
       axios
         .get(
           // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
-          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview_change'
+          'https://windplatform.usemock.com/overview_data'
         )
         .then((res) => {
           this.numData = res.data.numData

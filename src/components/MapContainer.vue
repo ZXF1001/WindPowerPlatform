@@ -173,7 +173,8 @@ export default {
     getMassLabel(m_AMap) {
       axios
         .get(
-          'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+          // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
+          'https://windplatform.usemock.com/zb_position'
         )
         .then((res) => {
           var icon = {
