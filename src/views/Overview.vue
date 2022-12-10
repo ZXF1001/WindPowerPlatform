@@ -29,7 +29,7 @@
               </el-card>
             </div>
           </div>
-          <el-card style="height:600px">
+          <el-card style="height:400px">
             <!-- 左下的表格 -->
             <el-table :data="tableData"
                       style="width: 100%">
@@ -96,7 +96,7 @@
     margin-bottom: 10px;
   }
   .linechart {
-    height: 350px;
+    height: 270px;
   }
 }
 </style>
@@ -117,12 +117,17 @@ export default {
       },
       tableData: [],
       lineData: {},
-      timer: null,
+      timer1: null,
+      //动态折线图相关
+      latestDate: null,
+      oneDay: 24 * 3600 * 1000,
+      oneSecond: 1000,
+      timer2: null,
     }
   },
   methods: {
     fetchNumData() {
-      this.timer = setInterval(() => {
+      this.timer1 = setInterval(() => {
         axios
           .get(
             // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
@@ -135,50 +140,142 @@ export default {
           .catch((error) => {
             console.log(error)
           })
-      }, 2000)
+      }, 1000)
     },
     fetchLinedata() {
       axios
-        .get(
-          // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
-          'https://windplatform.usemock.com/overview_data'
-        )
+        .get('https://windplatform.usemock.com/time_power_hhmmss')
         .then((res) => {
-          this.lineData = res.data.lineData
-          //在这里画图
-          const echarts1 = echarts.init(this.$refs.echarts1)
-          var echarts1Option = {
-            xAxis: {
-              type: 'category',
-              data: res.data.lineData.date,
-            },
-            yAxis: {
-              type: 'value',
-              scale: true,
-            },
-            tooltip: {
-              trigger: 'axis',
-            },
-            legend: {},
-            title: {
-              text: '功率',
-            },
-            series: [],
-          }
-          const legend1 = Object.keys(res.data.lineData.data[0])
-          legend1.forEach((key) => {
-            echarts1Option.series.push({
-              name: key,
-              type: 'line',
-              data: res.data.lineData.data.map((item) => item[key]),
-              smooth: true,
-            })
+          this.drawLineData(res.data)
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
+    drawLineData(data) {
+      const echarts1 = echarts.init(this.$refs.echarts1)
+      var seriesData = []
+      var clusterList = Object.keys(data[0].value) // clusterList : ["cluster1","cluster2",...]
+      clusterList.forEach((cluster) => {
+        var lineData = []
+        data.forEach((dateItem) => {
+          var date = new Date(dateItem.date)
+          this.latestDate = date
+          lineData.push({
+            name: date.toString(),
+            value: [
+              date.getFullYear() +
+                '/' +
+                (date.getMonth() + 1) +
+                '/' +
+                date.getDate() +
+                ' ' +
+                date.getHours() +
+                ':' +
+                date.getMinutes() +
+                ':' +
+                date.getSeconds(),
+              dateItem.value[cluster],
+            ],
           })
-          echarts1.setOption(echarts1Option)
         })
-        .catch((error) => {
-          console.log(error)
+        seriesData.push({
+          animationDuration: 0,
+          name: cluster,
+          type: 'line',
+          showSymbol: false,
+          data: lineData,
+          smooth: true,
         })
+      })
+
+      var option = {
+        title: {
+          text: '时变数据折线图',
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            animation: false,
+          },
+        },
+        xAxis: {
+          type: 'time',
+          splitLine: {
+            show: false,
+          },
+        },
+        yAxis: {
+          type: 'value',
+          boundaryGap: [0, '100%'],
+          splitLine: {
+            show: false,
+          },
+        },
+        legend: {
+          data: clusterList,
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '2%',
+          containLabel: true,
+        },
+        series: seriesData,
+      }
+      echarts1.setOption(option)
+      window.onresize = () => {
+        echarts1.resize()
+      }
+      this.updateLineData(seriesData, echarts1, option)
+    },
+    updateLineData(seriesData, echartsObj, echartsOption) {
+      this.timer2 = setInterval(() => {
+        axios
+          .get('https://windplatform.usemock.com/timely_data')
+          .then((res) => {
+            this.latestDate = new Date(+this.latestDate + this.oneSecond)
+            seriesData.forEach((clusterData) => {
+              // if (clusterData.data.length > 60) {
+              clusterData.data.shift()
+              // }
+              clusterData.data.push({
+                name: this.latestDate.toString(),
+                value: [
+                  // [
+                  //   this.latestDate.getFullYear(),
+                  //   this.latestDate.getMonth() + 1,
+                  //   this.latestDate.getDate(),
+                  // ].join('/'),
+                  this.latestDate.getFullYear() +
+                    '/' +
+                    (this.latestDate.getMonth() + 1) +
+                    '/' +
+                    this.latestDate.getDate() +
+                    ' ' +
+                    this.latestDate.getHours() +
+                    ':' +
+                    this.latestDate.getMinutes() +
+                    ':' +
+                    this.latestDate.getSeconds(),
+                  res.data.value[clusterData.name],
+                ],
+              })
+            })
+
+            echartsObj.setOption(echartsOption)
+            // {"value":{
+            //   "cluster1|20-40":20,
+            //   "cluster2|20-40":20,
+            //   "cluster3|20-40":20,
+            //   "cluster4|20-40":20,
+            //   "cluster5|20-40":20,
+            // }}
+          })
+          .catch((e) => {
+            console.log(e)
+          })
+      }, 1000)
     },
   },
   mounted() {
@@ -186,9 +283,13 @@ export default {
     this.fetchLinedata()
   },
   beforeDestroy() {
-    if (this.timer) {
+    if (this.timer1) {
       clearInterval(this.timer)
-      this.timer = null
+      this.timer1 = null
+    }
+    if (this.timer2) {
+      clearInterval(this.timer2)
+      this.timer2 = null
     }
   },
   // beforeRouteLeave(to, from, next) {

@@ -4,7 +4,7 @@
     <el-card>
       <!-- 右下的线图 -->
       <div class="linechart"
-           ref="echarts"></div>
+           ref="echarts1"></div>
     </el-card>
   </div>
 </template>
@@ -32,7 +32,7 @@ export default {
         })
     },
     drawData(data) {
-      const echarts1 = echarts.init(this.$refs.echarts)
+      const echarts1 = echarts.init(this.$refs.echarts1)
       var seriesData = []
       var clusterList = Object.keys(data[0].value) // clusterList : ["cluster1","cluster2",...]
       clusterList.forEach((cluster) => {
