@@ -15,9 +15,9 @@ export default {
   data() {
     return {
       latestDate: null,
-      now: new Date(1997, 9, 3),
+      // now: new Date(1997, 9, 3),
       oneDay: 24 * 3600 * 1000,
-      value: Math.random() * 1000,
+      // value: Math.random() * 1000,
       timer: null,
     }
   },
@@ -122,7 +122,7 @@ export default {
           .catch((e) => {
             console.log(e)
           })
-      }, 2000)
+      }, 1000)
     },
   },
   mounted() {
