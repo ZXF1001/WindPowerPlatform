@@ -15,16 +15,15 @@ export default {
   data() {
     return {
       latestDate: null,
-      // now: new Date(1997, 9, 3),
       oneDay: 24 * 3600 * 1000,
-      // value: Math.random() * 1000,
+      oneSecond: 1000,
       timer: null,
     }
   },
   methods: {
     fetchData() {
       axios
-        .get('https://windplatform.usemock.com/time_power')
+        .get('https://windplatform.usemock.com/time_power_hhmmss')
         .then((res) => {
           this.drawData(res.data)
         })
@@ -35,7 +34,7 @@ export default {
     drawData(data) {
       const echarts1 = echarts.init(this.$refs.echarts)
       var seriesData = []
-      var clusterList = Object.keys(data[0].value)
+      var clusterList = Object.keys(data[0].value) // clusterList : ["cluster1","cluster2",...]
       clusterList.forEach((cluster) => {
         var lineData = []
         data.forEach((dateItem) => {
@@ -44,9 +43,17 @@ export default {
           lineData.push({
             name: date.toString(),
             value: [
-              [date.getFullYear(), date.getMonth() + 1, date.getDate()].join(
-                '/'
-              ),
+              date.getFullYear() +
+                '/' +
+                (date.getMonth() + 1) +
+                '/' +
+                date.getDate() +
+                ' ' +
+                date.getHours() +
+                ':' +
+                date.getMinutes() +
+                ':' +
+                date.getSeconds(),
               dateItem.value[cluster],
             ],
           })
@@ -94,17 +101,30 @@ export default {
         axios
           .get('https://windplatform.usemock.com/timely_data')
           .then((res) => {
-            this.latestDate = new Date(+this.latestDate + this.oneDay)
+            this.latestDate = new Date(+this.latestDate + this.oneSecond)
             seriesData.forEach((clusterData) => {
+              // if (clusterData.data.length > 60) {
               clusterData.data.shift()
+              // }
               clusterData.data.push({
                 name: this.latestDate.toString(),
                 value: [
-                  [
-                    this.latestDate.getFullYear(),
-                    this.latestDate.getMonth() + 1,
-                    this.latestDate.getDate(),
-                  ].join('/'),
+                  // [
+                  //   this.latestDate.getFullYear(),
+                  //   this.latestDate.getMonth() + 1,
+                  //   this.latestDate.getDate(),
+                  // ].join('/'),
+                  this.latestDate.getFullYear() +
+                    '/' +
+                    (this.latestDate.getMonth() + 1) +
+                    '/' +
+                    this.latestDate.getDate() +
+                    ' ' +
+                    this.latestDate.getHours() +
+                    ':' +
+                    this.latestDate.getMinutes() +
+                    ':' +
+                    this.latestDate.getSeconds(),
                   res.data.value[clusterData.name],
                 ],
               })

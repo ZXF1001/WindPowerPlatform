@@ -150,8 +150,8 @@ export default {
         districtSearch.search('张北县', (status, result) => {
           if (status === 'complete') {
             const bounds = result.districtList[0].boundaries
-            for (let i = 0, l = bounds.length; i < l; i++) {
-              var polygon = new m_AMap.Polygon({
+            for (let i = 0; i < bounds.length; i++) {
+              new m_AMap.Polygon({
                 map: this.map, // 指定地图对象
                 strokeWeight: 2, // 轮廓线宽度
                 path: bounds[i], //轮廓线的节点坐标数组
