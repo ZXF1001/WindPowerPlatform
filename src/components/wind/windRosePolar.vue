@@ -30,15 +30,85 @@ export default {
         .then((res) => {
           this.drawRose(res.data)
         })
-        .catch(console.log(e))
+        .catch((e) => {
+          console.log(e)
+        })
     },
     drawRose(roseData) {
       const echarts1 = echarts.init(this.$refs.radarchart)
-      var radarMax = 0
+      var speedList = Object.keys(roseData) // ['<0.5m/s' , '>0.5m/s' , ...]
+      var seriesData = []
+      //极坐标堆叠图的数据是从正北方向逆时针排布
+      speedList.forEach((speedData) => {
+        seriesData.push({
+          animationDuration: 0,
+          type: 'bar',
+          data: roseData[speedData],
+          coordinateSystem: 'polar',
+          name: speedData,
+          stack: 'a',
+          emphasis: {
+            focus: 'series',
+          },
+        })
+      })
+      var option = {
+        title: {
+          text: '风向玫瑰图（极坐标堆叠图）',
+        },
+        angleAxis: {
+          startAngle: 90 + 360 / 16 / 2,
+          type: 'category',
+          data: [
+            'N',
+            '',
+            'NE',
+            '',
+            'E',
+            '',
+            'SE',
+            '',
+            'S',
+            '',
+            'SW',
+            '',
+            'W',
+            '',
+            'NW',
+            '',
+          ],
+        },
+        radiusAxis: {
+          axisLine: {
+            show: false,
+          },
+          axisTick: {
+            show: false,
+          },
+          axisLabel: {
+            show: false,
+          },
+        },
+        polar: {},
+        series: seriesData,
+        legend: {
+          x: 'center',
+          y: 'bottom',
+          data: Object.keys(roseData),
+        },
+      }
+
+      option && echarts1.setOption(option)
+    },
+    drawRosRadar(roseData) {
+      const echarts1 = echarts.init(this.$refs.radarchart)
+
       var speedList = Object.keys(roseData) // ['<0.5m/s' , '>0.5m/s' , ...]
       //根据数据大小确定雷达图坐标范围
+      var tempMax = 0
+      var radarMax = 0
       speedList.forEach((speedData) => {
-        var tempMax = Math.max(...roseData[speedData])
+        tempMax = Math.max(...roseData[speedData])
         radarMax = tempMax > radarMax ? tempMax : radarMax
       })
       radarMax = 1.1 * radarMax
@@ -53,7 +123,7 @@ export default {
       })
       var option = {
         title: {
-          text: '风向玫瑰图',
+          text: '风向玫瑰图（极坐标堆叠图）',
         },
         legend: {
           x: 'center',

@@ -82,14 +82,14 @@ export default {
     initMap() {
       AMapLoader.load({
         key: 'f9cb65dd9831f33581c66e88ec5881a6',
-        // version: '2.0',
-        version: '2.1Beta',
+        version: '2.0',
+        // version: '2.1Beta',
         plugins: [''],
       })
         .then((AMap) => {
           this.globalAMap = AMap
           this.map = new AMap.Map('container', {
-            // viewMode: '3D', // 地图模式
+            viewMode: '3D', // 地图模式
             // terrain: true, // 开启地形图
             zoom: 9,
             center: [114.88, 41.27565],
@@ -256,7 +256,6 @@ export default {
         })
         .catch((e) => {
           console.log(e)
-          alert('地图模块调用失败！')
         })
     },
 
