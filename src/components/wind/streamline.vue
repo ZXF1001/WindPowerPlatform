@@ -8,6 +8,7 @@ import * as echarts from 'echarts'
 import 'echarts-extension-amap'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import axios from 'axios'
+import vectorData from '../../json/wind.json'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
@@ -17,6 +18,7 @@ export default {
   },
   methods: {
     initmap() {
+      console.log(vectorData)
       AMapLoader.load({
         key: 'f9cb65dd9831f33581c66e88ec5881a6',
         version: '2.0',
@@ -30,16 +32,7 @@ export default {
           console.log(e)
         })
     },
-    drawStreamline(m_AMap) {
-      axios
-        .get()
-        .then((res) => {
-          console.log(res.data)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-    },
+    drawStreamline(m_AMap) {},
   },
   mounted() {
     this.initmap()
