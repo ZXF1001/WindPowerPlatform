@@ -20,7 +20,7 @@
         <div class="right">
           <el-card>
             <h1>风速云图</h1>
-            <!-- <wind-contour></wind-contour> -->
+            <wind-contour></wind-contour>
           </el-card>
         </div>
       </el-col>
