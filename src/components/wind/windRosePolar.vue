@@ -1,19 +1,18 @@
 <template>
   <div class="windrose"
-       ref="radarchart"></div>
+       ref="chart"></div>
 </template>
 
 <script>
+import { getWindRoseData } from '../../api/wind/getRoseData.js'
 import * as echarts from 'echarts'
-import axios from 'axios'
 export default {
   data() {
     return {}
   },
   methods: {
-    getRoseData() {
-      axios
-        .get('https://windplatform.usemock.com/windrose')
+    drawRoseData() {
+      getWindRoseData()
         .then((res) => {
           // windData:
           //   //假定数据是从正北方向逆时针排布
@@ -27,95 +26,92 @@ export default {
           //       0.02, 0.21, 0.24, 0.22, 0.1,
           //     ],
           //   },
-          this.drawRose(res.data)
+          var roseData = res.data
+          const echarts1 = echarts.init(this.$refs.chart)
+          var speedList = Object.keys(roseData) // ['<5m/s' , '>5m/s' , ...]
+          var dataMax = 0
+          for (var i = 0; i < roseData[speedList[0]].length; i++) {
+            var sum = 0
+            speedList.forEach((speedData) => {
+              sum += roseData[speedData][i]
+            })
+            dataMax = sum > dataMax ? sum : dataMax
+          }
+
+          var seriesData = []
+          //极坐标堆叠图的数据是从正北方向顺时针排布
+          speedList.forEach((speedData) => {
+            seriesData.push({
+              animationDuration: 0,
+              type: 'bar',
+              data: roseData[speedData],
+              coordinateSystem: 'polar',
+              name: speedData,
+              stack: 'a',
+              emphasis: {
+                focus: 'series',
+              },
+            })
+          })
+          var option = {
+            title: {
+              text: '风向玫瑰图（极坐标堆叠图）',
+            },
+            angleAxis: {
+              startAngle: 90 + 360 / 16 / 2,
+              type: 'category',
+              data: [
+                'N',
+                '',
+                'NE',
+                '',
+                'E',
+                '',
+                'SE',
+                '',
+                'S',
+                '',
+                'SW',
+                '',
+                'W',
+                '',
+                'NW',
+                '',
+              ],
+            },
+            radiusAxis: {
+              axisLine: {
+                show: false,
+              },
+              axisTick: {
+                show: false,
+              },
+              axisLabel: {
+                show: false,
+              },
+            },
+            polar: {},
+            series: seriesData,
+            legend: {
+              x: 'center',
+              y: 'bottom',
+              data: Object.keys(roseData),
+            },
+          }
+
+          option && echarts1.setOption(option)
+          window.onresize = () => {
+            echarts1.resize()
+          }
         })
         .catch((e) => {
           console.log(e)
         })
     },
-    drawRose(roseData) {
-      const echarts1 = echarts.init(this.$refs.radarchart)
-      var speedList = Object.keys(roseData) // ['<5m/s' , '>5m/s' , ...]
-      var dataMax = 0
-      for (var i = 0; i < roseData[speedList[0]].length; i++) {
-        var sum = 0
-        speedList.forEach((speedData) => {
-          sum += roseData[speedData][i]
-        })
-        dataMax = sum > dataMax ? sum : dataMax
-      }
-
-      var seriesData = []
-      //极坐标堆叠图的数据是从正北方向顺时针排布
-      speedList.forEach((speedData) => {
-        seriesData.push({
-          animationDuration: 0,
-          type: 'bar',
-          data: roseData[speedData],
-          coordinateSystem: 'polar',
-          name: speedData,
-          stack: 'a',
-          emphasis: {
-            focus: 'series',
-          },
-        })
-      })
-      var option = {
-        title: {
-          text: '风向玫瑰图（极坐标堆叠图）',
-        },
-        angleAxis: {
-          startAngle: 90 + 360 / 16 / 2,
-          type: 'category',
-          data: [
-            'N',
-            '',
-            'NE',
-            '',
-            'E',
-            '',
-            'SE',
-            '',
-            'S',
-            '',
-            'SW',
-            '',
-            'W',
-            '',
-            'NW',
-            '',
-          ],
-        },
-        radiusAxis: {
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          axisLabel: {
-            show: false,
-          },
-        },
-        polar: {},
-        series: seriesData,
-        legend: {
-          x: 'center',
-          y: 'bottom',
-          data: Object.keys(roseData),
-        },
-      }
-
-      option && echarts1.setOption(option)
-      window.onresize = () => {
-        echarts1.resize()
-      }
-    },
   },
   mounted() {
-    this.getRoseData()
+    this.drawRoseData()
   },
-  beforeDestroy() {},
 }
 </script>
 <style lang="less" scoped>

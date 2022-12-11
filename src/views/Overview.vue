@@ -102,7 +102,9 @@
 </style>
 <script>
 //import tab from '@/store/tab'
-import axios from 'axios'
+import { getOverviewNumData } from '../api/overview/getNumData.js'
+import { getOverviewRecentLineData } from '../api/overview/getRecentLineData.js'
+import { getOverviewTimelyLineData } from '../api/overview/getTimelyLineData.js'
 import MapContainer from '../components/overview/MapContainer.vue'
 import * as echarts from 'echarts'
 export default {
@@ -128,23 +130,28 @@ export default {
   methods: {
     fetchNumData() {
       this.timer1 = setInterval(() => {
-        axios
-          .get(
-            // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/overview'
-            'https://windplatform.usemock.com/overview_data'
-          )
+        getOverviewNumData()
           .then((res) => {
             this.numData = res.data.numData
             this.tableData = res.data.tableData
           })
-          .catch((error) => {
-            console.log(error)
+          .catch((e) => {
+            console.log(e)
           })
+        // 在/api中统一管理后弃用
+        // axios
+        //   .get('https://windplatform.usemock.com/overview_data')
+        //   .then((res) => {
+        //     this.numData = res.data.numData
+        //     this.tableData = res.data.tableData
+        //   })
+        //   .catch((error) => {
+        //     console.log(error)
+        //   })
       }, 1000)
     },
     fetchLinedata() {
-      axios
-        .get('https://windplatform.usemock.com/time_power_hhmmss')
+      getOverviewRecentLineData()
         .then((res) => {
           this.drawLineData(res.data)
         })
@@ -231,8 +238,7 @@ export default {
     },
     updateLineData(seriesData, echartsObj, echartsOption) {
       this.timer2 = setInterval(() => {
-        axios
-          .get('https://windplatform.usemock.com/timely_data')
+        getOverviewTimelyLineData()
           .then((res) => {
             this.latestDate = new Date(+this.latestDate + this.oneSecond)
             seriesData.forEach((clusterData) => {

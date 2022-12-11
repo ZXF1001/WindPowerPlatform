@@ -29,11 +29,10 @@
 </template>
 <script>
 import windContour from '../components/wind/windContour.vue'
-import windRoseRadar from '../components/wind/windRoseRadar.vue'
 import windRosePolar from '../components/wind/windRosePolar.vue'
 import streamline from '../components/wind/streamline.vue'
 export default {
-  components: { windContour, windRoseRadar, windRosePolar, streamline },
+  components: { windContour, windRosePolar, streamline },
   data() {
     return {}
   },
