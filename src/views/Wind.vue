@@ -5,14 +5,14 @@
       <el-col :span="8">
         <div class="left">
           <el-card>
-            <wind-rose-radar></wind-rose-radar>
+            <wind-rose-polar></wind-rose-polar>
           </el-card>
         </div>
       </el-col>
       <el-col :span="8">
         <div class="mid">
           <el-card>
-            <wind-rose-polar></wind-rose-polar>
+            <h1>流线图</h1>
             <!-- <streamline></streamline> -->
           </el-card>
         </div>
