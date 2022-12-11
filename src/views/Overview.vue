@@ -103,7 +103,7 @@
 <script>
 //import tab from '@/store/tab'
 import axios from 'axios'
-import MapContainer from '../components/MapContainer.vue'
+import MapContainer from '../components/overview/MapContainer.vue'
 import * as echarts from 'echarts'
 export default {
   components: { MapContainer },
