@@ -103,8 +103,8 @@
 <script>
 //import tab from '@/store/tab'
 import { getOverviewNumData } from '../api/overview/getNumData.js'
-import { getOverviewRecentLineData } from '../api/overview/getRecentLineData.js'
-import { getOverviewTimelyLineData } from '../api/overview/getTimelyLineData.js'
+import { getOverviewRecentLineData } from '../api/overview/getLineData.js'
+import { getOverviewTimelyLineData } from '../api/overview/getLineData.js'
 import MapContainer from '../components/overview/MapContainer.vue'
 import * as echarts from 'echarts'
 export default {
