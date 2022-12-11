@@ -3,6 +3,7 @@ import axios from "axios";
 const http = axios.create({
   // 通用请求地址前缀
   baseURL: "https://windplatform.usemock.com",
+  // headers: { "X-Requested-With": "XMLHttpRequest" },
   timeout: 10000,
 });
 

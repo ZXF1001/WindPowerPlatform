@@ -31,7 +31,7 @@
 
 <script>
 //准备工作
-import axios from 'axios'
+import { getOverviewTurbineData } from '../../api/overview/getMapData.js'
 import AMapLoader from '@amap/amap-jsapi-loader'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
@@ -170,11 +170,7 @@ export default {
 
     //画大量Label
     getMassLabel(m_AMap) {
-      axios
-        .get(
-          // 'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
-          'https://windplatform.usemock.com/zb_position'
-        )
+      getOverviewTurbineData()
         .then((res) => {
           var icon = {
             //标注的icon实例
