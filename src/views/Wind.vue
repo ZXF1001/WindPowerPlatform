@@ -12,8 +12,7 @@
       <el-col :span="8">
         <div class="mid">
           <el-card>
-            <h1>流线图</h1>
-            <!-- <streamline></streamline> -->
+            <streamline></streamline>
           </el-card>
         </div>
       </el-col>

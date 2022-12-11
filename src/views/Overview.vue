@@ -284,7 +284,7 @@ export default {
   },
   beforeDestroy() {
     if (this.timer1) {
-      clearInterval(this.timer)
+      clearInterval(this.timer1)
       this.timer1 = null
     }
     if (this.timer2) {

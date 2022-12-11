@@ -4,7 +4,7 @@
 
 <script>
 import * as echarts from 'echarts'
-import 'echarts-gl'
+// import 'echarts-gl'
 import 'echarts-extension-amap'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import axios from 'axios'
@@ -12,6 +12,9 @@ window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
 export default {
+  data() {
+    return {}
+  },
   methods: {
     initmap() {
       AMapLoader.load({
@@ -29,9 +32,7 @@ export default {
     },
     drawStreamline(m_AMap) {
       axios
-        .get(
-          'https://echarts.apache.org/examples/data-gl/asset/data/winds.json'
-        )
+        .get()
         .then((res) => {
           console.log(res.data)
         })
