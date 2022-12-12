@@ -1,6 +1,38 @@
 <template>
-  <div class="windrose"
-       ref="chart"></div>
+  <div>
+    <div class="filterbox">
+      <span>筛选条件：</span>
+      <el-select v-model="value"
+                 multiple
+                 collapse-tags
+                 placeholder="选择集群"
+                 size="small">
+        <el-option v-for="item in options"
+                   :key="item.value"
+                   :label="item.label"
+                   :value="item.value">
+        </el-option>
+      </el-select>
+      <el-select v-model="value"
+                 multiple
+                 collapse-tags
+                 placeholder="选择状态"
+                 size="small">
+        <el-option v-for="item in options"
+                   :key="item.value"
+                   :label="item.label"
+                   :value="item.value">
+        </el-option>
+      </el-select>
+    </div>
+
+    <el-card class="card"
+             shadow="hover">
+      <p class="rose-title">标题</p>
+      <div class="windrose"
+           ref="chart"></div>
+    </el-card>
+  </div>
 </template>
 
 <script>
@@ -8,7 +40,31 @@ import { getWindRoseData } from '../../api/wind/getRoseData.js'
 import * as echarts from 'echarts'
 export default {
   data() {
-    return {}
+    return {
+      options: [
+        {
+          value: '选项1',
+          label: '黄金糕',
+        },
+        {
+          value: '选项2',
+          label: '双皮奶',
+        },
+        {
+          value: '选项3',
+          label: '蚵仔煎',
+        },
+        {
+          value: '选项4',
+          label: '龙须面',
+        },
+        {
+          value: '选项5',
+          label: '北京烤鸭',
+        },
+      ],
+      value: [],
+    }
   },
   methods: {
     drawRoseData() {
@@ -54,9 +110,9 @@ export default {
             })
           })
           var option = {
-            title: {
-              text: '风向玫瑰图（极坐标堆叠图）',
-            },
+            // title: {
+            //   text: '风向玫瑰图（极坐标堆叠图）',
+            // },
             angleAxis: {
               startAngle: 90 + 360 / 16 / 2,
               type: 'category',
@@ -90,9 +146,13 @@ export default {
                 show: false,
               },
             },
-            polar: {},
+            polar: {
+              center: ['50%', '40%'],
+              radius: '75%', //半径大小
+            },
             series: seriesData,
             legend: {
+              // orient: 'vertical',
               x: 'center',
               y: 'bottom',
               data: Object.keys(roseData),
@@ -115,8 +175,18 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+.filterbox {
+  margin-bottom: 10px;
+}
 .windrose {
-  height: 400px;
+  height: 270px;
+}
+.card {
+  width: 250px;
+  .rose-title {
+    margin: 0px 0px 10px 0px;
+    text-align: center;
+  }
 }
 </style>
 
