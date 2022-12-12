@@ -1,32 +1,25 @@
 <template>
-  <div>
-    <h1>这是Wind</h1>
-    <el-row>
-      <el-col :span="8">
-        <div class="left">
-          <el-card>
-            <wind-rose-polar></wind-rose-polar>
-          </el-card>
-        </div>
-      </el-col>
-      <el-col :span="8">
-        <div class="mid">
-          <el-card>
-            <streamline></streamline>
-          </el-card>
-        </div>
-      </el-col>
-      <el-col :span="8">
-        <div class="right">
-          <el-card>
-            <h1>风速云图</h1>
-            <wind-contour></wind-contour>
-          </el-card>
-        </div>
-      </el-col>
-    </el-row>
-  </div>
+  <el-tabs v-model="activeName"
+           :before-leave="beforeTagsLeave">
+    <el-tab-pane label="风玫瑰图"
+                 name="windrose">
+      <wind-rose-polar></wind-rose-polar>
+    </el-tab-pane>
+    <el-tab-pane label="天气信息"
+                 name="weather">
+      <wind-rose-polar></wind-rose-polar>
+    </el-tab-pane>
+    <el-tab-pane label="流线图"
+                 name="streamline">
+      <streamline></streamline>
+    </el-tab-pane>
+    <el-tab-pane label="风资源云图"
+                 name="contour">
+      <wind-contour></wind-contour>
+    </el-tab-pane>
+  </el-tabs>
 </template>
+
 <script>
 import windContour from '../components/wind/windContour.vue'
 import windRosePolar from '../components/wind/windRosePolar.vue'
@@ -34,13 +27,15 @@ import streamline from '../components/wind/streamline.vue'
 export default {
   components: { windContour, windRosePolar, streamline },
   data() {
-    return {}
+    return {
+      activeName: 'windrose',
+    }
+  },
+  methods: {
+    beforeTagsLeave() {
+      console.log('l')
+    },
   },
 }
 </script>
-<style lang="less" scoped>
-.left,
-.mid {
-  margin-right: 10px;
-}
-</style>
+

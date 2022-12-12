@@ -92,6 +92,8 @@ export default {
           amap: {
             center: [114, 21],
             zoom: 1,
+            renderOnMoving: false,
+            largeMode: true,
           },
           series: [
             {
