@@ -48,6 +48,12 @@ export default {
             maxZoom: 18,
           }
         ), // 高德路网
+        AMap3: L.tileLayer(
+          'http://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}',
+          {
+            maxZoom: 18,
+          }
+        ), // 高德矢量
         Dark: L.tileLayer(
           'https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}',
           {
