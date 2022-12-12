@@ -3,13 +3,12 @@
        ref="chart"></div>
 </template>
 
-</script>
 <script>
 import * as echarts from 'echarts'
 import 'echarts-gl'
 import 'echarts-extension-amap'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import windData from '../../json/wind.json'
+import windData from '../../json/windDemo.json'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
@@ -41,26 +40,145 @@ export default {
       var p = 0
       var maxMag = 0
       var minMag = Infinity
-      for (var j = 0; j < windData.ny; j++) {
-        for (var i = 0; i <= windData.nx; i++) {
-          // Continuous data.
-          var p = (i % windData.nx) + j * windData.nx
-          var vx = windData.data[p][0]
-          var vy = windData.data[p][1]
-          var mag = Math.sqrt(vx * vx + vy * vy)
-          // 数据是一个一维数组
-          // [ [经度, 维度，向量经度方向的值，向量维度方向的值] ]
-          data.push([
-            (i / windData.nx) * 360 - 180,
-            (j / windData.ny) * 180 - 90,
-            vx,
-            vy,
-            mag,
-          ])
-          maxMag = Math.max(mag, maxMag)
-          minMag = Math.min(mag, minMag)
-        }
-      }
+      // for (var j = 0; j < windData.ny; j++) {
+      //   for (var i = 0; i < windData.nx; i++) {
+      //     // Continuous data.
+      //     var p = i + j * windData.nx
+      //     var vx = windData.data[p][0]
+      //     var vy = windData.data[p][1]
+      //     var mag = Math.sqrt(vx * vx + vy * vy)
+      //     // 数据是一个一维数组
+      //     // [ [经度, 维度，向量经度方向的值，向量维度方向的值] ]
+      //     // var gpsLng = (i / windData.nx) * 5 + 110
+      //     // var gpsLat = (j / windData.ny) * 5 + 30
+      //     // AMap.convertFrom([gpsLng, gpsLat], 'gps', function (status, result) {
+      //     //   if (result.info === 'ok') {
+      //     //     // console.log(amapLngLat[0].lat)
+      //     //     // [[144,72]]
+      //     //     data.push([
+      //     //       result.locations[0].lng,
+      //     //       result.locations[0].lat,
+      //     //       vx,
+      //     //       vy,
+      //     //       mag,
+      //     //     ])
+      //     //   }
+      //     // })
+
+      //     data.push([
+      //       (i / windData.nx) * 5 + 110,
+      //       (j / windData.ny) * 5 + 30,
+      //       vx,
+      //       vy,
+      //       mag,
+      //     ])
+      //     maxMag = Math.max(mag, maxMag)
+      //     minMag = Math.min(mag, minMag)
+      //   }
+      // }
+      // console.log(data)
+      data = [
+        [110, 30, 1, 1, 1.4142135623730951],
+        [110.5, 30, 1, 1, 1.4142135623730951],
+        [111, 30, 1, 1, 1.4142135623730951],
+        [111.5, 30, 1, 1, 1.4142135623730951],
+        [112, 30, 1, 1, 1.4142135623730951],
+        [112.5, 30, 1, 1, 1.4142135623730951],
+        [113, 30, 1, 1, 1.4142135623730951],
+        [113.5, 30, 1, 1, 1.4142135623730951],
+        [114, 30, 1, 1, 1.4142135623730951],
+        [114.5, 30, 1, 1, 1.4142135623730951],
+        [110, 30.5, 1, 1, 1.4142135623730951],
+        [110.5, 30.5, 1, 1, 1.4142135623730951],
+        [111, 30.5, 1, 1, 1.4142135623730951],
+        [111.5, 30.5, 1, 1, 1.4142135623730951],
+        [112, 30.5, 1, 1, 1.4142135623730951],
+        [112.5, 30.5, 1, 1, 1.4142135623730951],
+        [113, 30.5, 1, 1, 1.4142135623730951],
+        [113.5, 30.5, 1, 1, 1.4142135623730951],
+        [114, 30.5, 1, 1, 1.4142135623730951],
+        [114.5, 30.5, 1, 1, 1.4142135623730951],
+        [110, 31, 1, 1, 1.4142135623730951],
+        [110.5, 31, 1, 1, 1.4142135623730951],
+        [111, 31, 1, 1, 1.4142135623730951],
+        [111.5, 31, 1, 1, 1.4142135623730951],
+        [112, 31, 1, 1, 1.4142135623730951],
+        [112.5, 31, 1, 1, 1.4142135623730951],
+        [113, 31, 1, 1, 1.4142135623730951],
+        [113.5, 31, 1, 1, 1.4142135623730951],
+        [114, 31, 1, 1, 1.4142135623730951],
+        [114.5, 31, 1, 1, 1.4142135623730951],
+        [110, 31.5, 1, 1, 1.4142135623730951],
+        [110.5, 31.5, 1, 1, 1.4142135623730951],
+        [111, 31.5, 1, 1, 1.4142135623730951],
+        [111.5, 31.5, 1, 1, 1.4142135623730951],
+        [112, 31.5, 1, 1, 1.4142135623730951],
+        [112.5, 31.5, 1, 1, 1.4142135623730951],
+        [113, 31.5, 1, 1, 1.4142135623730951],
+        [113.5, 31.5, 1, 1, 1.4142135623730951],
+        [114, 31.5, 1, 1, 1.4142135623730951],
+        [114.5, 31.5, 1, 1, 1.4142135623730951],
+        [110, 32, 1, 1, 1.4142135623730951],
+        [110.5, 32, 1, 1, 1.4142135623730951],
+        [111, 32, 1, 1, 1.4142135623730951],
+        [111.5, 32, 1, 1, 1.4142135623730951],
+        [112, 32, 1, 1, 1.4142135623730951],
+        [112.5, 32, 1, 1, 1.4142135623730951],
+        [113, 32, 1, 1, 1.4142135623730951],
+        [113.5, 32, 1, 1, 1.4142135623730951],
+        [114, 32, 1, 1, 1.4142135623730951],
+        [114.5, 32, 1, 1, 1.4142135623730951],
+        [110, 32.5, 1, 1, 1.4142135623730951],
+        [110.5, 32.5, 1, 1, 1.4142135623730951],
+        [111, 32.5, 1, 1, 1.4142135623730951],
+        [111.5, 32.5, 1, 1, 1.4142135623730951],
+        [112, 32.5, 1, 1, 1.4142135623730951],
+        [112.5, 32.5, 1, 1, 1.4142135623730951],
+        [113, 32.5, 1, 1, 1.4142135623730951],
+        [113.5, 32.5, 1, 1, 1.4142135623730951],
+        [114, 32.5, 1, 1, 1.4142135623730951],
+        [114.5, 32.5, 1, 1, 1.4142135623730951],
+        [110, 33, 1, 1, 1.4142135623730951],
+        [110.5, 33, 1, 1, 1.4142135623730951],
+        [111, 33, 1, 1, 1.4142135623730951],
+        [111.5, 33, 1, 1, 1.4142135623730951],
+        [112, 33, 1, 1, 1.4142135623730951],
+        [112.5, 33, 1, 1, 1.4142135623730951],
+        [113, 33, 1, 1, 1.4142135623730951],
+        [113.5, 33, 1, 1, 1.4142135623730951],
+        [114, 33, 1, 1, 1.4142135623730951],
+        [114.5, 33, 1, 1, 1.4142135623730951],
+        [110, 33.5, 1, 1, 1.4142135623730951],
+        [110.5, 33.5, 1, 1, 1.4142135623730951],
+        [111, 33.5, 1, 1, 1.4142135623730951],
+        [111.5, 33.5, 1, 1, 1.4142135623730951],
+        [112, 33.5, 1, 1, 1.4142135623730951],
+        [112.5, 33.5, 1, 1, 1.4142135623730951],
+        [113, 33.5, 1, 1, 1.4142135623730951],
+        [113.5, 33.5, 1, 1, 1.4142135623730951],
+        [114, 33.5, 1, 1, 1.4142135623730951],
+        [114.5, 33.5, 1, 1, 1.4142135623730951],
+        [110, 34, 1, 1, 1.4142135623730951],
+        [110.5, 34, 1, 1, 1.4142135623730951],
+        [111, 34, 1, 1, 1.4142135623730951],
+        [111.5, 34, 1, 1, 1.4142135623730951],
+        [112, 34, 1, 1, 1.4142135623730951],
+        [112.5, 34, 1, 1, 1.4142135623730951],
+        [113, 34, 1, 1, 1.4142135623730951],
+        [113.5, 34, 1, 1, 1.4142135623730951],
+        [114, 34, 1, 1, 1.4142135623730951],
+        [114.5, 34, 1, 1, 1.4142135623730951],
+        [110, 34.5, 1, 1, 1.4142135623730951],
+        [110.5, 34.5, 1, 1, 1.4142135623730951],
+        [111, 34.5, 1, 1, 1.4142135623730951],
+        [111.5, 34.5, 1, 1, 1.4142135623730951],
+        [112, 34.5, 1, 1, 1.4142135623730951],
+        [112.5, 34.5, 1, 1, 1.4142135623730951],
+        [113, 34.5, 1, 1, 1.4142135623730951],
+        [113.5, 34.5, 1, 1, 1.4142135623730951],
+        [114, 34.5, 1, 1, 1.4142135623730951],
+        [114.5, 34.5, 1, 1, 1.4142135623730951],
+      ]
       myChart.setOption(
         (option = {
           visualMap: {
@@ -90,8 +208,8 @@ export default {
             },
           },
           amap: {
-            center: [114, 21],
-            zoom: 1,
+            center: [112.5, 32.5],
+            zoom: 7,
             renderOnMoving: false,
             largeMode: true,
           },
@@ -102,7 +220,7 @@ export default {
               data: data,
               supersampling: 4,
               particleType: 'line',
-              particleDensity: 128,
+              particleDensity: 64,
               particleSpeed: 1,
               itemStyle: {
                 opacity: 0.7,
@@ -111,209 +229,6 @@ export default {
           ],
         })
       )
-      //////////////////////////////////////////////
-      // var option
-      // var data = []
-      // var p = 0
-      // var maxMag = 0
-      // var minMag = Infinity
-      // for (var j = 0; j < windData.ny; j++) {
-      //   for (var i = 0; i <= windData.nx; i++) {
-      //     // Continuous data.
-      //     p = (i % windData.nx) + j * windData.nx
-      //     var vx = windData.data[p][0]
-      //     var vy = windData.data[p][1]
-      //     var mag = Math.sqrt(vx * vx + vy * vy)
-      //     // 数据是一个一维数组
-      //     // [ [经度, 维度，向量经度方向的值，向量维度方向的值] ]
-      //     data.push([
-      //       (i / windData.nx) * 360 - 180,
-      //       (j / windData.ny) * 180 - 90,
-      //       vx,
-      //       vy,
-      //       mag,
-      //     ])
-      //     maxMag = Math.max(mag, maxMag)
-      //     minMag = Math.min(mag, minMag)
-      //   }
-      // }
-      // myChart.setOption(
-      //   (option = {
-      //     backgroundColor: '#8899AA',
-      //     visualMap: {
-      //       left: 'right',
-      //       min: minMag,
-      //       max: maxMag,
-      //       dimension: 4,
-      //       inRange: {
-      //         // color: ['green', 'yellow', 'red']
-      //         color: [
-      //           '#313695',
-      //           '#4575b4',
-      //           '#74add1',
-      //           '#abd9e9',
-      //           '#e0f3f8',
-      //           '#ffffbf',
-      //           '#fee090',
-      //           '#fdae61',
-      //           '#f46d43',
-      //           '#d73027',
-      //           '#a50026',
-      //         ],
-      //       },
-      //       realtime: false,
-      //       calculable: true,
-      //       textStyle: {
-      //         color: '#fff',
-      //       },
-      //     },
-      //     amap: {
-      //       center: [0, 0],
-      //       zoom: 1,
-      //       roam: true,
-      //       mapStyle: {
-      //         styleJson: [
-      //           {
-      //             featureType: 'water',
-      //             elementType: 'all',
-      //             stylers: {
-      //               color: '#031628',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'land',
-      //             elementType: 'geometry',
-      //             stylers: {
-      //               color: '#000102',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'highway',
-      //             elementType: 'all',
-      //             stylers: {
-      //               visibility: 'off',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'arterial',
-      //             elementType: 'geometry.fill',
-      //             stylers: {
-      //               color: '#000000',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'arterial',
-      //             elementType: 'geometry.stroke',
-      //             stylers: {
-      //               color: '#0b3d51',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'local',
-      //             elementType: 'geometry',
-      //             stylers: {
-      //               color: '#000000',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'railway',
-      //             elementType: 'geometry.fill',
-      //             stylers: {
-      //               color: '#000000',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'railway',
-      //             elementType: 'geometry.stroke',
-      //             stylers: {
-      //               color: '#08304b',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'subway',
-      //             elementType: 'geometry',
-      //             stylers: {
-      //               lightness: -70,
-      //             },
-      //           },
-      //           {
-      //             featureType: 'building',
-      //             elementType: 'geometry.fill',
-      //             stylers: {
-      //               color: '#000000',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'all',
-      //             elementType: 'labels.text.fill',
-      //             stylers: {
-      //               color: '#857f7f',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'all',
-      //             elementType: 'labels.text.stroke',
-      //             stylers: {
-      //               color: '#000000',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'building',
-      //             elementType: 'geometry',
-      //             stylers: {
-      //               color: '#022338',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'green',
-      //             elementType: 'geometry',
-      //             stylers: {
-      //               color: '#062032',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'boundary',
-      //             elementType: 'all',
-      //             stylers: {
-      //               color: '#465b6c',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'manmade',
-      //             elementType: 'all',
-      //             stylers: {
-      //               color: '#022338',
-      //             },
-      //           },
-      //           {
-      //             featureType: 'label',
-      //             elementType: 'all',
-      //             stylers: {
-      //               visibility: 'off',
-      //             },
-      //           },
-      //         ],
-      //       },
-      //     },
-      //     series: [
-      //       {
-      //         type: 'flowGL',
-      //         coordinateSystem: 'amap',
-      //         data: data,
-      //         supersampling: 4,
-      //         particleType: 'line',
-      //         particleDensity: 128,
-      //         particleSpeed: 1,
-      //         // gridWidth: windData.nx,
-      //         // gridHeight: windData.ny,
-      //         itemStyle: {
-      //           opacity: 0.7,
-      //         },
-      //       },
-      //     ],
-      //   })
-      // )
-      //////////////////////////////////////////////
     },
   },
   mounted() {
