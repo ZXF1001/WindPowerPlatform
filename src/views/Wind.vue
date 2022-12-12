@@ -38,9 +38,7 @@ export default {
     }
   },
   methods: {
-    beforeTagsLeave() {
-      console.log('l')
-    },
+    beforeTagsLeave() {},
   },
 }
 </script>
