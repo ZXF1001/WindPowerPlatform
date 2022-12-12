@@ -238,7 +238,6 @@ export default {
 </script>
 <style lang="less" scoped>
 .streamline {
-  height: 650px;
-  background-color: burlywood;
+  height: calc(100vh - 154px);
 }
 </style>
