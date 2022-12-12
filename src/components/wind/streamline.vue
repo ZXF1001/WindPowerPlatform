@@ -38,8 +38,8 @@ export default {
       var option = null
       var data = []
       var p = 0
-      var maxMag = 0
-      var minMag = Infinity
+      var maxMag = 1
+      var minMag = 1
       // for (var j = 0; j < windData.ny; j++) {
       //   for (var i = 0; i < windData.nx; i++) {
       //     // Continuous data.
@@ -220,8 +220,8 @@ export default {
               data: data,
               supersampling: 4,
               particleType: 'line',
-              particleDensity: 64,
-              particleSpeed: 1,
+              particleDensity: 16,
+              particleSpeed: 2,
               itemStyle: {
                 opacity: 0.7,
               },
@@ -238,7 +238,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .streamline {
-  height: 400px;
+  height: 650px;
   background-color: burlywood;
 }
 </style>

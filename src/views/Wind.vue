@@ -6,19 +6,23 @@
       <wind-rose-polar></wind-rose-polar>
     </el-tab-pane>
     <el-tab-pane label="风速信息"
-                 name="speedLine">
+                 name="speedLine"
+                 :lazy="true">
       <speed-line></speed-line>
     </el-tab-pane>
     <el-tab-pane label="天气信息"
-                 name="weather">
+                 name="weather"
+                 :lazy="true">
       <weather></weather>
     </el-tab-pane>
     <el-tab-pane label="流线图"
-                 name="streamline">
+                 name="streamline"
+                 :lazy="true">
       <streamline></streamline>
     </el-tab-pane>
     <el-tab-pane label="风资源云图"
-                 name="contour">
+                 name="contour"
+                 :lazy="true">
       <wind-contour></wind-contour>
     </el-tab-pane>
   </el-tabs>
