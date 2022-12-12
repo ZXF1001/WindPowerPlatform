@@ -1,5 +1,5 @@
 <template>
-  <div>windContour挂载成功</div>
+  <div>weather挂载成功</div>
 </template>
 
 <script>

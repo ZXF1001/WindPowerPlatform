@@ -5,9 +5,13 @@
                  name="windrose">
       <wind-rose-polar></wind-rose-polar>
     </el-tab-pane>
+    <el-tab-pane label="风速信息"
+                 name="speedLine">
+      <speed-line></speed-line>
+    </el-tab-pane>
     <el-tab-pane label="天气信息"
                  name="weather">
-      <wind-rose-polar></wind-rose-polar>
+      <weather></weather>
     </el-tab-pane>
     <el-tab-pane label="流线图"
                  name="streamline">
@@ -24,8 +28,10 @@
 import windContour from '../components/wind/windContour.vue'
 import windRosePolar from '../components/wind/windRosePolar.vue'
 import streamline from '../components/wind/streamline.vue'
+import speedLine from '../components/wind/speedLine.vue'
+import weather from '../components/wind/weather.vue'
 export default {
-  components: { windContour, windRosePolar, streamline },
+  components: { windContour, windRosePolar, streamline, speedLine, weather },
   data() {
     return {
       activeName: 'windrose',
