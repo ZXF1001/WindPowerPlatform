@@ -92,12 +92,13 @@ export default {
         zoom: 9,
         layers: baseLayers.Dark, //默认加载图层
       })
-      this.map.on('move', function (e) {
+      this.map.on('move', (e) => {
         velocityLayer1.remove()
       })
       this.map.on('moveend', (e) => {
         this.map.addLayer(velocityLayer1)
       })
+      // this.map.dragging.disable() // 禁止平移
       var layerControl = L.control
         .layers(
           baseLayers,

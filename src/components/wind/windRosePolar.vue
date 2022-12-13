@@ -6,8 +6,7 @@
                  multiple
                  collapse-tags
                  placeholder="选择集群"
-                 size="small"
-                 class="select">
+                 size="small">
         <el-option v-for="item in options1"
                    :key="item.value"
                    :label="item.label"
@@ -18,8 +17,7 @@
                  multiple
                  collapse-tags
                  placeholder="选择状态"
-                 size="small"
-                 class="select">
+                 size="small">
         <el-option v-for="item in options2"
                    :key="item.value"
                    :label="item.label"
@@ -194,7 +192,7 @@ export default {
 <style lang="less" scoped>
 .filterbox {
   margin-bottom: 10px;
-  .select {
+  .el-select {
     margin-left: 5px;
     margin-right: 5px;
   }

@@ -3,14 +3,13 @@
     <h1 class="title">总览</h1>
     <el-row>
       <el-col :span="6">
-        <div class="grid-content bg-purple"
-             style="margin-right:10px">
+        <div style="margin-right:10px">
           <!-- 左栏 -->
           <div class="num-info">
             <!-- 左上的四块数字 -->
             <div class="row">
               <el-card>
-                <p class="label">运行中台数</p>
+                <p class="label">运行中</p>
                 <p class="num">{{numData.runNum}}</p>
               </el-card>
               <el-card>
@@ -29,7 +28,7 @@
               </el-card>
             </div>
           </div>
-          <el-card style="height:400px">
+          <el-card class="echarts-table">
             <!-- 左下的表格 -->
             <el-table :data="tableData"
                       style="width: 100%">
@@ -76,6 +75,7 @@
       align-items: center;
       justify-content: center;
       width: 48%;
+      height: 113px;
       margin-bottom: 10px;
       font-weight: bold;
       .label {
@@ -91,12 +91,15 @@
     }
   }
 }
+.echarts-table {
+  height: calc(100vh - 396px);
+}
 .right {
   .map {
     margin-bottom: 10px;
   }
   .linechart {
-    height: 270px;
+    height: calc((100vh - 238px) / 2);
   }
 }
 </style>
