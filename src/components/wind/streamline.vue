@@ -132,10 +132,11 @@ export default {
         data: windData,
         minVelocity: minMag,
         maxVelocity: maxMag,
-        velocityScale: 0.01,
+        velocityScale: 0.005,
+        frameRate: 40,
         // particleAge: 20,
         // lineWidth: 2,
-        // particleMultiplier: 0.001,
+        // particleMultiplier: 0.005,
         // colorScale:[],
       })
       mapObj.addLayer(velocityLayer1)
