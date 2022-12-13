@@ -2,23 +2,25 @@
   <div>
     <div class="filterbox">
       <span>筛选条件：</span>
-      <el-select v-model="value"
+      <el-select v-model="value1"
                  multiple
                  collapse-tags
                  placeholder="选择集群"
-                 size="small">
-        <el-option v-for="item in options"
+                 size="small"
+                 class="select">
+        <el-option v-for="item in options1"
                    :key="item.value"
                    :label="item.label"
                    :value="item.value">
         </el-option>
       </el-select>
-      <el-select v-model="value"
+      <el-select v-model="value2"
                  multiple
                  collapse-tags
                  placeholder="选择状态"
-                 size="small">
-        <el-option v-for="item in options"
+                 size="small"
+                 class="select">
+        <el-option v-for="item in options2"
                    :key="item.value"
                    :label="item.label"
                    :value="item.value">
@@ -41,29 +43,44 @@ import * as echarts from 'echarts'
 export default {
   data() {
     return {
-      options: [
+      options1: [
         {
-          value: '选项1',
-          label: '黄金糕',
+          value: 'option1',
+          label: '向服务器',
         },
         {
-          value: '选项2',
-          label: '双皮奶',
+          value: 'option2',
+          label: '请求',
         },
         {
-          value: '选项3',
-          label: '蚵仔煎',
+          value: 'option3',
+          label: '集群列表',
         },
         {
-          value: '选项4',
-          label: '龙须面',
-        },
-        {
-          value: '选项5',
-          label: '北京烤鸭',
+          value: 'option4',
+          label: '数据',
         },
       ],
-      value: [],
+      options2: [
+        {
+          value: 'option1',
+          label: '向服务器',
+        },
+        {
+          value: 'option2',
+          label: '请求',
+        },
+        {
+          value: 'option3',
+          label: '所有的',
+        },
+        {
+          value: 'option4',
+          label: '状态数据',
+        },
+      ],
+      value1: [],
+      value2: [],
     }
   },
   methods: {
@@ -177,6 +194,10 @@ export default {
 <style lang="less" scoped>
 .filterbox {
   margin-bottom: 10px;
+  .select {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
 }
 .windrose {
   height: 270px;

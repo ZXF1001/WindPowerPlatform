@@ -92,7 +92,12 @@ export default {
         zoom: 9,
         layers: baseLayers.Dark, //默认加载图层
       })
-
+      this.map.on('move', function (e) {
+        velocityLayer1.remove()
+      })
+      this.map.on('moveend', (e) => {
+        this.map.addLayer(velocityLayer1)
+      })
       var layerControl = L.control
         .layers(
           baseLayers,
@@ -103,6 +108,7 @@ export default {
           }
         )
         .addTo(this.map)
+
       L.control
         .scale({
           position: 'bottomleft',
@@ -140,11 +146,13 @@ export default {
         minVelocity: minMag,
         maxVelocity: maxMag,
         velocityScale: 0.01,
+        // particleAge: 20,
+        // lineWidth: 2,
+        // particleMultiplier: 0.001,
         // colorScale:[],
-        opacity: 0.95,
       })
       this.map.addLayer(velocityLayer1)
-      layerControl.addOverlay(velocityLayer1, 'Wind - Great Barrier Reef')
+      layerControl.addOverlay(velocityLayer1, 'Wind Streamline')
     },
   },
   mounted() {
