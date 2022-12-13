@@ -14,15 +14,7 @@ export default {
   },
   methods: {
     initMap() {
-      this.map = L.map('map', {
-        //参考坐标系
-        // crs: L.CRS.EPSG3857,
-        //不添加属性说明控件
-        attributionControl: false,
-        zoomControl: false,
-        center: [41.20019, 114.948313],
-        zoom: 16,
-      })
+      //瓦片地图列表
       var baseLayers = {
         AMap1: L.tileLayer(
           'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
@@ -73,6 +65,17 @@ export default {
           }
         ), // 白色
       }
+      //定义地图
+      this.map = L.map('map', {
+        //参考坐标系
+        // crs: L.CRS.EPSG3857,
+        attributionControl: false,
+        zoomControl: false,
+        center: [41.370233, 114.345034],
+        zoom: 16,
+        layers: baseLayers.AMap1,
+      })
+
       L.control
         .layers(
           baseLayers,
