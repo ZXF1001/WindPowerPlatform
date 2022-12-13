@@ -12,9 +12,7 @@ import 'leaflet-velocity/dist/leaflet-velocity.css'
 import 'leaflet-velocity/dist/leaflet-velocity'
 export default {
   data() {
-    return {
-      map: null,
-    }
+    return {}
   },
   methods: {
     initMap() {
