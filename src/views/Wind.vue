@@ -27,11 +27,6 @@
                  :lazy="true">
       <wind-contour></wind-contour>
     </el-tab-pane>
-    <el-tab-pane label="测试"
-                 name="testpage"
-                 :lazy="true">
-      <test-page></test-page>
-    </el-tab-pane>
   </el-tabs>
 </template>
 
@@ -41,7 +36,6 @@ import windRosePolar from '../components/wind/windRosePolar.vue'
 import streamline from '../components/wind/streamline.vue'
 import speedLine from '../components/wind/speedLine.vue'
 import weather from '../components/wind/weather.vue'
-import testPage from '../components/wind/testPage.vue'
 export default {
   components: {
     windContour,
@@ -49,11 +43,10 @@ export default {
     streamline,
     speedLine,
     weather,
-    testPage,
   },
   data() {
     return {
-      activeName: 'testpage',
+      activeName: 'windrose',
     }
   },
   methods: {

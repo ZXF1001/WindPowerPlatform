@@ -1,243 +1,160 @@
 <template>
-  <div class="streamline"
-       ref="chart"></div>
+  <div id='map'>
+  </div>
 </template>
 
 <script>
-import * as echarts from 'echarts'
-import 'echarts-gl'
-import 'echarts-extension-amap'
-import AMapLoader from '@amap/amap-jsapi-loader'
-import windData from '../../json/windDemo.json'
-window._AMapSecurityConfig = {
-  securityJsCode: '1260f13fffc52b86824606929288ef75',
-}
+import data from '../../json/zb.json'
+
+import 'leaflet/dist/leaflet.css'
+import * as L from 'leaflet/dist/leaflet'
+import 'leaflet-velocity/dist/leaflet-velocity.css'
+import 'leaflet-velocity/dist/leaflet-velocity'
 export default {
   data() {
-    return {}
+    return {
+      map: null,
+    }
   },
   methods: {
-    initmap() {
-      // console.log(windData)
-      AMapLoader.load({
-        key: 'f9cb65dd9831f33581c66e88ec5881a6',
-        version: '2.0',
-        // version: '2.1Beta',
-        plugins: [''],
+    initMap() {
+      //瓦片地图列表
+      var baseLayers = {
+        AMap1: L.tileLayer(
+          'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+          {
+            maxZoom: 18,
+          }
+        ), // 高德卫星
+        TXLW: L.tileLayer(
+          'http://rt0.map.gtimg.com/realtimerender?z={z}&x={x}&y={-y}&type=vector&style=0',
+          {
+            maxZoom: 18,
+          }
+        ), // 腾讯地图路网
+        ArcGIS: L.tileLayer(
+          'https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}',
+          {
+            maxZoom: 18,
+          }
+        ), // ArcGIS
+        AMap2: L.tileLayer(
+          'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+          {
+            maxZoom: 18,
+          }
+        ), // 高德路网
+
+        Dark: L.tileLayer(
+          'https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}',
+          {
+            maxZoom: 18,
+          }
+        ), // 暗色
+        opentopomap: L.tileLayer(
+          'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+          {
+            maxZoom: 18,
+          }
+        ), // 密集道路
+        White: L.tileLayer(
+          'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+          {
+            maxZoom: 18,
+          }
+        ), // 白色
+        TDT1: L.tileLayer(
+          'https://t3.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TileMatrix={z}&TileRow={y}&TileCol={x}&tk=ec899a50c7830ea2416ca182285236f3',
+          {
+            maxZoom: 18,
+          }
+        ), // 天地图
+        TDT2: L.tileLayer(
+          'http://t0.tianditu.gov.cn/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={z}&TileRow={y}&TileCol={x}&style=default&format=tiles&tk=ec899a50c7830ea2416ca182285236f3',
+          {
+            maxZoom: 18,
+          }
+        ), // 天地图卫星
+        TDT3: L.tileLayer(
+          'http://t0.tianditu.gov.cn/ter_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ter&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TileMatrix={z}&TileRow={y}&TileCol={x}&tk=ec899a50c7830ea2416ca182285236f3',
+          {
+            maxZoom: 18,
+          }
+        ), // 天地图地形
+      }
+      //定义地图
+      this.map = L.map('map', {
+        //参考坐标系
+        // crs: L.CRS.EPSG3857,
+        attributionControl: false,
+        zoomControl: false,
+        center: [41.05, 114.8],
+        zoom: 9,
+        layers: baseLayers.Dark, //默认加载图层
       })
-        .then((AMap) => {
-          this.drawStreamline(AMap)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-    },
 
-    drawStreamline(AMap) {
-      var myChart = echarts.init(this.$refs.chart)
-      var option = null
-      var data = []
-      var p = 0
-      var maxMag = 1
-      var minMag = 1
-      // for (var j = 0; j < windData.ny; j++) {
-      //   for (var i = 0; i < windData.nx; i++) {
-      //     // Continuous data.
-      //     var p = i + j * windData.nx
-      //     var vx = windData.data[p][0]
-      //     var vy = windData.data[p][1]
-      //     var mag = Math.sqrt(vx * vx + vy * vy)
-      //     // 数据是一个一维数组
-      //     // [ [经度, 维度，向量经度方向的值，向量维度方向的值] ]
-      //     // var gpsLng = (i / windData.nx) * 5 + 110
-      //     // var gpsLat = (j / windData.ny) * 5 + 30
-      //     // AMap.convertFrom([gpsLng, gpsLat], 'gps', function (status, result) {
-      //     //   if (result.info === 'ok') {
-      //     //     // console.log(amapLngLat[0].lat)
-      //     //     // [[144,72]]
-      //     //     data.push([
-      //     //       result.locations[0].lng,
-      //     //       result.locations[0].lat,
-      //     //       vx,
-      //     //       vy,
-      //     //       mag,
-      //     //     ])
-      //     //   }
-      //     // })
-
-      //     data.push([
-      //       (i / windData.nx) * 5 + 110,
-      //       (j / windData.ny) * 5 + 30,
-      //       vx,
-      //       vy,
-      //       mag,
-      //     ])
-      //     maxMag = Math.max(mag, maxMag)
-      //     minMag = Math.min(mag, minMag)
-      //   }
-      // }
-      // console.log(data)
-      data = [
-        [110, 30, 1, 1, 1.4142135623730951],
-        [110.5, 30, 1, 1, 1.4142135623730951],
-        [111, 30, 1, 1, 1.4142135623730951],
-        [111.5, 30, 1, 1, 1.4142135623730951],
-        [112, 30, 1, 1, 1.4142135623730951],
-        [112.5, 30, 1, 1, 1.4142135623730951],
-        [113, 30, 1, 1, 1.4142135623730951],
-        [113.5, 30, 1, 1, 1.4142135623730951],
-        [114, 30, 1, 1, 1.4142135623730951],
-        [114.5, 30, 1, 1, 1.4142135623730951],
-        [110, 30.5, 1, 1, 1.4142135623730951],
-        [110.5, 30.5, 1, 1, 1.4142135623730951],
-        [111, 30.5, 1, 1, 1.4142135623730951],
-        [111.5, 30.5, 1, 1, 1.4142135623730951],
-        [112, 30.5, 1, 1, 1.4142135623730951],
-        [112.5, 30.5, 1, 1, 1.4142135623730951],
-        [113, 30.5, 1, 1, 1.4142135623730951],
-        [113.5, 30.5, 1, 1, 1.4142135623730951],
-        [114, 30.5, 1, 1, 1.4142135623730951],
-        [114.5, 30.5, 1, 1, 1.4142135623730951],
-        [110, 31, 1, 1, 1.4142135623730951],
-        [110.5, 31, 1, 1, 1.4142135623730951],
-        [111, 31, 1, 1, 1.4142135623730951],
-        [111.5, 31, 1, 1, 1.4142135623730951],
-        [112, 31, 1, 1, 1.4142135623730951],
-        [112.5, 31, 1, 1, 1.4142135623730951],
-        [113, 31, 1, 1, 1.4142135623730951],
-        [113.5, 31, 1, 1, 1.4142135623730951],
-        [114, 31, 1, 1, 1.4142135623730951],
-        [114.5, 31, 1, 1, 1.4142135623730951],
-        [110, 31.5, 1, 1, 1.4142135623730951],
-        [110.5, 31.5, 1, 1, 1.4142135623730951],
-        [111, 31.5, 1, 1, 1.4142135623730951],
-        [111.5, 31.5, 1, 1, 1.4142135623730951],
-        [112, 31.5, 1, 1, 1.4142135623730951],
-        [112.5, 31.5, 1, 1, 1.4142135623730951],
-        [113, 31.5, 1, 1, 1.4142135623730951],
-        [113.5, 31.5, 1, 1, 1.4142135623730951],
-        [114, 31.5, 1, 1, 1.4142135623730951],
-        [114.5, 31.5, 1, 1, 1.4142135623730951],
-        [110, 32, 1, 1, 1.4142135623730951],
-        [110.5, 32, 1, 1, 1.4142135623730951],
-        [111, 32, 1, 1, 1.4142135623730951],
-        [111.5, 32, 1, 1, 1.4142135623730951],
-        [112, 32, 1, 1, 1.4142135623730951],
-        [112.5, 32, 1, 1, 1.4142135623730951],
-        [113, 32, 1, 1, 1.4142135623730951],
-        [113.5, 32, 1, 1, 1.4142135623730951],
-        [114, 32, 1, 1, 1.4142135623730951],
-        [114.5, 32, 1, 1, 1.4142135623730951],
-        [110, 32.5, 1, 1, 1.4142135623730951],
-        [110.5, 32.5, 1, 1, 1.4142135623730951],
-        [111, 32.5, 1, 1, 1.4142135623730951],
-        [111.5, 32.5, 1, 1, 1.4142135623730951],
-        [112, 32.5, 1, 1, 1.4142135623730951],
-        [112.5, 32.5, 1, 1, 1.4142135623730951],
-        [113, 32.5, 1, 1, 1.4142135623730951],
-        [113.5, 32.5, 1, 1, 1.4142135623730951],
-        [114, 32.5, 1, 1, 1.4142135623730951],
-        [114.5, 32.5, 1, 1, 1.4142135623730951],
-        [110, 33, 1, 1, 1.4142135623730951],
-        [110.5, 33, 1, 1, 1.4142135623730951],
-        [111, 33, 1, 1, 1.4142135623730951],
-        [111.5, 33, 1, 1, 1.4142135623730951],
-        [112, 33, 1, 1, 1.4142135623730951],
-        [112.5, 33, 1, 1, 1.4142135623730951],
-        [113, 33, 1, 1, 1.4142135623730951],
-        [113.5, 33, 1, 1, 1.4142135623730951],
-        [114, 33, 1, 1, 1.4142135623730951],
-        [114.5, 33, 1, 1, 1.4142135623730951],
-        [110, 33.5, 1, 1, 1.4142135623730951],
-        [110.5, 33.5, 1, 1, 1.4142135623730951],
-        [111, 33.5, 1, 1, 1.4142135623730951],
-        [111.5, 33.5, 1, 1, 1.4142135623730951],
-        [112, 33.5, 1, 1, 1.4142135623730951],
-        [112.5, 33.5, 1, 1, 1.4142135623730951],
-        [113, 33.5, 1, 1, 1.4142135623730951],
-        [113.5, 33.5, 1, 1, 1.4142135623730951],
-        [114, 33.5, 1, 1, 1.4142135623730951],
-        [114.5, 33.5, 1, 1, 1.4142135623730951],
-        [110, 34, 1, 1, 1.4142135623730951],
-        [110.5, 34, 1, 1, 1.4142135623730951],
-        [111, 34, 1, 1, 1.4142135623730951],
-        [111.5, 34, 1, 1, 1.4142135623730951],
-        [112, 34, 1, 1, 1.4142135623730951],
-        [112.5, 34, 1, 1, 1.4142135623730951],
-        [113, 34, 1, 1, 1.4142135623730951],
-        [113.5, 34, 1, 1, 1.4142135623730951],
-        [114, 34, 1, 1, 1.4142135623730951],
-        [114.5, 34, 1, 1, 1.4142135623730951],
-        [110, 34.5, 1, 1, 1.4142135623730951],
-        [110.5, 34.5, 1, 1, 1.4142135623730951],
-        [111, 34.5, 1, 1, 1.4142135623730951],
-        [111.5, 34.5, 1, 1, 1.4142135623730951],
-        [112, 34.5, 1, 1, 1.4142135623730951],
-        [112.5, 34.5, 1, 1, 1.4142135623730951],
-        [113, 34.5, 1, 1, 1.4142135623730951],
-        [113.5, 34.5, 1, 1, 1.4142135623730951],
-        [114, 34.5, 1, 1, 1.4142135623730951],
-        [114.5, 34.5, 1, 1, 1.4142135623730951],
-      ]
-      myChart.setOption(
-        (option = {
-          visualMap: {
-            left: 'right',
-            min: minMag,
-            max: maxMag,
-            dimension: 4,
-            inRange: {
-              color: [
-                '#313695',
-                '#4575b4',
-                '#74add1',
-                '#abd9e9',
-                '#e0f3f8',
-                '#ffffbf',
-                '#fee090',
-                '#fdae61',
-                '#f46d43',
-                '#d73027',
-                '#a50026',
-              ],
-            },
-            realtime: false,
-            calculable: true,
-            textStyle: {
-              color: '#fff',
-            },
-          },
-          amap: {
-            center: [112.5, 32.5],
-            zoom: 7,
-            renderOnMoving: false,
-            largeMode: true,
-          },
-          series: [
-            {
-              type: 'flowGL',
-              coordinateSystem: 'amap',
-              data: data,
-              supersampling: 4,
-              particleType: 'line',
-              particleDensity: 16,
-              particleSpeed: 2,
-              itemStyle: {
-                opacity: 0.7,
-              },
-            },
-          ],
+      var layerControl = L.control
+        .layers(
+          baseLayers,
+          {},
+          {
+            position: 'topright',
+            collapsed: false,
+          }
+        )
+        .addTo(this.map)
+      L.control
+        .scale({
+          position: 'bottomleft',
+          maxWidth: '100',
+          imperial: false,
         })
+        .addTo(this.map)
+      //////////加入风场流线//////////
+      const n = data[0].header.nx * data[0].header.ny //网格数
+      var minMag = Math.sqrt(
+        Math.pow(data[0].data[0], 2) + Math.pow(data[1].data[0], 2)
       )
+      var maxMag = 0
+      var mag = 0
+      for (var i = 0; i < n; i++) {
+        mag = Math.sqrt(
+          Math.pow(data[0].data[i], 2) + Math.pow(data[1].data[i], 2)
+        )
+        minMag = mag < minMag ? mag : minMag
+        maxMag = mag > maxMag ? mag : maxMag
+      }
+      var velocityLayer1 = L.velocityLayer({
+        displayValues: true,
+        displayOptions: {
+          velocityType: '',
+          position: 'bottomright',
+          emptyString: '此处没有风数据',
+          angleConvention: 'meteoCCW',
+          showCardinal: true,
+          speedUnit: 'm/s',
+          directionString: '风向',
+          speedString: '风速',
+        },
+        data: data,
+        minVelocity: minMag,
+        maxVelocity: maxMag,
+        velocityScale: 0.01,
+        // colorScale:[],
+        opacity: 0.95,
+      })
+      this.map.addLayer(velocityLayer1)
+      layerControl.addOverlay(velocityLayer1, 'Wind - Great Barrier Reef')
     },
   },
   mounted() {
-    this.initmap()
+    this.initMap()
   },
 }
 </script>
+
 <style lang="less" scoped>
-.streamline {
+#map {
   height: calc(100vh - 154px);
 }
 </style>
