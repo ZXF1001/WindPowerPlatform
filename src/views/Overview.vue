@@ -105,10 +105,10 @@
 </style>
 <script>
 //import tab from '@/store/tab'
-import { getOverviewNumData } from '../api/overview/getNumData.js'
-import { getOverviewRecentLineData } from '../api/overview/getLineData.js'
-import { getOverviewTimelyLineData } from '../api/overview/getLineData.js'
-import MapContainer from '../components/overview/MapContainer.vue'
+import { getOverviewNumData } from '../api/overview/getNumData'
+import { getOverviewRecentLineData } from '../api/overview/getLineData'
+import { getOverviewTimelyLineData } from '../api/overview/getLineData'
+import MapContainer from '../components/overview/MapContainer'
 import * as echarts from 'echarts'
 export default {
   components: { MapContainer },

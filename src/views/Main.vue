@@ -20,6 +20,10 @@
 </template>
 
 <style lang="less" scoped>
+.el-container,
+.el-main {
+  height: 100%;
+}
 .el-header {
   padding: 0;
 }
