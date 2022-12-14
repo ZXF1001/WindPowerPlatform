@@ -190,6 +190,9 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+/deep/.el-card__body {
+  padding: 15px;
+}
 .filterbox {
   margin-bottom: 10px;
   .el-select {
