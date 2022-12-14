@@ -320,7 +320,7 @@ export default {
 <style lang="less" scoped>
 .left,
 #container {
-  height: calc((100vh - 238px) / 2);
+  height: calc(0.6 * (100vh - 238px));
 }
 .left {
   overflow: scroll;

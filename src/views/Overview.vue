@@ -99,7 +99,7 @@
     margin-bottom: 10px;
   }
   .linechart {
-    height: calc((100vh - 238px) / 2);
+    height: calc(0.4 * (100vh - 238px));
   }
 }
 </style>
