@@ -6,6 +6,7 @@
                  size="mini"
                  @click="handleMenu"></el-button> -->
       <!-- 面包屑 -->
+
       <h2 style="color:#fff">虚拟激光雷达区域化风电场优化云计算平台</h2>
     </div>
     <div class="r-content">
@@ -44,6 +45,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
+
   .text {
     color: #fff;
     font-size: 14px;

@@ -2,42 +2,35 @@
   <el-col :span="25">
 
     <el-menu default-active="overview"
-             class="el-menu-vertical-demo"
+             class="menu"
              :collapse="isCollapse">
-      <div class="logo">
-        <img class="logoimg"
-             src="../assets/images/wind.png">
+
+      <div class="menuItem">
+        <el-menu-item v-for="item in menuData"
+                      :key="item.name"
+                      :index="item.name"
+                      @click="clickMenu(item)">
+          <i :class="item.icon"></i>
+          <span slot="title">{{item.label}}</span>
+        </el-menu-item>
       </div>
-      <el-menu-item v-for="item in menuData"
-                    :key="item.name"
-                    :index="item.name"
-                    @click="clickMenu(item)">
-        <i :class="item.icon"></i>
-        <span slot="title">{{item.label}}</span>
-      </el-menu-item>
+
     </el-menu>
   </el-col>
 </template>
 <style lang="less" scoped>
-.logo {
-  height: 60px;
-
-  text-align: center;
-  .logoimg {
-    height: 50px;
-  }
-}
-.el-menu {
-  height: 100vh;
-  h4 {
-    text-align: center;
-  }
-  .logo {
-    padding-top: 10px;
-  }
-}
 .el-col {
   width: 100%;
+
+  .el-menu {
+    height: calc(100vh - 65px);
+    h4 {
+      text-align: center;
+    }
+    .logo {
+      padding-top: 10px;
+    }
+  }
 }
 </style>
 <script>

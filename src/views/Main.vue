@@ -1,30 +1,27 @@
 <template>
-  <div>
+
+  <el-container>
+    <el-header>
+      <common-header></common-header>
+    </el-header>
     <el-container>
-      <el-aside width="190px">
+      <el-aside width="160px">
         <common-aside></common-aside>
       </el-aside>
-      <el-container>
-        <el-header>
-          <common-header></common-header>
-        </el-header>
-        <el-main>
-          <!-- <keep-alive> -->
-          <router-view></router-view>
-          <!-- </keep-alive> -->
-        </el-main>
-      </el-container>
+      <el-main>
+        <!-- <keep-alive> -->
+        <router-view></router-view>
+        <!-- </keep-alive> -->
+      </el-main>
     </el-container>
-  </div>
+
+  </el-container>
+
 </template>
 
 <style lang="less" scoped>
 .el-header {
   padding: 0;
-}
-.el-container,
-.el-main {
-  height: 100vh;
 }
 </style>
 
