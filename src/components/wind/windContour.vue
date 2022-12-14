@@ -1,5 +1,5 @@
 <template>
-  <div id='map'>
+  <div id='map2'>
   </div>
 </template>
 
@@ -63,7 +63,7 @@ export default {
         ),
       }
       //定义map对象
-      var map = L.map('map', {
+      var map = L.map('map2', {
         //参考坐标系
         // crs: L.CRS.EPSG3857,
         attributionControl: false,
@@ -100,7 +100,7 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-#map {
+#map2 {
   height: calc(100vh - 154px);
 }
 </style>

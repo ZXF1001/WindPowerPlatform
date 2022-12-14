@@ -1,5 +1,5 @@
 <template>
-  <div id='map'>
+  <div id='map1'>
   </div>
 </template>
 
@@ -70,7 +70,7 @@ export default {
         ),
       }
       //定义map对象
-      var map = L.map('map', {
+      var map = L.map('map1', {
         //参考坐标系
         // crs: L.CRS.EPSG3857,
         attributionControl: false,
@@ -140,7 +140,7 @@ export default {
         // colorScale:[],
       })
       mapObj.addLayer(velocityLayer1)
-      layerControlObj.addOverlay(velocityLayer1, 'Wind Streamline')
+      layerControlObj.addOverlay(velocityLayer1, '风场流线')
       //挂载map对象移动事件（隐藏流线）
       mapObj.on('move', () => {
         velocityLayer1.remove()
@@ -157,7 +157,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-#map {
+#map1 {
   height: calc(100vh - 154px);
 }
 </style>
