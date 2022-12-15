@@ -1,32 +1,34 @@
 <template>
-  <div v-loading="loading">
-    <el-row>
-      <el-col :span="3">
-        <div class="left">
-          <!-- <el-button @click="conventGPS"
+  <el-card class="map">
+    <div v-loading="loading">
+      <el-row>
+        <el-col :span="3">
+          <div class="left">
+            <!-- <el-button @click="conventGPS"
                      size="mini">执行gps转化</el-button> -->
-          <el-checkbox :indeterminate="isIndeterminate"
-                       v-model="checkAll"
-                       @change="handleCheckAllChange">全选</el-checkbox>
-          <div style="margin: 15px 0;"></div>
-          <el-checkbox-group v-model="checkedClusters"
-                             @change="handleCheckedClustersChange">
-            <el-checkbox v-for="cluster in clusterOptions"
-                         :label="cluster"
-                         :key="cluster"
-                         style="display: block; padding-top: 10px;">{{cluster}}</el-checkbox>
+            <el-checkbox :indeterminate="isIndeterminate"
+                         v-model="checkAll"
+                         @change="handleCheckAllChange">全选</el-checkbox>
+            <div style="margin: 15px 0;"></div>
+            <el-checkbox-group v-model="checkedClusters"
+                               @change="handleCheckedClustersChange">
+              <el-checkbox v-for="cluster in clusterOptions"
+                           :label="cluster"
+                           :key="cluster"
+                           style="display: block; padding-top: 10px;">{{cluster}}</el-checkbox>
 
-          </el-checkbox-group>
-        </div>
-      </el-col>
-      <el-col :span="21">
-        <div class="right">
-          <div id="container"></div>
-        </div>
-      </el-col>
-    </el-row>
+            </el-checkbox-group>
+          </div>
+        </el-col>
+        <el-col :span="21">
+          <div class="right">
+            <div id="container"></div>
+          </div>
+        </el-col>
+      </el-row>
 
-  </div>
+    </div>
+  </el-card>
 </template>
 
 <script>
@@ -318,6 +320,9 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.map {
+  margin-bottom: 10px;
+}
 .left,
 #container {
   height: calc(0.6 * (100vh - 238px));

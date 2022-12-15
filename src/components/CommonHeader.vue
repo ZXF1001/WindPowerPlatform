@@ -62,6 +62,7 @@ export default {
   beforeDestroy() {
     if (this.timer) {
       clearInterval(this.timer)
+      this.timer = null
     }
   },
 }
