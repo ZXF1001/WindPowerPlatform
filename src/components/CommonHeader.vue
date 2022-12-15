@@ -47,7 +47,11 @@ export default {
       var Hour = temp.getHours()
       var Minute = temp.getMinutes()
       var Second = temp.getSeconds()
-      this.date = `${Year}/${Month}/${Day} ${Hour}:${Minute}:${Second}`
+      this.date = `${Year}年${Month}月${Day}日 ${
+        Hour < 10 ? '0' + Hour : Hour
+      }:${Minute < 10 ? '0' + Minute : Minute}:${
+        Second < 10 ? '0' + Second : Second
+      }`
     },
     updateFormatDate() {
       this.timer = setInterval(() => {

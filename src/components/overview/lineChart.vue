@@ -14,9 +14,7 @@ export default {
     return {
       lineData: {},
       latestDate: null,
-      oneDay: 24 * 3600 * 1000,
-      oneSecond: 1000,
-      timer2: null,
+
       timer: null,
     }
   },
@@ -108,10 +106,10 @@ export default {
       this.updateLineData(seriesData, echarts1, option)
     },
     updateLineData(seriesData, echartsObj, echartsOption) {
-      this.timer2 = setInterval(() => {
+      this.timer = setInterval(() => {
         getOverviewTimelyLineData()
           .then((res) => {
-            this.latestDate = new Date(+this.latestDate + this.oneSecond)
+            this.latestDate = new Date(+this.latestDate + 1000)
             seriesData.forEach((clusterData) => {
               // if (clusterData.data.length > 60) {
               clusterData.data.shift()
@@ -159,9 +157,9 @@ export default {
     this.fetchLinedata()
   },
   beforeDestroy() {
-    if (this.timer2) {
-      clearInterval(this.timer2)
-      this.timer2 = null
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
     }
   },
 }
