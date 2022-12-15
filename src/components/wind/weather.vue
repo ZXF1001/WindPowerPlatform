@@ -1,8 +1,82 @@
 <template>
-  <div>weather挂载成功</div>
+  <div>
+    <el-card class="now">
+      <h2>当前天气</h2>
+      <p>{{updateTime?"最近更新时间："+updateTime:"更新中"}}
+      </p>
+      <div class="weatherdata">
+
+        <span>温度：{{weatherNow.temp?weatherNow.temp+"°C":"无数据"}}</span>
+        <span>湿度：{{weatherNow.humidity?weatherNow.humidity+"%":"无数据"}}</span>
+        <span>风速：{{weatherNow.windSpeed?weatherNow.windSpeed+"m/s":"无数据"}}</span>
+        <span>风向：{{weatherNow.windDir?weatherNow.windDir:"无数据"}}</span>
+        <span>角度：{{weatherNow.wind360?weatherNow.wind360+"°":"无数据"}}</span>
+      </div>
+    </el-card>
+    <el-card class="future">
+      <h2>未来24小时天气</h2>
+    </el-card>
+  </div>
 </template>
 
 <script>
-export default {}
+import { get24hWeather, getNowWeather } from '../../api/wind/getQweather'
+import * as echarts from 'echarts'
+export default {
+  data() {
+    return {
+      updateTime: null,
+      weatherNow: {},
+    }
+  },
+  methods: {
+    draw24hWeather(lat, lng) {
+      get24hWeather(lat, lng)
+        .then((res) => {
+          console.log(res)
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
+    drawNowWeather(lat, lng) {
+      getNowWeather(lat, lng)
+        .then((res) => {
+          if (res.data.code == '200') {
+            console.log(res.data.now)
+            this.weatherNow = res.data.now
+            var now = new Date(res.data.now.obsTime)
+            var Month = now.getMonth() + 1
+            var Day = now.getDay()
+            var Hour = now.getHours()
+            var Minute = now.getMinutes()
+            var Second = now.getSeconds()
+            this.updateTime = `${Month}月${Day}日 ${
+              Hour < 10 ? '0' + Hour : Hour
+            }:${Minute < 10 ? '0' + Minute : Minute}:${
+              Second < 10 ? '0' + Second : Second
+            }`
+          }
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
+  },
+  mounted() {
+    this.draw24hWeather(121, 30)
+    this.drawNowWeather(121, 30)
+  },
+}
 </script>
 
+<style lang="less" scoped>
+h2 {
+  margin-top: 0px;
+}
+.weatherdata {
+  span {
+    display: block;
+  }
+}
+</style>

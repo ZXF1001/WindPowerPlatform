@@ -211,7 +211,7 @@ export default {
                 icon: icon,
               })
               // 挂载标记点击事件
-              labelMarker.on('click', () => {
+              labelMarker.on('mouseover', () => {
                 var infoWindowContent = [
                   '<h1 style="font-size; 18px;margin-top:0px">编号：' +
                     element.turbine_id +
@@ -232,7 +232,14 @@ export default {
                 this.infoWindow.setContent(infoWindowContent.join(''))
                 this.infoWindow.open(this.map, labelMarker.getPosition())
               })
-
+              labelMarker.on('mouseout', () => {
+                this.infoWindow.close()
+              })
+              labelMarker.on('dragstart', () => {
+                this.labelsLayerList.forEach((element) => {
+                  element.layerData.hide()
+                })
+              })
               labelMarkers.push(labelMarker)
             })
             // 创建 AMap.LabelsLayer 图层
