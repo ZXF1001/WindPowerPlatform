@@ -10,6 +10,9 @@
       <h2 style="color:#fff">虚拟激光雷达区域化风电场优化云计算平台</h2>
     </div>
     <div class="r-content">
+      <div class="nowtime">
+        <h3 style="color:#fff">{{date}}</h3>
+      </div>
       <el-dropdown>
         <span class="el-dropdown-link">
           <img class="user"
@@ -27,12 +30,35 @@
 <script>
 export default {
   data() {
-    return {}
+    return {
+      date: null,
+      timer: null,
+    }
   },
   methods: {
-    handleMenu() {
-      this.$store.commit('collapseMenu')
+    // handleMenu() {
+    //   this.$store.commit('collapseMenu')
+    // },
+    updateFormatDate() {
+      this.timer = setInterval(() => {
+        var temp = new Date()
+        var Year = temp.getFullYear()
+        var Month = temp.getMonth() + 1
+        var Day = temp.getDate()
+        var Hour = temp.getHours()
+        var Minute = temp.getMinutes()
+        var Second = temp.getSeconds()
+        this.date = `${Year}/${Month}/${Day} ${Hour}:${Minute}:${Second}`
+      }, 1000)
     },
+  },
+  created() {
+    this.updateFormatDate()
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
   },
 }
 </script>
@@ -45,7 +71,14 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-
+  .r-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .nowtime {
+      margin-right: 40px;
+    }
+  }
   .text {
     color: #fff;
     font-size: 14px;
