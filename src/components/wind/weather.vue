@@ -5,15 +5,15 @@
       <p>{{updateTime?"最近更新时间："+updateTime:"更新中"}}
       </p>
       <div class="weatherdata">
-
-        <span>温度：{{weatherNow.temp?weatherNow.temp+"°C":"无数据"}}</span>
-        <span>湿度：{{weatherNow.humidity?weatherNow.humidity+"%":"无数据"}}</span>
-        <span>风速：{{weatherNow.windSpeed?weatherNow.windSpeed+"m/s":"无数据"}}</span>
-        <span>风向：{{weatherNow.windDir?weatherNow.windDir:"无数据"}}</span>
-        <span>角度：{{weatherNow.wind360?weatherNow.wind360+"°":"无数据"}}</span>
+        <span v-if="weatherNow.temp">温度：{{weatherNow.temp}}°C</span>
+        <span v-if="weatherNow.humidity">湿度：{{weatherNow.humidity}}%</span>
+        <span v-if="weatherNow.windSpeed">风速：{{weatherNow.windSpeed}}m/s</span>
+        <span v-if="weatherNow.windDir">风向：{{weatherNow.windDir}}</span>
+        <span v-if="weatherNow.wind360">角度：{{weatherNow.wind360}}°</span>
       </div>
     </el-card>
-    <el-card class="future">
+    <el-card class="
+              future">
       <h2>未来24小时天气</h2>
     </el-card>
   </div>
@@ -71,12 +71,16 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.now {
+  width: 30%;
+  margin-bottom: 10px;
+  .weatherdata {
+    span {
+      display: block;
+    }
+  }
+}
 h2 {
   margin-top: 0px;
-}
-.weatherdata {
-  span {
-    display: block;
-  }
 }
 </style>
