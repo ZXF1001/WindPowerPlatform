@@ -39,20 +39,24 @@ export default {
     // handleMenu() {
     //   this.$store.commit('collapseMenu')
     // },
+    getDate() {
+      var temp = new Date()
+      var Year = temp.getFullYear()
+      var Month = temp.getMonth() + 1
+      var Day = temp.getDate()
+      var Hour = temp.getHours()
+      var Minute = temp.getMinutes()
+      var Second = temp.getSeconds()
+      this.date = `${Year}/${Month}/${Day} ${Hour}:${Minute}:${Second}`
+    },
     updateFormatDate() {
       this.timer = setInterval(() => {
-        var temp = new Date()
-        var Year = temp.getFullYear()
-        var Month = temp.getMonth() + 1
-        var Day = temp.getDate()
-        var Hour = temp.getHours()
-        var Minute = temp.getMinutes()
-        var Second = temp.getSeconds()
-        this.date = `${Year}/${Month}/${Day} ${Hour}:${Minute}:${Second}`
+        this.getDate()
       }, 1000)
     },
   },
-  created() {
+  mounted() {
+    this.getDate()
     this.updateFormatDate()
   },
   beforeDestroy() {
