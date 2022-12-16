@@ -110,8 +110,113 @@ export default {
         })
     },
     drawTempAndHumid(dataArr) {
+      //Echarts绘制温湿度折线图
       console.log(dataArr)
       const THecharts = echarts.init(this.$refs.THecharts)
+      // var option = {
+      //   title: {
+      //     text: '未来24小时温湿度',
+      //   },
+      //   tooltip: {
+      //     trigger: 'axis',
+      //     axisPointer: {
+      //       animation: false,
+      //     },
+      //   },
+      //   xAxis: {
+      //     type: 'time',
+      //     splitLine: {
+      //       show: false,
+      //     },
+      //   },
+      //   yAxis: {
+      //     type: 'value',
+      //     boundaryGap: [0, '100%'],
+      //     splitLine: {
+      //       show: false,
+      //     },
+      //   },
+      //   legend: {
+      //     data: clusterList,
+      //   },
+      //   toolbox: {
+      //     show: true,
+      //     feature: {
+      //       dataZoom: {
+      //         yAxisIndex: 'none',
+      //       },
+      //       // dataView: { readOnly: false },
+      //       restore: {},
+      //       saveAsImage: {},
+      //     },
+      //   },
+      //   grid: {
+      //     left: '3%',
+      //     right: '4%',
+      //     bottom: '2%',
+      //     containLabel: true,
+      //   },
+      //   series: seriesData,
+      // }
+      var timeList = []
+
+      dataArr.forEach((element) => {
+        var time = new Date(element.fxTime)
+        timeList.push(time.getHours())
+      })
+      var tempList = []
+      var humidList = []
+      dataArr.forEach((element) => {
+        tempList.push(element.temp)
+        humidList.push(element.humidity)
+      })
+      console.log(timeList)
+      var option = {
+        title: {
+          text: '未来24小时温湿度预报',
+        },
+        tooltip: {
+          trigger: 'axis',
+        },
+        // legend: {
+        //   data: ,
+        // },
+        toolbox: {
+          show: true,
+          feature: {
+            dataZoom: {
+              yAxisIndex: 'none',
+            },
+            // dataView: { readOnly: false },
+            restore: {},
+            saveAsImage: {},
+          },
+        },
+        xAxis: {
+          type: 'category',
+          data: timeList,
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: {
+            formatter: '{value} °C',
+          },
+        },
+        series: [
+          {
+            data: tempList,
+            type: 'line',
+          },
+          {
+            data: humidList,
+            type: 'line',
+          },
+        ],
+      }
+      THecharts.setOption(option)
+      window.onresize = () => {
+        THecharts.resize()
+      }
     },
   },
   mounted() {
