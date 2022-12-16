@@ -21,8 +21,10 @@
 
 <style lang="less" scoped>
 .el-container,
-.el-main {
-  height: 100%;
+.el-main,
+.el-aside {
+  // 与CommonAside中的el-menu配合使用
+  height: calc(100vh - 60px);
 }
 .el-header {
   padding: 0;

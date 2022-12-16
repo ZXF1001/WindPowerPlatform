@@ -11,6 +11,17 @@
         <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
       </div>
     </el-card>
+    <el-card>
+      <!-- 温湿度折线图 -->
+      <div class="linechart"
+           ref="THecharts"></div>
+    </el-card>
+    <el-card>
+      <!-- 风速风向折线图 -->
+      <div class="linechart"
+           ref="WSWDecharts"></div>
+    </el-card>
+
     <el-card class="future">
       <h2>未来24小时天气</h2>
       <p>{{hourlyUpdateTime?"最近更新时间："+hourlyUpdateTime:"更新中"}}</p>
@@ -58,6 +69,7 @@ export default {
           console.log(res)
           if (res.data.code == '200') {
             this.hourlyWeather = res.data.hourly
+            this.drawTempAndHumid(res.data.hourly)
             var now = new Date(res.data.updateTime)
             var Month = now.getMonth() + 1
             var Day = now.getDay()
@@ -69,15 +81,13 @@ export default {
             }:${Minute < 10 ? '0' + Minute : Minute}:${
               Second < 10 ? '0' + Second : Second
             }`
-
-            console.log(this.hourlyUpdateTime)
           }
         })
         .catch((e) => {
           console.log(e)
         })
     },
-    drawNowWeather(lat, lng) {
+    fetchNowWeather(lat, lng) {
       getNowWeather(lat, lng)
         .then((res) => {
           if (res.data.code == '200') {
@@ -99,10 +109,14 @@ export default {
           console.log(e)
         })
     },
+    drawTempAndHumid(dataArr) {
+      console.log(dataArr)
+      const THecharts = echarts.init(this.$refs.THecharts)
+    },
   },
   mounted() {
     this.draw24hWeather(121, 30)
-    this.drawNowWeather(121, 30)
+    this.fetchNowWeather(121, 30)
   },
 }
 </script>
@@ -119,6 +133,9 @@ export default {
 }
 h2 {
   margin-top: 0px;
+}
+.linechart {
+  height: 300px;
 }
 .future {
   .hourlyDatas {

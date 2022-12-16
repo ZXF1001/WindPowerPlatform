@@ -7,14 +7,15 @@
 
 <script>
 import * as echarts from 'echarts'
-import { getOverviewRecentLineData } from '../../api/overview/getLineData'
-import { getOverviewTimelyLineData } from '../../api/overview/getLineData'
+import {
+  getOverviewRecentLineData,
+  getOverviewTimelyLineData,
+} from '../../api/overview/getLineData'
 export default {
   data() {
     return {
       lineData: {},
       latestDate: null,
-
       timer: null,
     }
   },
