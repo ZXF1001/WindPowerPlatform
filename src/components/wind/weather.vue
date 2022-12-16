@@ -355,7 +355,7 @@ export default {
             animationDuration: 0,
             symbol: 'arrow',
             symbolSize: [8, 15],
-            symbolRotate: (value) => -value[2],
+            symbolRotate: (value) => 180 - value[2],
           },
         ],
       }
@@ -367,16 +367,17 @@ export default {
     },
   },
   mounted() {
-    this.draw24hWeather(121, 30)
-    this.fetchNowWeather(121, 30)
+    const latlng = [121.182329, 31.906801]
+    this.draw24hWeather(latlng[0], latlng[1])
+    this.fetchNowWeather(latlng[0], latlng[1])
     window.onresize = () => {
       this.Techart.resize()
       this.Hechart.resize()
       this.Wechart.resize()
     }
     this.timer = setInterval(() => {
-      this.draw24hWeather(121, 30)
-      this.fetchNowWeather(121, 30)
+      this.draw24hWeather(latlng[0], latlng[1])
+      this.fetchNowWeather(latlng[0], latlng[1])
     }, 1000 * 60 * 5)
   },
   beforeDestroy() {
@@ -444,6 +445,6 @@ h2 {
   margin-top: 0px;
 }
 .linechart {
-  height: 300px;
+  height: 280px;
 }
 </style>
