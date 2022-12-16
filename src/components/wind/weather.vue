@@ -2,19 +2,31 @@
   <div>
     <el-card class="now">
       <h2>当前天气</h2>
-      <p>{{updateTime?"最近更新时间："+updateTime:"更新中"}}
-      </p>
+      <p>{{nowUpdateTime?"最近更新时间："+nowUpdateTime:"更新中"}}</p>
       <div class="weatherdata">
-        <span v-if="weatherNow.temp">温度：{{weatherNow.temp}}°C</span>
-        <span v-if="weatherNow.humidity">湿度：{{weatherNow.humidity}}%</span>
-        <span v-if="weatherNow.windSpeed">风速：{{weatherNow.windSpeed}}m/s</span>
-        <span v-if="weatherNow.windDir">风向：{{weatherNow.windDir}}</span>
-        <span v-if="weatherNow.wind360">角度：{{weatherNow.wind360}}°</span>
+        <span v-if="nowWeather.temp">温度：{{nowWeather.temp}}°C</span>
+        <span v-if="nowWeather.humidity">湿度：{{nowWeather.humidity}}%</span>
+        <span v-if="nowWeather.windSpeed">风速：{{nowWeather.windSpeed}}m/s</span>
+        <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}</span>
+        <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
       </div>
     </el-card>
-    <el-card class="
-              future">
+    <el-card class="future">
       <h2>未来24小时天气</h2>
+      <p>{{hourlyUpdateTime?"最近更新时间："+hourlyUpdateTime:"更新中"}}</p>
+      <div class="hourlyDatas">
+        <div v-for="item in hourlyWeather"
+             :key="item.fxTime"
+             class="hourlyData">
+          <span v-if="item.fxTime"
+                class="time">时间：{{returnDayHour(item.fxTime)}}</span>
+          <span v-if="item.temp">温度：{{item.temp}}°C</span>
+          <span v-if="item.humidity">湿度：{{item.humidity}}%</span>
+          <span v-if="item.windSpeed">风速：{{item.windSpeed}}m/s</span>
+          <span v-if="item.windDir">风向：{{item.windDir}}</span>
+          <span v-if="item.wind360">角度：{{item.wind360}}°</span>
+        </div>
+      </div>
     </el-card>
   </div>
 </template>
@@ -25,15 +37,41 @@ import * as echarts from 'echarts'
 export default {
   data() {
     return {
-      updateTime: null,
-      weatherNow: {},
+      nowUpdateTime: null,
+      hourlyUpdateTime: null,
+      nowWeather: {},
+      hourlyWeather: [],
     }
   },
   methods: {
+    returnDayHour(date) {
+      // 输入json日期时间，返回屏幕显示的日期时间
+      var dateObj = new Date(date)
+      var Day = dateObj.getDay()
+      var Hour = dateObj.getHours()
+      var returnTime = `${Day}日${Hour < 10 ? '0' + Hour : Hour}时`
+      return returnTime
+    },
     draw24hWeather(lat, lng) {
       get24hWeather(lat, lng)
         .then((res) => {
           console.log(res)
+          if (res.data.code == '200') {
+            this.hourlyWeather = res.data.hourly
+            var now = new Date(res.data.updateTime)
+            var Month = now.getMonth() + 1
+            var Day = now.getDay()
+            var Hour = now.getHours()
+            var Minute = now.getMinutes()
+            var Second = now.getSeconds()
+            this.hourlyUpdateTime = `${Month}月${Day}日 ${
+              Hour < 10 ? '0' + Hour : Hour
+            }:${Minute < 10 ? '0' + Minute : Minute}:${
+              Second < 10 ? '0' + Second : Second
+            }`
+
+            console.log(this.hourlyUpdateTime)
+          }
         })
         .catch((e) => {
           console.log(e)
@@ -43,15 +81,14 @@ export default {
       getNowWeather(lat, lng)
         .then((res) => {
           if (res.data.code == '200') {
-            console.log(res.data.now)
-            this.weatherNow = res.data.now
+            this.nowWeather = res.data.now
             var now = new Date(res.data.now.obsTime)
             var Month = now.getMonth() + 1
             var Day = now.getDay()
             var Hour = now.getHours()
             var Minute = now.getMinutes()
             var Second = now.getSeconds()
-            this.updateTime = `${Month}月${Day}日 ${
+            this.nowUpdateTime = `${Month}月${Day}日 ${
               Hour < 10 ? '0' + Hour : Hour
             }:${Minute < 10 ? '0' + Minute : Minute}:${
               Second < 10 ? '0' + Second : Second
@@ -82,5 +119,18 @@ export default {
 }
 h2 {
   margin-top: 0px;
+}
+.future {
+  .hourlyDatas {
+    overflow-x: scroll;
+    display: flex;
+    justify-content: space-between;
+    .hourlyData {
+      span {
+        display: block;
+        width: 150px;
+      }
+    }
+  }
 }
 </style>
