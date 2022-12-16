@@ -1,16 +1,42 @@
 <template>
   <div>
-    <el-card class="now">
-      <h2>当前天气</h2>
-      <p>{{nowUpdateTime?"最近更新时间："+nowUpdateTime:"更新中"}}</p>
-      <div class="weatherdata">
-        <span v-if="nowWeather.temp">温度：{{nowWeather.temp}}°C</span>
-        <span v-if="nowWeather.humidity">湿度：{{nowWeather.humidity}}%</span>
-        <span v-if="nowWeather.windSpeed">风速：{{nowWeather.windSpeed}}m/s</span>
-        <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}</span>
-        <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
-      </div>
-    </el-card>
+    <el-row>
+      <!-- 左栏 -->
+      <el-col :span="5">
+        <el-card class="now">
+          <h2>当前天气</h2>
+          <p>{{nowUpdateTime?"最近更新时间："+nowUpdateTime:"更新中"}}</p>
+          <div class="weatherdata">
+            <span v-if="nowWeather.temp">温度：{{nowWeather.temp}}°C</span>
+            <span v-if="nowWeather.humidity">湿度：{{nowWeather.humidity}}%</span>
+            <span v-if="nowWeather.windSpeed">风速：{{nowWeather.windSpeed}}km/h</span>
+            <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}</span>
+            <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
+          </div>
+        </el-card>
+      </el-col>
+      <!-- 右栏 -->
+      <el-col :span="19">
+        <el-card class="future">
+          <h2>未来24小时天气</h2>
+          <p>{{hourlyUpdateTime?"最近更新时间："+hourlyUpdateTime:"更新中"}}</p>
+          <div class="hourlyDatas scroller">
+            <div v-for="item in hourlyWeather"
+                 :key="item.fxTime"
+                 class="hourlyData">
+              <span v-if="item.fxTime"
+                    class="time">时间：{{returnDayHour(item.fxTime)}}</span>
+              <span v-if="item.temp">温度：{{item.temp}}°C</span>
+              <span v-if="item.humidity">湿度：{{item.humidity}}%</span>
+              <span v-if="item.windSpeed">风速：{{item.windSpeed}}km/h</span>
+              <span v-if="item.windDir">风向：{{item.windDir}}</span>
+              <span v-if="item.wind360">角度：{{item.wind360}}°</span>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <div class="row">
       <el-card>
         <!-- 温湿度折线图 -->
@@ -26,26 +52,9 @@
     <el-card>
       <!-- 风速风向折线图 -->
       <div class="linechart"
-           ref="WSWDecharts"></div>
+           ref="Wecharts"></div>
     </el-card>
 
-    <el-card class="future">
-      <h2>未来24小时天气</h2>
-      <p>{{hourlyUpdateTime?"最近更新时间："+hourlyUpdateTime:"更新中"}}</p>
-      <div class="hourlyDatas">
-        <div v-for="item in hourlyWeather"
-             :key="item.fxTime"
-             class="hourlyData">
-          <span v-if="item.fxTime"
-                class="time">时间：{{returnDayHour(item.fxTime)}}</span>
-          <span v-if="item.temp">温度：{{item.temp}}°C</span>
-          <span v-if="item.humidity">湿度：{{item.humidity}}%</span>
-          <span v-if="item.windSpeed">风速：{{item.windSpeed}}m/s</span>
-          <span v-if="item.windDir">风向：{{item.windDir}}</span>
-          <span v-if="item.wind360">角度：{{item.wind360}}°</span>
-        </div>
-      </div>
-    </el-card>
   </div>
 </template>
 
@@ -61,8 +70,8 @@ export default {
       hourlyWeather: [],
       Techart: null,
       Hechart: null,
+      Wechart: null,
       timer: null,
-      Htimer: null,
     }
   },
   methods: {
@@ -77,10 +86,12 @@ export default {
     draw24hWeather(lat, lng) {
       get24hWeather(lat, lng)
         .then((res) => {
+          console.log(res.data.hourly)
           if (res.data.code == '200') {
             this.hourlyWeather = res.data.hourly
             this.drawTemp(res.data.hourly)
             this.drawHumid(res.data.hourly)
+            this.drawWind(res.data.hourly)
             var now = new Date(res.data.updateTime)
             var Month = now.getMonth() + 1
             var Day = now.getDay()
@@ -162,22 +173,13 @@ export default {
         grid: {
           containLabel: true,
           left: '2%',
-          right: '2%',
+          right: '3%',
           bottom: '2%',
         },
-        toolbox: {
-          show: true,
-          feature: {
-            // dataView: { readOnly: false },
-            saveAsImage: {},
-          },
-        },
+
         xAxis: {
           type: 'time',
           splitNumber: 11,
-          // axisTick: {
-          //   alignWithLabel: true,
-          // },
         },
         yAxis: {
           type: 'value',
@@ -242,16 +244,16 @@ export default {
         grid: {
           containLabel: true,
           left: '2%',
-          right: '2%',
+          right: '3%',
           bottom: '2%',
         },
-        toolbox: {
-          show: true,
-          feature: {
-            // dataView: { readOnly: false },
-            saveAsImage: {},
-          },
-        },
+        // toolbox: {
+        //   show: true,
+        //   feature: {
+        //     // dataView: { readOnly: false },
+        //     saveAsImage: {},
+        //   },
+        // },
         xAxis: {
           type: 'time',
 
@@ -287,6 +289,82 @@ export default {
       //   Hecharts.resize()
       // }
     },
+    drawWind(dataArr) {
+      const Wecharts = echarts.init(this.$refs.Wecharts)
+      var windList = []
+      dataArr.forEach((element) => {
+        var time = new Date(element.fxTime)
+        var chartTime =
+          time.getFullYear() +
+          '/' +
+          (time.getMonth() + 1) +
+          '/' +
+          time.getDate() +
+          ' ' +
+          time.getHours() +
+          ':' +
+          time.getMinutes() +
+          ':' +
+          time.getSeconds()
+
+        windList.push({
+          name: time.toString(),
+          value: [chartTime, element.windSpeed, element.wind360],
+        })
+        // timeList.push(time.getHours())
+      })
+      var option = {
+        color: '#73c0de',
+        title: {
+          text: '未来24小时风速风向预报',
+        },
+        tooltip: {
+          trigger: 'axis',
+          // formatter:{}
+        },
+
+        grid: {
+          containLabel: true,
+          left: '2%',
+          right: '3%',
+          bottom: '2%',
+        },
+
+        xAxis: {
+          type: 'time',
+
+          splitNumber: 11,
+          // axisTick: {
+          //   alignWithLabel: true,
+          // },
+        },
+        yAxis: [
+          {
+            type: 'value',
+            axisLabel: {
+              formatter: '{value} km/h',
+            },
+          },
+        ],
+        series: [
+          {
+            name: '风速',
+            data: windList,
+            type: 'line',
+            smooth: true,
+            animationDuration: 0,
+            symbol: 'arrow',
+            symbolSize: [8, 15],
+            symbolRotate: (value) => -value[2],
+          },
+        ],
+      }
+      Wecharts.setOption(option)
+      this.Wechart = Wecharts
+      // window.onresize = () => {
+      //   Hecharts.resize()
+      // }
+    },
   },
   mounted() {
     this.draw24hWeather(121, 30)
@@ -294,6 +372,7 @@ export default {
     window.onresize = () => {
       this.Techart.resize()
       this.Hechart.resize()
+      this.Wechart.resize()
     }
     this.timer = setInterval(() => {
       this.draw24hWeather(121, 30)
@@ -311,15 +390,49 @@ export default {
 
 <style lang="less" scoped>
 .now {
-  width: 30%;
-  margin-bottom: 10px;
+  width: 95%;
+  height: 280px;
   .weatherdata {
     span {
       display: block;
     }
   }
 }
+.future {
+  height: 280px;
+  .hourlyDatas {
+    overflow-x: scroll;
+    display: flex;
+    justify-content: space-between;
+    .hourlyData {
+      margin-bottom: 10px;
+      span {
+        display: block;
+        width: 180px;
+      }
+    }
+  }
+  .scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 9px;
+  }
+
+  .scroller::-webkit-scrollbar-track {
+    background-color: #f9f9f9;
+    -webkit-border-radius: 2em;
+    -moz-border-radius: 2em;
+    border-radius: 2em;
+  }
+  .scroller::-webkit-scrollbar-thumb {
+    background-color: #dedede;
+    -webkit-border-radius: 2em;
+    -moz-border-radius: 2em;
+    border-radius: 2em;
+  }
+}
+
 .row {
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
@@ -332,18 +445,5 @@ h2 {
 }
 .linechart {
   height: 300px;
-}
-.future {
-  .hourlyDatas {
-    overflow-x: scroll;
-    display: flex;
-    justify-content: space-between;
-    .hourlyData {
-      span {
-        display: block;
-        width: 150px;
-      }
-    }
-  }
 }
 </style>

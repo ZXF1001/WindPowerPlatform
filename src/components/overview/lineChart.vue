@@ -1,5 +1,5 @@
 <template>
-  <el-card>
+  <el-card v-loading="loading">
     <div class="linechart"
          ref="echarts1"></div>
   </el-card>
@@ -14,6 +14,7 @@ import {
 export default {
   data() {
     return {
+      loading: true,
       lineData: {},
       latestDate: null,
       timer: null,
@@ -101,6 +102,7 @@ export default {
       window.onresize = () => {
         echarts1.resize()
       }
+      this.loading = false
       this.updateLineData(seriesData, echarts1, option)
     },
     updateLineData(seriesData, echartsObj, echartsOption) {

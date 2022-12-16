@@ -1,5 +1,6 @@
 <template>
-  <div style="margin-right:10px">
+  <div v-loading="loading"
+       style="margin-right:10px">
     <!-- 左栏 -->
     <div class="num-info">
       <!-- 左上的四块数字 -->
@@ -47,6 +48,7 @@ import { getOverviewNumData } from '../../api/overview/getNumData'
 export default {
   data() {
     return {
+      loading: true,
       numData: {
         runNum: '加载中',
         totalNum: '加载中',
@@ -65,6 +67,7 @@ export default {
           .then((res) => {
             this.numData = res.data.numData
             this.tableData = res.data.tableData
+            this.loading = false
           })
           .catch((e) => {
             console.log(e)
