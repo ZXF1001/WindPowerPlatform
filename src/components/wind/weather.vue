@@ -61,6 +61,8 @@ export default {
       hourlyWeather: [],
       Techart: null,
       Hechart: null,
+      timer: null,
+      Htimer: null,
     }
   },
   methods: {
@@ -79,7 +81,6 @@ export default {
             this.hourlyWeather = res.data.hourly
             this.drawTemp(res.data.hourly)
             this.drawHumid(res.data.hourly)
-
             var now = new Date(res.data.updateTime)
             var Month = now.getMonth() + 1
             var Day = now.getDay()
@@ -115,6 +116,8 @@ export default {
             }:${Minute < 10 ? '0' + Minute : Minute}:${
               Second < 10 ? '0' + Second : Second
             }`
+          } else {
+            //执行没得到数据的代码
           }
         })
         .catch((e) => {
@@ -292,6 +295,16 @@ export default {
       this.Techart.resize()
       this.Hechart.resize()
     }
+    this.timer = setInterval(() => {
+      this.draw24hWeather(121, 30)
+      this.fetchNowWeather(121, 30)
+    }, 1000 * 60 * 5)
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
   },
 }
 </script>
@@ -309,6 +322,7 @@ export default {
 .row {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 10px;
   .el-card {
     width: 49.5%;
   }

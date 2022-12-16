@@ -66,7 +66,6 @@ export default {
           smooth: true,
         })
       })
-      console.log(seriesData)
       var option = {
         title: {
           text: '时变数据折线图',
@@ -84,7 +83,7 @@ export default {
           type: 'value',
           boundaryGap: [0, '100%'],
           splitLine: {
-            show: false,
+            // show: false,
           },
         },
         legend: {
