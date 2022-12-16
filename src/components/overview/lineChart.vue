@@ -32,7 +32,8 @@ export default {
     drawLineData(data) {
       const echarts1 = echarts.init(this.$refs.echarts1)
       var seriesData = []
-      var clusterList = Object.keys(data[0].value) // clusterList : ["cluster1","cluster2",...]
+      var clusterList = Object.keys(data[0].value)
+      // clusterList : ["cluster1","cluster2",...]
       clusterList.forEach((cluster) => {
         var lineData = []
         data.forEach((dateItem) => {
@@ -65,7 +66,7 @@ export default {
           smooth: true,
         })
       })
-
+      console.log(seriesData)
       var option = {
         title: {
           text: '时变数据折线图',
@@ -78,9 +79,6 @@ export default {
         },
         xAxis: {
           type: 'time',
-          splitLine: {
-            show: false,
-          },
         },
         yAxis: {
           type: 'value',
@@ -90,7 +88,7 @@ export default {
           },
         },
         legend: {
-          data: clusterList,
+          // data: clusterList,
         },
         grid: {
           left: '3%',
