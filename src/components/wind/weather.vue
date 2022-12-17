@@ -86,7 +86,6 @@ export default {
     draw24hWeather(lat, lng) {
       get24hWeather(lat, lng)
         .then((res) => {
-          console.log(res.data.hourly)
           if (res.data.code == '200') {
             this.hourlyWeather = res.data.hourly
             this.drawTemp(res.data.hourly)
