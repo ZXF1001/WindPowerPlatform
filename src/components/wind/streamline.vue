@@ -20,10 +20,23 @@ export default {
       var baseLayers = {}
       // 从底图列表baseLayers.json文件中读取底图
       baseLayersData.forEach((element) => {
-        baseLayers[element.name] = L.tileLayer(element.url, {
-          minZoom: element.minZoom,
-          maxZoom: element.maxZoom,
-        })
+        if ('annotationUrl' in element) {
+          //底图的标注annotation也要加进来
+          var map = L.tileLayer(element.url, {
+            minZoom: element.minZoom,
+            maxZoom: element.maxZoom,
+          })
+          var annotation = L.tileLayer(element.annotationUrl, {
+            minZoom: element.minZoom,
+            maxZoom: element.maxZoom,
+          })
+          baseLayers[element.name] = L.layerGroup([map, annotation])
+        } else {
+          baseLayers[element.name] = L.tileLayer(element.url, {
+            minZoom: element.minZoom,
+            maxZoom: element.maxZoom,
+          })
+        }
       })
       //定义map对象
       var map = L.map('map1', {

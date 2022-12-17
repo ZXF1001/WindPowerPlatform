@@ -63,13 +63,15 @@
     "name": "天地图卫星",
     "url": "http://t0.tianditu.gov.cn/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={z}&TileRow={y}&TileCol={x}&style=default&format=tiles&tk=9e888cc799f9e890369bf6c08bba4bf3",
     "minZoom": 1,
-    "maxZoom": 18
+    "maxZoom": 18,
+    "annotationUrl": "http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=9e888cc799f9e890369bf6c08bba4bf3"
   },
   {
     "name": "天地图地形",
     "url": "http://t0.tianditu.gov.cn/ter_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ter&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TileMatrix={z}&TileRow={y}&TileCol={x}&tk=9e888cc799f9e890369bf6c08bba4bf3",
     "minZoom": 1,
-    "maxZoom": 18
+    "maxZoom": 18,
+    "annotationUrl": "http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=9e888cc799f9e890369bf6c08bba4bf3"
   },
   {
     "name": "Thunderforest-Landscape",
