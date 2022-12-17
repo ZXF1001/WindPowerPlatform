@@ -64,7 +64,8 @@ export default {
         .addTo(map)
 
       var imageUrl =
-        'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg'
+        'https://www.energychina.press/fileNFNYJS/journal/article/nfnyjs/2017/1/PIC/2095-8676-04-01-006-F008.jpg'
+      // 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg'
 
       const point1 = [41.55, 115.3]
       const point2 = [41.05, 114.8]
