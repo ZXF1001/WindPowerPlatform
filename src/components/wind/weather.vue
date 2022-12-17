@@ -162,7 +162,7 @@ export default {
       var option = {
         color: '#ee6666',
         title: {
-          text: '未来24小时温度预报',
+          text: '未来24小时温度',
         },
         tooltip: {
           trigger: 'axis',
@@ -234,7 +234,7 @@ export default {
       var option = {
         color: '#5470c6',
         title: {
-          text: '未来24小时湿度预报',
+          text: '未来24小时湿度',
         },
         tooltip: {
           trigger: 'axis',
@@ -311,12 +311,11 @@ export default {
           name: time.toString(),
           value: [chartTime, element.windSpeed, element.wind360],
         })
-        // timeList.push(time.getHours())
       })
       var option = {
         color: '#73c0de',
         title: {
-          text: '未来24小时风速风向预报',
+          text: '未来24小时风速风向',
         },
         tooltip: {
           trigger: 'axis',

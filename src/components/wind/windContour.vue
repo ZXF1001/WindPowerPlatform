@@ -61,6 +61,18 @@ export default {
           'http://t0.tianditu.gov.cn/ter_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ter&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TileMatrix={z}&TileRow={y}&TileCol={x}&tk=9e888cc799f9e890369bf6c08bba4bf3',
           { minZoom: 1, maxZoom: 18 }
         ),
+        'Thunderforest-Landscape': L.tileLayer(
+          'https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=9ceb45fae79844f7a88afd27aa351aad',
+          { minZoom: 1, maxZoom: 20 }
+        ),
+        'Thunderforest-OpenCycleMap': L.tileLayer(
+          'https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=9ceb45fae79844f7a88afd27aa351aad',
+          { minZoom: 1, maxZoom: 20 }
+        ),
+        'Thunderforest-Outdoors': L.tileLayer(
+          'https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=9ceb45fae79844f7a88afd27aa351aad',
+          { minZoom: 1, maxZoom: 20 }
+        ),
       }
       //定义map对象
       var map = L.map('map2', {
