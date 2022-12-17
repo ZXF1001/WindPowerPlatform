@@ -43,7 +43,7 @@ export default {
           {},
           {
             position: 'topright',
-            collapsed: false,
+            collapsed: true,
           }
         )
         .addTo(map)
