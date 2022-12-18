@@ -1,6 +1,6 @@
 # wind-power-platform
 
-完成框架的搭建
+继续推进
 
 ## Project setup
 
