@@ -9,8 +9,8 @@
           <div class="weatherdata">
             <span v-if="nowWeather.temp">温度：{{nowWeather.temp}}°C</span>
             <span v-if="nowWeather.humidity">湿度：{{nowWeather.humidity}}%</span>
-            <span v-if="nowWeather.windSpeed">风速：{{nowWeather.windSpeed}}km/h</span>
-            <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}</span>
+            <span v-if="nowWeather.windSpeed">风速：{{nowWeather.windSpeed}}m/s</span>
+            <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}风</span>
             <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
           </div>
         </el-card>
@@ -18,19 +18,18 @@
       <!-- 右栏 -->
       <el-col :span="19">
         <el-card class="future">
-          <h2>未来24小时天气</h2>
-          <p>{{hourlyUpdateTime?"最近更新时间："+hourlyUpdateTime:"更新中"}}</p>
+          <h2>未来五天天气</h2>
           <div class="hourlyDatas scroller">
             <div v-for="item in hourlyWeather"
-                 :key="item.fxTime"
+                 :key="item.dt"
                  class="hourlyData">
-              <span v-if="item.fxTime"
-                    class="time">时间：{{returnDayHour(item.fxTime)}}</span>
-              <span v-if="item.temp">温度：{{item.temp}}°C</span>
-              <span v-if="item.humidity">湿度：{{item.humidity}}%</span>
-              <span v-if="item.windSpeed">风速：{{item.windSpeed}}km/h</span>
-              <span v-if="item.windDir">风向：{{item.windDir}}</span>
-              <span v-if="item.wind360">角度：{{item.wind360}}°</span>
+              <span v-if="item.dt"
+                    class="time">时间：{{returnDayHour(1000*item.dt)}}</span>
+              <span v-if="item.main.temp">温度：{{item.main.temp}}°C</span>
+              <span v-if="item.main.humidity">湿度：{{item.main.humidity}}%</span>
+              <span v-if="item.wind.speed">风速：{{item.wind.speed}}m/s</span>
+              <span v-if="item.wind.Dir">风向：{{item.wind.Dir}}风</span>
+              <span v-if="item.wind.deg">角度：{{item.wind.deg}}°</span>
             </div>
           </div>
         </el-card>
@@ -59,13 +58,12 @@
 </template>
 
 <script>
-import { get24hWeather, getNowWeather } from '../../api/wind/getQweather'
+import { get5DayWeather, getNowWeather } from '../../api/wind/getOpenWeather'
 import * as echarts from 'echarts'
 export default {
   data() {
     return {
       nowUpdateTime: null,
-      hourlyUpdateTime: null,
       nowWeather: {},
       hourlyWeather: [],
       Techart: null,
@@ -83,25 +81,27 @@ export default {
       var returnTime = `${Day}日${Hour < 10 ? '0' + Hour : Hour}时`
       return returnTime
     },
-    draw24hWeather(lat, lng) {
-      get24hWeather(lat, lng)
+    draw5DayWeather(lat, lng) {
+      get5DayWeather(lat, lng)
         .then((res) => {
-          if (res.data.code == '200') {
-            this.hourlyWeather = res.data.hourly
-            this.drawTemp(res.data.hourly)
-            this.drawHumid(res.data.hourly)
-            this.drawWind(res.data.hourly)
-            var now = new Date(res.data.updateTime)
-            var Month = now.getMonth() + 1
-            var Day = now.getDate()
-            var Hour = now.getHours()
-            var Minute = now.getMinutes()
-            var Second = now.getSeconds()
-            this.hourlyUpdateTime = `${Month}月${Day}日 ${
-              Hour < 10 ? '0' + Hour : Hour
-            }:${Minute < 10 ? '0' + Minute : Minute}:${
-              Second < 10 ? '0' + Second : Second
-            }`
+          if (res.data.cod == '200') {
+            this.hourlyWeather = res.data.list
+            res.data.list.forEach((timeData) => {
+              timeData.wind.Dir = [
+                '北',
+                '东北',
+                '东',
+                '东南',
+                '南',
+                '西南',
+                '西',
+                '西北',
+                '北',
+              ][Math.round(timeData.wind.deg / 45)]
+            })
+            this.drawTemp(res.data.list)
+            this.drawHumid(res.data.list)
+            this.drawWind(res.data.list)
           } else {
             //执行没得到数据的代码
           }
@@ -113,9 +113,26 @@ export default {
     fetchNowWeather(lat, lng) {
       getNowWeather(lat, lng)
         .then((res) => {
-          if (res.data.code == '200') {
-            this.nowWeather = res.data.now
-            var now = new Date(res.data.now.obsTime)
+          if (res.data.cod == '200') {
+            this.nowWeather = {
+              temp: res.data.main.temp,
+              humidity: res.data.main.humidity,
+              windSpeed: res.data.wind.speed,
+              wind360: res.data.wind.deg,
+              windGust: res.data.wind.gust,
+              windDir: [
+                '北',
+                '东北',
+                '东',
+                '东南',
+                '南',
+                '西南',
+                '西',
+                '西北',
+                '北',
+              ][Math.round(res.data.wind.deg / 45)],
+            }
+            var now = new Date(1000 * res.data.dt)
             var Month = now.getMonth() + 1
             var Day = now.getDate()
             var Hour = now.getHours()
@@ -135,12 +152,13 @@ export default {
         })
     },
     drawTemp(dataArr) {
+      console.log(dataArr)
       //Echarts绘制温度折线图
       const Techarts = echarts.init(this.$refs.Techarts)
       var tempList = []
       //时间列表获取
       dataArr.forEach((element) => {
-        var time = new Date(element.fxTime)
+        var time = new Date(1000 * element.dt)
         var chartTime =
           time.getFullYear() +
           '/' +
@@ -155,13 +173,13 @@ export default {
           time.getSeconds()
         tempList.push({
           name: time.toString(),
-          value: [chartTime, element.temp],
+          value: [chartTime, element.main.temp],
         })
       })
       var option = {
         color: '#ee6666',
         title: {
-          text: '未来24小时温度',
+          text: '未来五天温度',
         },
         tooltip: {
           trigger: 'axis',
@@ -178,7 +196,7 @@ export default {
 
         xAxis: {
           type: 'time',
-          splitNumber: 11,
+          splitNumber: 9,
         },
         yAxis: {
           type: 'value',
@@ -193,9 +211,6 @@ export default {
           type: 'line',
           smooth: true,
           // animationDuration: 0,
-          emphasis: {
-            focus: 'series',
-          },
         },
       }
       Techarts.setOption(option)
@@ -207,7 +222,7 @@ export default {
       var humidList = []
       //时间列表获取
       dataArr.forEach((element) => {
-        var time = new Date(element.fxTime)
+        var time = new Date(1000 * element.dt)
         var chartTime =
           time.getFullYear() +
           '/' +
@@ -223,14 +238,13 @@ export default {
 
         humidList.push({
           name: time.toString(),
-          value: [chartTime, element.humidity],
+          value: [chartTime, element.main.humidity],
         })
-        // timeList.push(time.getHours())
       })
       var option = {
         color: '#5470c6',
         title: {
-          text: '未来24小时湿度',
+          text: '未来五天湿度',
         },
         tooltip: {
           trigger: 'axis',
@@ -253,7 +267,7 @@ export default {
         xAxis: {
           type: 'time',
 
-          splitNumber: 11,
+          splitNumber: 9,
           // axisTick: {
           //   alignWithLabel: true,
           // },
@@ -272,9 +286,6 @@ export default {
             data: humidList,
             type: 'line',
             smooth: true,
-            emphasis: {
-              focus: 'series',
-            },
           },
         ],
       }
@@ -288,7 +299,7 @@ export default {
       const Wecharts = echarts.init(this.$refs.Wecharts)
       var windList = []
       dataArr.forEach((element) => {
-        var time = new Date(element.fxTime)
+        var time = new Date(1000 * element.dt)
         var chartTime =
           time.getFullYear() +
           '/' +
@@ -304,13 +315,13 @@ export default {
 
         windList.push({
           name: time.toString(),
-          value: [chartTime, element.windSpeed, element.wind360],
+          value: [chartTime, element.wind.speed, element.wind.deg],
         })
       })
       var option = {
         color: '#73c0de',
         title: {
-          text: '未来24小时风速风向',
+          text: '未来五天风速风向',
         },
         tooltip: {
           trigger: 'axis',
@@ -336,7 +347,7 @@ export default {
           {
             type: 'value',
             axisLabel: {
-              formatter: '{value} km/h',
+              formatter: '{value} m/s',
             },
           },
         ],
@@ -346,7 +357,7 @@ export default {
             data: windList,
             type: 'line',
             smooth: true,
-            // animationDuration: 0,
+            animationDuration: 0,
             symbol: 'arrow',
             symbolSize: [8, 15],
             symbolRotate: (value) => 180 - value[2],
@@ -362,7 +373,7 @@ export default {
   },
   mounted() {
     const latlng = [31.906801, 121.182329]
-    this.draw24hWeather(latlng[0], latlng[1])
+    this.draw5DayWeather(latlng[0], latlng[1])
     this.fetchNowWeather(latlng[0], latlng[1])
     window.onresize = () => {
       this.Techart.resize()
@@ -386,7 +397,7 @@ export default {
 <style lang="less" scoped>
 .now {
   width: 95%;
-  height: 280px;
+  height: 260px;
   .weatherdata {
     span {
       display: block;
@@ -394,10 +405,11 @@ export default {
   }
 }
 .future {
-  height: 280px;
+  height: 260px;
   .hourlyDatas {
-    overflow-x: scroll;
+    overflow-x: auto;
     display: flex;
+
     justify-content: space-between;
     .hourlyData {
       margin-bottom: 10px;

@@ -12,10 +12,15 @@
                  :lazy="true">
       <speed-line></speed-line>
     </el-tab-pane>
-    <el-tab-pane label="天气信息"
+    <el-tab-pane label="和风天气"
                  name="weather"
                  :lazy="true">
       <weather></weather>
+    </el-tab-pane>
+    <el-tab-pane label="openweather"
+                 name="openweather"
+                 :lazy="true">
+      <openweather></openweather>
     </el-tab-pane>
     <el-tab-pane label="流线图"
                  name="streamline"
@@ -36,6 +41,8 @@ import windRosePolar from '../components/wind/windRosePolar.vue'
 import streamline from '../components/wind/streamline.vue'
 import speedLine from '../components/wind/speedLine.vue'
 import weather from '../components/wind/weather.vue'
+import openweather from '../components/wind/openweather.vue'
+
 export default {
   components: {
     windContour,
@@ -43,6 +50,7 @@ export default {
     streamline,
     speedLine,
     weather,
+    openweather,
   },
   data() {
     return {

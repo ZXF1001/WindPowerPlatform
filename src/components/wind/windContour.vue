@@ -32,7 +32,7 @@
 
 <script>
 import 'leaflet/dist/leaflet.css'
-import * as L from 'leaflet/dist/leaflet'
+import L from 'leaflet/dist/leaflet'
 import baseLayersData from '../../json/map/baseLayers.json'
 import { getMyTurbineData } from '../../api/wind/getMapData.js'
 export default {
@@ -201,7 +201,9 @@ export default {
               markerList.push(tempMarker)
             })
 
-            var templayerGroup = L.layerGroup(markerList).addTo(mapObj)
+            var templayerGroup = L.layerGroup(markerList)
+
+            templayerGroup.addTo(mapObj)
             // 定义矩形的地理边界
             var bounds = [
               [bound.left, bound.top],
@@ -216,7 +218,7 @@ export default {
               data: templayerGroup,
             })
           })
-          mapObj.on('zoomend', () => {})
+          // mapObj.on('zoomend', () => {})
         })
         .catch((e) => {
           console.log(e)

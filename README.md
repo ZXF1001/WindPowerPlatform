@@ -1,6 +1,6 @@
 # wind-power-platform
 
-继续推进
+注意：lat 为纬度(-90,90)，lng/lon 是经度(-180,180)
 
 ## Project setup
 

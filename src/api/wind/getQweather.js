@@ -3,9 +3,9 @@ import httpQweather from "../../utils/requestQweather.js";
 export const get24hWeather = (lat, lng) => {
   var url = [
     "/24h?location=",
-    lat,
-    ",",
     lng,
+    ",",
+    lat,
     "&key=a1d4666305e340d2949e735377311cca",
   ].join("");
   return httpQweather.get(url);
@@ -13,9 +13,9 @@ export const get24hWeather = (lat, lng) => {
 export const getNowWeather = (lat, lng) => {
   var url = [
     "/now?location=",
-    lat,
-    ",",
     lng,
+    ",",
+    lat,
     "&key=a1d4666305e340d2949e735377311cca",
   ].join("");
   return httpQweather.get(url);
