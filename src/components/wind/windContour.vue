@@ -1,23 +1,28 @@
 <template>
-  <div>
+  <div style="height=100%">
     <el-card class="floating">
-      <h3 class="title">集群列表<i class="el-icon-arrow-down el-icon--right"
-           @click="collapseItem"></i></h3>
-      <div class="select"
-           v-loading="loading">
-        <el-checkbox :indeterminate="isIndeterminate"
-                     v-model="checkAll"
-                     @change="handleCheckAllChange">全选</el-checkbox>
-        <div style="margin: 15px 0;"></div>
-        <el-checkbox-group v-model="checkedClusters"
-                           @change="handleCheckedClustersChange">
-          <el-checkbox v-for="cluster in clusterOptions"
-                       :label="cluster"
-                       :key="cluster"
-                       style="display: block; padding-top: 10px;">{{cluster}}</el-checkbox>
-
-        </el-checkbox-group>
+      <div class="collapse"
+           @click="collapseItem">
+        <h4 class="title">集群列表<i class="el-icon-arrow-down el-icon--right"></i></h4>
       </div>
+      <el-collapse-transition>
+        <div class="select scroller"
+             v-loading="loading"
+             v-show="isShow">
+          <el-checkbox :indeterminate="isIndeterminate"
+                       v-model="checkAll"
+                       @change="handleCheckAllChange">全选</el-checkbox>
+          <div style="margin: 10px 0;"></div>
+          <el-checkbox-group v-model="checkedClusters"
+                             @change="handleCheckedClustersChange">
+            <el-checkbox v-for="cluster in clusterOptions"
+                         :label="cluster"
+                         :key="cluster"
+                         style="display: block; padding-top: 10px;">{{cluster}}</el-checkbox>
+
+          </el-checkbox-group>
+        </div>
+      </el-collapse-transition>
     </el-card>
     <div id='map2'>
 
@@ -33,6 +38,7 @@ import { getOverviewTurbineData } from '../../api/overview/getMapData.js'
 export default {
   data() {
     return {
+      isShow: true,
       loading: true,
       checkAll: true,
       clusterOptions: [],
@@ -44,7 +50,7 @@ export default {
   },
   methods: {
     collapseItem() {
-      console.log('dd')
+      this.isShow = !this.isShow
     },
     //多选框相关方法
     handleCheckAllChange(val) {
@@ -94,6 +100,8 @@ export default {
         center: [41.05, 114.8],
         zoom: 9,
         layers: baseLayers['天地图地形'], //默认加载图层
+        // zoomAnimation:false,
+        markerZoomAnimation: false,
       })
       // map.dragging.disable() // 禁止平移
       // 定义图层控件
@@ -137,29 +145,34 @@ export default {
       mapObj.addLayer(contourLayer1)
       layerControlObj.addOverlay(contourLayer1, '风场云图')
     },
-    drawMarker(mapObj, layerControlObj) {
+    drawMarker(mapObj) {
       getOverviewTurbineData()
         .then((res) => {
-          console.log(res.data)
-          var myIcon = L.icon({
-            iconUrl:
-              'http://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
-            iconSize: [24, 32],
-            iconAnchor: [14, 32],
-            popupAnchor: [-1, -35],
-          })
+          // 自定义marker的icon
+          // console.log(res.data)
+          // var myIcon = L.icon({
+          //   iconUrl:
+          //     'http://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
+          //   iconSize: [24, 32],
+          //   iconAnchor: [14, 32],
+          //   popupAnchor: [-1, -35],
+          // })
           res.data.forEach((cluster) => {
             this.clusterOptions.push(cluster.cluster_id)
             this.checkedClusters.push(cluster.cluster_id)
             var markerList = []
             cluster.turbine.forEach((turbine) => {
-              var tempMarker = L.marker([turbine.lat, turbine.lng], {
-                icon: myIcon,
-              })
+              // 使用自定icon的marker
+              // var tempMarker = L.marker([turbine.lat, turbine.lng], {
+              //   icon: myIcon,
+              //   opacity: 0.8,
+              // })
+              var tempMarker = L.circleMarker([turbine.lat, turbine.lng])
               var popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
                                   <span>所属集群：${cluster.cluster_id}</span><br>
                                   <span>经度：${turbine.lat}</span><br>
-                                  <span>纬度：${turbine.lng}</span>`
+                                  <span>纬度：${turbine.lng}</span><br>
+                                  <span>高程：${turbine.height}</span>`
               tempMarker.bindPopup(popupContent).openPopup()
               markerList.push(tempMarker)
             })
@@ -199,10 +212,32 @@ export default {
   width: 150px;
   left: 15px;
   top: 15px;
-  .title {
-    margin-top: 0;
-    .el-icon-arrow-down {
-      cursor: pointer;
+  .select {
+    margin-top: 10px;
+    max-height: calc(100vh - 280px);
+    overflow: auto;
+  }
+  .scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 9px;
+  }
+
+  .scroller::-webkit-scrollbar-track {
+    background-color: #f9f9f9;
+    -webkit-border-radius: 2em;
+    -moz-border-radius: 2em;
+    border-radius: 2em;
+  }
+  .scroller::-webkit-scrollbar-thumb {
+    background-color: #dedede;
+    -webkit-border-radius: 2em;
+    -moz-border-radius: 2em;
+    border-radius: 2em;
+  }
+  .collapse {
+    cursor: pointer;
+    .title {
+      margin: 0;
     }
   }
 }

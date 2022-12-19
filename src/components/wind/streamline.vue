@@ -111,10 +111,9 @@ export default {
       mapObj.addLayer(velocityLayer1)
       layerControlObj.addOverlay(velocityLayer1, '风场流线')
       //挂载map对象移动事件（隐藏流线）
-      mapObj.on('move', () => {
-        velocityLayer1.remove()
-      })
+      // mapObj.on('movestart', () => {})
       mapObj.on('moveend', () => {
+        velocityLayer1.remove()
         mapObj.addLayer(velocityLayer1)
       })
     },
