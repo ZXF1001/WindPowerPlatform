@@ -161,7 +161,20 @@ export default {
             this.clusterOptions.push(cluster.cluster_id)
             this.checkedClusters.push(cluster.cluster_id)
             var markerList = []
+            var bound = {
+              top: cluster.turbine[0].lng,
+              bottom: cluster.turbine[0].lng,
+              left: cluster.turbine[0].lat,
+              right: cluster.turbine[0].lat,
+            }
             cluster.turbine.forEach((turbine) => {
+              bound.top = turbine.lng > bound.top ? turbine.lng : bound.top
+              bound.bottom =
+                turbine.lng < bound.bottom ? turbine.lng : bound.bottom
+              bound.left = turbine.lat < bound.left ? turbine.lat : bound.left
+              bound.right =
+                turbine.lat > bound.right ? turbine.lat : bound.right
+
               // 使用自定icon的marker
               // var tempMarker = L.marker([turbine.lat, turbine.lng], {
               //   icon: myIcon,
@@ -176,13 +189,30 @@ export default {
               tempMarker.bindPopup(popupContent).openPopup()
               markerList.push(tempMarker)
             })
+
             var templayerGroup = L.layerGroup(markerList).addTo(mapObj)
+            // 定义矩形的地理边界
+            var bounds = [
+              [bound.left, bound.top],
+              [bound.right, bound.bottom],
+            ]
+
+            // 创建一个橙色的矩形
+            var rec = L.rectangle(bounds, { color: '#ff7800', weight: 1 })
             this.layerGroup.push({
               name: cluster.cluster_id,
+              bound: rec,
               data: templayerGroup,
             })
           })
           this.loading = false
+          // mapObj.on('zoomend', () => {
+          //   console.log(this.layerGroup)
+          //   if (mapObj.getZoom() == 9 || mapObj.getZoom() == 10) {
+          //     //显示风力机点位
+          //     this.redrawMarker(this.map)
+          //   }
+          // })
         })
         .catch((e) => {
           console.log(e)
@@ -191,8 +221,16 @@ export default {
     redrawMarker(mapObj) {
       this.layerGroup.forEach((layer) => {
         if (this.checkedClusters.indexOf(layer.name) !== -1) {
+          // if (mapObj.getZoom() < 10) {
+          //   mapObj.addLayer(layer.bound)
+          //   layer.data.remove()
+          // } else {
+          //   mapObj.addLayer(layer.data)
+          //   layer.bound.remove()
+          // }
           mapObj.addLayer(layer.data)
         } else {
+          // layer.bound.remove()
           layer.data.remove()
         }
       })
@@ -209,7 +247,7 @@ export default {
   position: absolute;
   padding: 0px;
   // text-align: center;
-  width: 150px;
+  // width: 150px;
   left: 15px;
   top: 15px;
   .select {
