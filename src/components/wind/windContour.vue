@@ -173,6 +173,27 @@ export default {
       getMyTurbineData()
         .then((res) => {
           var data = groupByCluster(res)
+          var colorList = [
+            '#5470c6',
+            '#91cc75',
+            '#fac858',
+            '#ee6666',
+            '#73c0de',
+            '#3ba272',
+            '#fc8452',
+            '#9a60b4',
+            '#ea7ccc',
+            '#A6ACAF',
+            '#27AE60',
+            '#00FFFF',
+            '#000080',
+            '#FF0000',
+            '#FFFF00',
+            '#00FF00',
+            '#28ED9C',
+            '#95324E',
+            '#F7AAAA',
+          ]
           data.forEach((cluster) => {
             var markerList = []
             var bound = {
@@ -191,6 +212,7 @@ export default {
 
               var tempMarker = L.circleMarker([turbine.lat, turbine.lng], {
                 radius: 5,
+                color: colorList[cluster.cluster_id - 1],
               })
               var popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
                                   <span>所属集群：${cluster.cluster_name}</span><br>

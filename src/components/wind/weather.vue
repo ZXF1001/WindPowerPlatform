@@ -9,7 +9,7 @@
           <div class="weatherdata">
             <span v-if="nowWeather.temp">温度：{{nowWeather.temp}}°C</span>
             <span v-if="nowWeather.humidity">湿度：{{nowWeather.humidity}}%</span>
-            <span v-if="nowWeather.windSpeed">风速：{{nowWeather.windSpeed}}km/h</span>
+            <span v-if="nowWeather.windSpeed">风速：{{(nowWeather.windSpeed/3.6).toFixed(2)}}m/s</span>
             <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}</span>
             <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
           </div>
@@ -28,7 +28,7 @@
                     class="time">时间：{{returnDayHour(item.fxTime)}}</span>
               <span v-if="item.temp">温度：{{item.temp}}°C</span>
               <span v-if="item.humidity">湿度：{{item.humidity}}%</span>
-              <span v-if="item.windSpeed">风速：{{item.windSpeed}}km/h</span>
+              <span v-if="item.windSpeed">风速：{{(item.windSpeed/3.6).toFixed(2)}}m/s</span>
               <span v-if="item.windDir">风向：{{item.windDir}}</span>
               <span v-if="item.wind360">角度：{{item.wind360}}°</span>
             </div>
