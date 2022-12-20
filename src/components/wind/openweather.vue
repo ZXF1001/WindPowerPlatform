@@ -381,7 +381,7 @@ export default {
       this.Wechart.resize()
     }
     this.timer = setInterval(() => {
-      this.draw24hWeather(latlng[0], latlng[1])
+      this.draw5DayWeather(latlng[0], latlng[1])
       this.fetchNowWeather(latlng[0], latlng[1])
     }, 1000 * 60 * 5)
   },
