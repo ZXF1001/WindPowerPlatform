@@ -103,7 +103,7 @@ export default {
       //风速分布弹窗的数据
       dialogVisible: false,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
-      echarts2: null,
+      distributeChart: null,
     }
   },
   methods: {
@@ -115,14 +115,6 @@ export default {
           console.log(roseData)
           const echarts1 = echarts.init(this.$refs.roseChart)
           var speedList = Object.keys(roseData) // ['<5m/s' , '>5m/s' , ...]
-          var dataMax = 0
-          for (var i = 0; i < roseData[speedList[0]].length; i++) {
-            var sum = 0
-            speedList.forEach((speedData) => {
-              sum += roseData[speedData][i]
-            })
-            dataMax = sum > dataMax ? sum : dataMax
-          }
 
           var seriesData = []
           //极坐标堆叠图的数据是从正北方向顺时针排布
@@ -306,7 +298,7 @@ export default {
       })
     },
     drawDistribute() {
-      this.echarts2 = echarts.init(this.$refs.distributeChart)
+      this.distributeChart = echarts.init(this.$refs.distributeChart)
       var option = {
         tooltip: {
           trigger: 'axis',
@@ -343,13 +335,13 @@ export default {
           },
         ],
       }
-      option && this.echarts2.setOption(option)
+      option && this.distributeChart.setOption(option)
     },
     closeDialog() {
       //在这里销毁当前玫瑰图的曲线数据
       console.log('close')
-      this.echarts2.dispose()
-      this.echarts2 = null
+      this.distributeChart.dispose()
+      this.distributeChart = null
     },
   },
   mounted() {
