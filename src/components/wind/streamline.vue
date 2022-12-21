@@ -1,5 +1,5 @@
 <template>
-  <div id='map1'>
+  <div id='streamlimeMap'>
   </div>
 </template>
 
@@ -39,7 +39,7 @@ export default {
         }
       })
       //定义map对象
-      var map = L.map('map1', {
+      var map = L.map('streamlimeMap', {
         //参考坐标系
         // crs: L.CRS.EPSG3857,
         attributionControl: false,
@@ -111,7 +111,6 @@ export default {
       mapObj.addLayer(velocityLayer1)
       layerControlObj.addOverlay(velocityLayer1, '风场流线')
       //挂载map对象移动事件（隐藏流线）
-      // mapObj.on('movestart', () => {})
       mapObj.on('moveend', () => {
         velocityLayer1.remove()
         mapObj.addLayer(velocityLayer1)
@@ -125,7 +124,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-#map1 {
+#streamlimeMap {
   height: calc(100vh - 154px);
 }
 </style>

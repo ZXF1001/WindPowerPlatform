@@ -58,7 +58,10 @@
 </template>
 
 <script>
-import { get5DayWeather, getNowWeather } from '../../api/wind/getOpenWeather'
+import {
+  getOpen5DayWeather,
+  getOpenNowWeather,
+} from '../../api/wind/getWeather'
 import * as echarts from 'echarts'
 export default {
   data() {
@@ -82,7 +85,7 @@ export default {
       return returnTime
     },
     draw5DayWeather(lat, lng) {
-      get5DayWeather(lat, lng)
+      getOpen5DayWeather(lat, lng)
         .then((res) => {
           if (res.data.cod == '200') {
             this.hourlyWeather = res.data.list
@@ -111,7 +114,7 @@ export default {
         })
     },
     fetchNowWeather(lat, lng) {
-      getNowWeather(lat, lng)
+      getOpenNowWeather(lat, lng)
         .then((res) => {
           if (res.data.cod == '200') {
             this.nowWeather = {

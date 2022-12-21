@@ -15,7 +15,7 @@
     <el-tab-pane label="和风天气"
                  name="weather"
                  :lazy="true">
-      <weather></weather>
+      <qweather></qweather>
     </el-tab-pane>
     <el-tab-pane label="openweather"
                  name="openweather"
@@ -40,7 +40,7 @@ import windContour from '../components/wind/windContour.vue'
 import windRosePolar from '../components/wind/windRosePolar.vue'
 import streamline from '../components/wind/streamline.vue'
 import speedLine from '../components/wind/speedLine.vue'
-import weather from '../components/wind/weather.vue'
+import qweather from '../components/wind/qweather.vue'
 import openweather from '../components/wind/openweather.vue'
 
 export default {
@@ -49,7 +49,7 @@ export default {
     windRosePolar,
     streamline,
     speedLine,
-    weather,
+    qweather,
     openweather,
   },
   data() {

@@ -24,7 +24,7 @@
         </div>
       </el-collapse-transition>
     </el-card>
-    <div id='map2'>
+    <div id='contourMap'>
 
     </div>
   </div>
@@ -88,7 +88,7 @@ export default {
         }
       })
 
-      this.map = L.map('map2', {
+      this.map = L.map('contourMap', {
         //参考坐标系
         // crs: L.CRS.EPSG3857,
         attributionControl: false,
@@ -300,7 +300,7 @@ export default {
     }
   }
 }
-#map2 {
+#contourMap {
   height: calc(100vh - 154px);
 }
 </style>

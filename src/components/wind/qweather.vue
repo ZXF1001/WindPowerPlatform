@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { get24hWeather, getNowWeather } from '../../api/wind/getQweather'
+import { getQ24hWeather, getQNowWeather } from '../../api/wind/getWeather'
 import * as echarts from 'echarts'
 export default {
   data() {
@@ -84,7 +84,7 @@ export default {
       return returnTime
     },
     draw24hWeather(lat, lng) {
-      get24hWeather(lat, lng)
+      getQ24hWeather(lat, lng)
         .then((res) => {
           if (res.data.code == '200') {
             this.hourlyWeather = res.data.hourly
@@ -111,7 +111,7 @@ export default {
         })
     },
     fetchNowWeather(lat, lng) {
-      getNowWeather(lat, lng)
+      getQNowWeather(lat, lng)
         .then((res) => {
           if (res.data.code == '200') {
             this.nowWeather = res.data.now

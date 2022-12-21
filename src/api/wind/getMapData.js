@@ -1,6 +1,6 @@
 import http from "../../utils/requestMyApi.js";
-//请求总览页的数据
+//请求风资源页的地图数据
 export const getMyTurbineData = () => {
-  // 获取总览页的数字和表格数据
+  // 获取张北县风机点位的GPS经纬度数据
   return http.get("/get_zb_position.php");
 };
