@@ -5,7 +5,7 @@
       <el-select v-model="value1"
                  multiple
                  collapse-tags
-                 placeholder="选择集群"
+                 placeholder="选择测风塔"
                  size="small">
         <el-option v-for="item in options1"
                    :key="item.value"
@@ -55,8 +55,8 @@
 </template>
 
 <script>
-import { getWindRoseData } from '../../api/wind/getRoseData.js'
-import { get5DayWeather } from '../../api/wind/getOpenWeather'
+import { postData } from '@/api/wind/postRoseData.js'
+import { get5DayWeather } from '@/api/wind/getOpenWeather'
 import * as echarts from 'echarts'
 export default {
   data() {
@@ -108,30 +108,41 @@ export default {
   },
   methods: {
     drawRoseData() {
-      getWindRoseData()
+      const data = {
+        site: '0305',
+        height: 70,
+        range: [0, 5, 10, 15],
+      }
+      postData(data)
         .then((res) => {
           var roseData = res.data
+
           console.log('roseData')
           console.log(roseData)
           const echarts1 = echarts.init(this.$refs.roseChart)
-          var speedList = Object.keys(roseData) // ['<5m/s' , '>5m/s' , ...]
-
           var seriesData = []
           //极坐标堆叠图的数据是从正北方向顺时针排布
-          speedList.forEach((speedData) => {
-            seriesData.push({
-              animationDuration: 0,
-              type: 'bar',
-              // barWidth: '100%',
-              data: roseData[speedData],
-              coordinateSystem: 'polar',
-              name: speedData,
-              stack: 'a',
-              emphasis: {
-                // focus: 'self',
-              },
+          for (var key in roseData) {
+            var barData = []
+            roseData[key].forEach((dirData) => {
+              barData[dirData.direction] = dirData.frequency
             })
-          })
+            if (roseData[key].length != 0) {
+              seriesData.push({
+                animationDuration: 0,
+                type: 'bar',
+                // barWidth: '100%',
+                data: barData,
+                coordinateSystem: 'polar',
+                name: key,
+                stack: 'a',
+                // emphasis: {
+                //   focus: 'self',
+                // },
+              })
+            }
+          }
+
           var option = {
             // title: {
             //   text: '风向玫瑰图（极坐标堆叠图）',
