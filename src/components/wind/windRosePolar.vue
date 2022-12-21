@@ -29,25 +29,32 @@
       <el-date-picker v-model="dateValue"
                       size="small"
                       type="datetimerange"
+                      :default-value="new Date('2016/1/1')"
                       range-separator="至"
                       start-placeholder="开始日期"
                       end-placeholder="结束日期">
       </el-date-picker>
-      <el-button size="mini">筛选</el-button>
+
+      <el-button size="mini"
+                 plain
+                 @click="clearFilter">清除</el-button>
     </div>
     <!-- 遍历的风玫瑰图 -->
-    <div v-for="height in heightOptions"
-         :key="height.value">
-      <div v-for="site in siteOptions"
-           :key="site.value">
-        <el-card class="card"
-                 shadow="hover">
-          <p class="title">{{site.label}}测风塔{{height.label}}数据</p>
-          <div class="windrose"
-               ref="roseChart"
-               :id="site.label+height.label"></div>
-        </el-card>
-      </div>
+    <div v-for="site in siteOptions"
+         :key="site.value"
+         class="siteGroup">
+      <el-divider content-position="left">{{site.label}}测风塔</el-divider>
+      <el-card class="card"
+               shadow="never"
+               v-for="height in heightOptions"
+               :key="height.value"
+               v-loading="loading">
+        <p class="title">{{site.label}}测风塔{{height.label}}数据</p>
+        <div class="windrose"
+             ref="roseChart"
+             :id="site.label+height.label"></div>
+      </el-card>
+
     </div>
     <!-- 点击玫瑰图弹窗 -->
     <el-dialog title="xxx的风速分布"
@@ -78,6 +85,10 @@ export default {
       siteValue: [],
       heightValue: [],
       dateValue: [],
+      //加载遮罩的状态
+      loading: true,
+      //所有的echarts玫瑰图
+      echartsList: [],
       //风速分布弹窗的数据
       dialogVisible: false,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
@@ -103,6 +114,7 @@ export default {
                   label: height,
                 })
               })
+
               this.$nextTick(() => {
                 this.drawRoseData()
               })
@@ -118,25 +130,23 @@ export default {
     drawRoseData() {
       var that = this
       const range = [0, 5, 10, 15, 20] //表示风速范围[0,5),[5,10),[10,15),[15,20),[20,inf)
-      this.heightOptions.forEach((height) => {
-        this.siteOptions.forEach((site) => {
-          drawSingleRose(site.label, height.label, range, that)
+      this.siteOptions.forEach((site) => {
+        this.heightOptions.forEach((height) => {
+          drawSingleRose(site, height, range, that)
         })
       })
 
       function drawSingleRose(site, height, range) {
         const data = {
-          site: site,
-          height: height,
+          site: site.label,
+          height: height.label,
           range: range,
         }
         postData(data)
           .then((res) => {
-            var echartsList = []
-
             var roseData = res.data
-            echartsList.push(
-              echarts.init(document.getElementById(site + height))
+            that.echartsList.push(
+              echarts.init(document.getElementById(site.label + height.label))
             )
             var seriesData = []
             //极坐标堆叠图的数据是从正北方向顺时针排布
@@ -211,16 +221,22 @@ export default {
               },
             }
 
-            option && echartsList[echartsList.length - 1].setOption(option)
-            echartsList[echartsList.length - 1].on('click', (params) => {
-              that.drawDistributeParams = {
-                dataIndex: params.dataIndex,
+            option &&
+              that.echartsList[that.echartsList.length - 1].setOption(option)
+            that.loading = false
+            that.echartsList[that.echartsList.length - 1].on(
+              'click',
+              (params) => {
+                that.drawDistributeParams = {
+                  dataIndex: params.dataIndex,
+                }
+                console.log(params.dataIndex)
+                that.dialogVisible = true
               }
-              console.log(params.dataIndex)
-              that.dialogVisible = true
-            })
+            )
+
             window.onresize = () => {
-              echartsList[echartsList.length - 1].resize()
+              that.echartsList[that.echartsList.length - 1].resize()
             }
           })
           .catch((e) => {
@@ -301,11 +317,17 @@ export default {
 .windrose {
   height: 300px;
 }
-.card {
-  width: 280px;
-  .title {
-    margin: 0px 0px 10px 0px;
-    text-align: center;
+.siteGroup {
+  display: flex; //弹性布局
+  // justify-content: space-between; //中间空隙自适应
+  flex-wrap: wrap; //自适应分行
+  .card {
+    width: 280px;
+    margin: 5px;
+    .title {
+      margin: 0px 0px 10px 0px;
+      text-align: center;
+    }
   }
 }
 .windDistribute {
