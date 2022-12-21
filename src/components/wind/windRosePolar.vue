@@ -16,7 +16,7 @@
       <el-select v-model="value2"
                  multiple
                  collapse-tags
-                 placeholder="选择状态"
+                 placeholder="选择高度"
                  size="small">
         <el-option v-for="item in options2"
                    :key="item.value"
@@ -24,6 +24,15 @@
                    :value="item.value">
         </el-option>
       </el-select>
+
+      <el-date-picker v-model="value3"
+                      size="small"
+                      type="datetimerange"
+                      range-separator="至"
+                      start-placeholder="开始日期"
+                      end-placeholder="结束日期">
+      </el-date-picker>
+
     </div>
 
     <el-card class="card"
@@ -55,6 +64,7 @@
 </template>
 
 <script>
+import { getSiteData } from '@/api/wind/getSiteData'
 import { postData } from '@/api/wind/postRoseData.js'
 import { get5DayWeather } from '@/api/wind/getOpenWeather'
 import * as echarts from 'echarts'
@@ -62,24 +72,7 @@ export default {
   data() {
     return {
       //筛选框的数据
-      options1: [
-        {
-          value: 'option1',
-          label: '向服务器',
-        },
-        {
-          value: 'option2',
-          label: '请求',
-        },
-        {
-          value: 'option3',
-          label: '集群列表',
-        },
-        {
-          value: 'option4',
-          label: '数据',
-        },
-      ],
+      options1: [],
       options2: [
         {
           value: 'option1',
@@ -107,6 +100,20 @@ export default {
     }
   },
   methods: {
+    fetchSiteData() {
+      getSiteData()
+        .then((res) => {
+          res.data.forEach((site) => {
+            this.options1.push({
+              value: this.options1.length + 1,
+              label: site,
+            })
+          })
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
     drawRoseData() {
       const data = {
         site: '0305',
@@ -116,9 +123,6 @@ export default {
       postData(data)
         .then((res) => {
           var roseData = res.data
-
-          console.log('roseData')
-          console.log(roseData)
           const echarts1 = echarts.init(this.$refs.roseChart)
           var seriesData = []
           //极坐标堆叠图的数据是从正北方向顺时针排布
@@ -237,8 +241,6 @@ export default {
               }
             }
           })
-          console.log('data')
-          console.log(data)
 
           //开始画图
           const echarts3 = echarts.init(this.$refs.roseChart3)
@@ -356,6 +358,7 @@ export default {
     },
   },
   mounted() {
+    this.fetchSiteData()
     this.drawRoseData()
     this.drawRoseData2()
   },
