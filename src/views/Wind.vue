@@ -63,3 +63,9 @@ export default {
 }
 </script>
 
+<style lang="less" scoped>
+// .el-tab-pane {
+//   height: calc(100vh - 154px); //内部元素的高度
+//   overflow-y: auto;
+// }
+</style>

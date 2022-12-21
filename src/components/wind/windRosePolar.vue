@@ -42,12 +42,14 @@
     <!-- 遍历的风玫瑰图 -->
     <div v-for="site in siteOptions"
          :key="site.value"
+         v-show="(siteValue.indexOf(site.value)!=-1)||(siteValue.length==0)"
          class="siteGroup">
       <el-divider content-position="left">{{site.label}}测风塔</el-divider>
       <el-card class="card"
                shadow="never"
                v-for="height in heightOptions"
                :key="height.value"
+               v-show="(heightValue.indexOf(height.value)!=-1)||(heightValue.length==0)"
                v-loading="loading">
         <p class="title">{{site.label}}测风塔{{height.label}}数据</p>
         <div class="windrose"
@@ -97,6 +99,10 @@ export default {
   },
 
   methods: {
+    clearFilter() {
+      this.siteValue = []
+      this.heightValue = []
+    },
     fetchFilterData() {
       getSiteData()
         .then((res) => {
