@@ -36,13 +36,19 @@
       <el-button size="mini">筛选</el-button>
     </div>
     <!-- 遍历的风玫瑰图 -->
-    <el-card class="card"
-             shadow="hover">
-      <p class="title">标题</p>
-      <div class="windrose"
-           ref="roseChart"></div>
-    </el-card>
-
+    <div v-for="height in heightOptions"
+         :key="height.value">
+      <div v-for="site in siteOptions"
+           :key="site.value">
+        <el-card class="card"
+                 shadow="hover">
+          <p class="title">{{site.label}}测风塔{{height.label}}数据</p>
+          <div class="windrose"
+               ref="roseChart"
+               :id="site.label+height.label"></div>
+        </el-card>
+      </div>
+    </div>
     <!-- 点击玫瑰图弹窗 -->
     <el-dialog title="xxx的风速分布"
                :visible.sync="dialogVisible"
@@ -78,6 +84,7 @@ export default {
       distributeChart: null,
     }
   },
+
   methods: {
     fetchFilterData() {
       getSiteData()
@@ -88,122 +95,134 @@ export default {
               label: site,
             })
           })
-          console.log(this.siteOptions)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-      getHeightData()
-        .then((res) => {
-          res.data.forEach((height) => {
-            this.heightOptions.push({
-              value: this.heightOptions.length + 1,
-              label: height,
+          getHeightData()
+            .then((res) => {
+              res.data.forEach((height) => {
+                this.heightOptions.push({
+                  value: this.heightOptions.length + 1,
+                  label: height,
+                })
+              })
+              this.$nextTick(() => {
+                this.drawRoseData()
+              })
             })
-          })
+            .catch((e) => {
+              console.log(e)
+            })
         })
         .catch((e) => {
           console.log(e)
         })
     },
     drawRoseData() {
-      const data = {
-        site: '0305',
-        height: 70,
-        range: [0, 5, 10, 15],
-      }
-      postData(data)
-        .then((res) => {
-          var roseData = res.data
-          const echarts1 = echarts.init(this.$refs.roseChart)
-          var seriesData = []
-          //极坐标堆叠图的数据是从正北方向顺时针排布
-          for (var key in roseData) {
-            var barData = []
-            roseData[key].forEach((dirData) => {
-              barData[dirData.direction] = dirData.frequency
-            })
-            if (roseData[key].length != 0) {
-              seriesData.push({
-                animationDuration: 0,
-                type: 'bar',
-                // barWidth: '100%',
-                data: barData,
-                coordinateSystem: 'polar',
-                name: key,
-                stack: 'a',
-                // emphasis: {
-                //   focus: 'self',
-                // },
+      const range = [0, 5, 10, 15, 20] //表示风速范围[0,5),[5,10),[10,15),[15,20),[20,inf)
+      this.heightOptions.forEach((height) => {
+        this.siteOptions.forEach((site) => {
+          drawSingleRose(site.label, height.label, range)
+        })
+      })
+
+      function drawSingleRose(site, height, range) {
+        const data = {
+          site: site,
+          height: height,
+          range: range,
+        }
+        postData(data)
+          .then((res) => {
+            var roseData = res.data
+            const echarts1 = echarts.init(
+              document.getElementById(site + height)
+            )
+            var seriesData = []
+            //极坐标堆叠图的数据是从正北方向顺时针排布
+            for (var key in roseData) {
+              var barData = []
+              roseData[key].forEach((dirData) => {
+                barData[dirData.direction] = dirData.frequency
               })
+              if (roseData[key].length != 0) {
+                seriesData.push({
+                  animationDuration: 0,
+                  type: 'bar',
+                  // barWidth: '100%',
+                  data: barData,
+                  coordinateSystem: 'polar',
+                  name: key,
+                  stack: 'a',
+                  // emphasis: {
+                  //   focus: 'self',
+                  // },
+                })
+              }
             }
-          }
 
-          var option = {
-            // title: {
-            //   text: '风向玫瑰图（极坐标堆叠图）',
-            // },
-            angleAxis: {
-              startAngle: 90 + 360 / 16 / 2,
-              type: 'category',
-              data: [
-                'N',
-                '',
-                'NE',
-                '',
-                'E',
-                '',
-                'SE',
-                '',
-                'S',
-                '',
-                'SW',
-                '',
-                'W',
-                '',
-                'NW',
-                '',
-              ],
-            },
-            radiusAxis: {
-              axisLine: {
-                show: false,
+            var option = {
+              // title: {
+              //   text: '风向玫瑰图（极坐标堆叠图）',
+              // },
+              angleAxis: {
+                startAngle: 90 + 360 / 16 / 2,
+                type: 'category',
+                data: [
+                  'N',
+                  '',
+                  'NE',
+                  '',
+                  'E',
+                  '',
+                  'SE',
+                  '',
+                  'S',
+                  '',
+                  'SW',
+                  '',
+                  'W',
+                  '',
+                  'NW',
+                  '',
+                ],
               },
-              axisTick: {
-                show: false,
+              radiusAxis: {
+                axisLine: {
+                  show: false,
+                },
+                axisTick: {
+                  show: false,
+                },
+                axisLabel: {
+                  show: false,
+                },
               },
-              axisLabel: {
-                show: false,
+              polar: {
+                center: ['50%', '38%'],
+                radius: '68%', //半径大小
               },
-            },
-            polar: {
-              center: ['50%', '38%'],
-              radius: '68%', //半径大小
-            },
-            series: seriesData,
-            legend: {
-              // orient: 'vertical',
-              x: 'center',
-              y: 'bottom',
-              // data: Object.keys(roseData),
-            },
-          }
-
-          option && echarts1.setOption(option)
-          echarts1.on('click', (params) => {
-            // console.log('params.dataIndex' + params.dataIndex)
-            this.drawDistributeParams = {
-              dataIndex: params.dataIndex,
+              series: seriesData,
+              legend: {
+                // orient: 'vertical',
+                x: 'center',
+                y: 'bottom',
+                // data: Object.keys(roseData),
+              },
             }
-            this.dialogVisible = true
+
+            option && echarts1.setOption(option)
+            echarts1.on('click', (params) => {
+              this.drawDistributeParams = {
+                dataIndex: params.dataIndex,
+              }
+              this.dialogVisible = true
+            })
+            window.onresize = () => {
+              echarts1.resize()
+            }
           })
-          window.onresize = () => {
-            echarts1.resize()
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+          .catch((e) => {
+            console.log(e)
+          })
+      }
     },
 
     drawDistribute() {
@@ -253,11 +272,9 @@ export default {
       this.distributeChart = null
     },
   },
-  created() {
-    this.fetchFilterData()
-  },
+  created() {},
   mounted() {
-    this.drawRoseData()
+    this.fetchFilterData()
   },
 }
 </script>
