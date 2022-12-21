@@ -1,51 +1,53 @@
 <template>
   <div>
     <div class="filterbox">
+      <!-- 筛选栏 -->
       <span>筛选条件：</span>
-      <el-select v-model="value1"
+      <el-select v-model="siteValue"
                  multiple
                  collapse-tags
                  placeholder="选择测风塔"
                  size="small">
-        <el-option v-for="item in options1"
-                   :key="item.value"
-                   :label="item.label"
-                   :value="item.value">
+        <el-option v-for="site in siteOptions"
+                   :key="site.value"
+                   :label="site.label"
+                   :value="site.value">
         </el-option>
       </el-select>
-      <el-select v-model="value2"
+      <el-select v-model="heightValue"
                  multiple
                  collapse-tags
                  placeholder="选择高度"
                  size="small">
-        <el-option v-for="item in options2"
-                   :key="item.value"
-                   :label="item.label"
-                   :value="item.value">
+        <el-option v-for="height in heightOptions"
+                   :key="height.value"
+                   :label="height.label"
+                   :value="height.value">
         </el-option>
       </el-select>
 
-      <el-date-picker v-model="value3"
+      <el-date-picker v-model="dateValue"
                       size="small"
                       type="datetimerange"
                       range-separator="至"
                       start-placeholder="开始日期"
                       end-placeholder="结束日期">
       </el-date-picker>
-
+      <el-button size="mini">筛选</el-button>
     </div>
-
+    <!-- 遍历的风玫瑰图 -->
     <el-card class="card"
              shadow="hover">
-      <p class="rose-title">标题</p>
+      <p class="title">标题</p>
       <div class="windrose"
            ref="roseChart"></div>
     </el-card>
+    <!-- 根据openweather天气预报获得的风玫瑰图 -->
     <el-card class="card"
              shadow="hover">
-      <p class="rose-title">标题</p>
+      <p class="title">标题</p>
       <div class="windrose"
-           ref="roseChart3"></div>
+           ref="roseChart2"></div>
     </el-card>
     <!-- 点击玫瑰图弹窗 -->
     <el-dialog title="xxx的风速分布"
@@ -64,7 +66,7 @@
 </template>
 
 <script>
-import { getSiteData } from '@/api/wind/getSiteData'
+import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
 import { postData } from '@/api/wind/postRoseData.js'
 import { get5DayWeather } from '@/api/wind/getOpenWeather'
 import * as echarts from 'echarts'
@@ -72,27 +74,11 @@ export default {
   data() {
     return {
       //筛选框的数据
-      options1: [],
-      options2: [
-        {
-          value: 'option1',
-          label: '向服务器',
-        },
-        {
-          value: 'option2',
-          label: '请求',
-        },
-        {
-          value: 'option3',
-          label: '所有的',
-        },
-        {
-          value: 'option4',
-          label: '状态数据',
-        },
-      ],
-      value1: [],
-      value2: [],
+      siteOptions: [],
+      heightOptions: [],
+      siteValue: [],
+      heightValue: [],
+      dateValue: [],
       //风速分布弹窗的数据
       dialogVisible: false,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
@@ -100,13 +86,26 @@ export default {
     }
   },
   methods: {
-    fetchSiteData() {
+    fetchFilterData() {
       getSiteData()
         .then((res) => {
           res.data.forEach((site) => {
             this.options1.push({
               value: this.options1.length + 1,
               label: site,
+            })
+          })
+          console.log(this.options1)
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+      getHeightData()
+        .then((res) => {
+          res.data.forEach((height) => {
+            this.options2.push({
+              value: this.options2.length + 1,
+              label: height,
             })
           })
         })
@@ -243,7 +242,7 @@ export default {
           })
 
           //开始画图
-          const echarts3 = echarts.init(this.$refs.roseChart3)
+          const echarts3 = echarts.init(this.$refs.roseChart2)
           var speedList = Object.keys(data)
           var seriesData = []
           speedList.forEach((speedData) => {
@@ -357,8 +356,10 @@ export default {
       this.distributeChart = null
     },
   },
+  created() {
+    this.fetchFilterData()
+  },
   mounted() {
-    this.fetchSiteData()
     this.drawRoseData()
     this.drawRoseData2()
   },
@@ -370,9 +371,14 @@ export default {
 }
 .filterbox {
   margin-bottom: 10px;
-  .el-select {
+  .el-select,
+  .el-date-picker {
     margin-left: 5px;
     margin-right: 5px;
+  }
+
+  .el-button {
+    margin-left: 5px;
   }
 }
 .windrose {
@@ -380,7 +386,7 @@ export default {
 }
 .card {
   width: 280px;
-  .rose-title {
+  .title {
     margin: 0px 0px 10px 0px;
     text-align: center;
   }
