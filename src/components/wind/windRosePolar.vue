@@ -42,13 +42,7 @@
       <div class="windrose"
            ref="roseChart"></div>
     </el-card>
-    <!-- 根据openweather天气预报获得的风玫瑰图 -->
-    <el-card class="card"
-             shadow="hover">
-      <p class="title">标题</p>
-      <div class="windrose"
-           ref="roseChart2"></div>
-    </el-card>
+
     <!-- 点击玫瑰图弹窗 -->
     <el-dialog title="xxx的风速分布"
                :visible.sync="dialogVisible"
@@ -68,7 +62,6 @@
 <script>
 import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
 import { postData } from '@/api/wind/postRoseData.js'
-import { get5DayWeather } from '@/api/wind/getOpenWeather'
 import * as echarts from 'echarts'
 export default {
   data() {
@@ -90,12 +83,12 @@ export default {
       getSiteData()
         .then((res) => {
           res.data.forEach((site) => {
-            this.options1.push({
-              value: this.options1.length + 1,
+            this.siteOptions.push({
+              value: this.siteOptions.length + 1,
               label: site,
             })
           })
-          console.log(this.options1)
+          console.log(this.siteOptions)
         })
         .catch((e) => {
           console.log(e)
@@ -103,8 +96,8 @@ export default {
       getHeightData()
         .then((res) => {
           res.data.forEach((height) => {
-            this.options2.push({
-              value: this.options2.length + 1,
+            this.heightOptions.push({
+              value: this.heightOptions.length + 1,
               label: height,
             })
           })
@@ -212,103 +205,7 @@ export default {
           console.log(e)
         })
     },
-    drawRoseData2() {
-      // 通过openweather的五天数据画玫瑰图
-      get5DayWeather(31.906801, 121.182329).then((res) => {
-        if (res.status == '200') {
-          var listData = res.data.list
-          // console.log(listData)
 
-          var data = {}
-          const speedRangeArr = [0, 1, 3, 5, 7, 10, 13, 17, 21, 25, 30]
-          // 要将风力划分为0,1,3,5,7,10,13,17,21,25,30这些区间
-          listData.forEach((element) => {
-            // 每个时间点的风速数据
-            for (var i = 1; i < speedRangeArr.length; i++) {
-              if (
-                element.wind.speed >= speedRangeArr[i - 1] &&
-                element.wind.speed < speedRangeArr[i]
-              ) {
-                // 找出风速对应的区间并存入
-                var key = speedRangeArr[i - 1] + '-' + speedRangeArr[i] + 'm/s'
-                if (!(key in data)) {
-                  data[key] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                }
-                //角度化为十六风向序号(顺时针)
-                var sectorId = Math.round(element.wind.deg / 22.5) % 16
-                data[key][sectorId] += 1 / listData.length
-              }
-            }
-          })
-
-          //开始画图
-          const echarts3 = echarts.init(this.$refs.roseChart2)
-          var speedList = Object.keys(data)
-          var seriesData = []
-          speedList.forEach((speedData) => {
-            seriesData.push({
-              animationDuration: 0,
-              type: 'bar',
-              // barWidth: '100%',
-              data: data[speedData],
-              coordinateSystem: 'polar',
-              name: speedData,
-              stack: 'a',
-              emphasis: {
-                // focus: 'self',
-              },
-            })
-            var option = {
-              angleAxis: {
-                startAngle: 90 + 360 / 16 / 2,
-                type: 'category',
-                data: [
-                  'N',
-                  '',
-                  'NE',
-                  '',
-                  'E',
-                  '',
-                  'SE',
-                  '',
-                  'S',
-                  '',
-                  'SW',
-                  '',
-                  'W',
-                  '',
-                  'NW',
-                  '',
-                ],
-              },
-              radiusAxis: {
-                axisLine: {
-                  show: false,
-                },
-                axisTick: {
-                  show: false,
-                },
-                axisLabel: {
-                  show: false,
-                },
-              },
-              polar: {
-                center: ['50%', '38%'],
-                radius: '68%', //半径大小
-              },
-              series: seriesData,
-              legend: {
-                // orient: 'vertical',
-                x: 'center',
-                y: 'bottom',
-                // data: Object.keys(data),
-              },
-            }
-            option && echarts3.setOption(option)
-          })
-        }
-      })
-    },
     drawDistribute() {
       this.distributeChart = echarts.init(this.$refs.distributeChart)
       var option = {
@@ -361,7 +258,6 @@ export default {
   },
   mounted() {
     this.drawRoseData()
-    this.drawRoseData2()
   },
 }
 </script>
