@@ -116,10 +116,11 @@ export default {
         })
     },
     drawRoseData() {
+      var that = this
       const range = [0, 5, 10, 15, 20] //表示风速范围[0,5),[5,10),[10,15),[15,20),[20,inf)
       this.heightOptions.forEach((height) => {
         this.siteOptions.forEach((site) => {
-          drawSingleRose(site.label, height.label, range)
+          drawSingleRose(site.label, height.label, range, that)
         })
       })
 
@@ -131,9 +132,11 @@ export default {
         }
         postData(data)
           .then((res) => {
+            var echartsList = []
+
             var roseData = res.data
-            const echarts1 = echarts.init(
-              document.getElementById(site + height)
+            echartsList.push(
+              echarts.init(document.getElementById(site + height))
             )
             var seriesData = []
             //极坐标堆叠图的数据是从正北方向顺时针排布
@@ -208,15 +211,16 @@ export default {
               },
             }
 
-            option && echarts1.setOption(option)
-            echarts1.on('click', (params) => {
-              this.drawDistributeParams = {
+            option && echartsList[echartsList.length - 1].setOption(option)
+            echartsList[echartsList.length - 1].on('click', (params) => {
+              that.drawDistributeParams = {
                 dataIndex: params.dataIndex,
               }
-              this.dialogVisible = true
+              console.log(params.dataIndex)
+              that.dialogVisible = true
             })
             window.onresize = () => {
-              echarts1.resize()
+              echartsList[echartsList.length - 1].resize()
             }
           })
           .catch((e) => {
