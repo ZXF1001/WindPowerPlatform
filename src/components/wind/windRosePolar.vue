@@ -85,7 +85,7 @@ export default {
       heightOptions: [],
       siteValue: [],
       heightValue: [],
-      dateValue: [],
+      dateValue: null,
       //加载遮罩的状态
       loading: true,
       //所有的echarts玫瑰图
@@ -97,7 +97,17 @@ export default {
       distributeChart: null,
     }
   },
-
+  watch: {
+    dateValue(newVal, oldVal) {
+      this.echartsList.forEach((echartsObj) => {
+        echartsObj.dispose()
+      })
+      this.echartsList = []
+      this.loading = true
+      console.log(this.dateValue)
+      this.drawRoseData()
+    },
+  },
   methods: {
     clearFilter() {
       this.siteValue = []
@@ -159,7 +169,27 @@ export default {
           site: site.label,
           height: height.label,
           range: range,
+          dateBegin: null,
+          dateEnd: null,
         }
+
+        if (that.dateValue !== null) {
+          var YY0 = that.dateValue[0].getFullYear()
+          var MM0 = that.dateValue[0].getMonth() + 1
+          var DD0 = that.dateValue[0].getDate()
+          var hh0 = that.dateValue[0].getHours()
+          var mm0 = that.dateValue[0].getMinutes()
+          var ss0 = that.dateValue[0].getSeconds()
+          var YY1 = that.dateValue[1].getFullYear()
+          var MM1 = that.dateValue[1].getMonth() + 1
+          var DD1 = that.dateValue[1].getDate()
+          var hh1 = that.dateValue[1].getHours()
+          var mm1 = that.dateValue[1].getMinutes()
+          var ss1 = that.dateValue[1].getSeconds()
+          data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
+          data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+        }
+        console.log(data)
         postData(data)
           .then((res) => {
             var roseData = res.data
