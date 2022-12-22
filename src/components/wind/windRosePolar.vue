@@ -186,6 +186,15 @@ export default {
         postData(data)
           .then((res) => {
             var roseData = res.data
+            const colorBar = [
+              '#404588',
+              '#2e6d8e',
+              '#20a486',
+              '#5bc863',
+              '#e7e419',
+              '#fbbb2e',
+              '#d05d24',
+            ]
 
             this.echartsList[item.siteValue - 1][item.heightValue - 1] =
               echarts.init(
@@ -215,6 +224,7 @@ export default {
             }
 
             var option = {
+              color: colorBar,
               // title: {
               //   text: `${item.siteLabel} ${item.heightLabel}风向玫瑰图`,
               // },
