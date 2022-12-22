@@ -89,7 +89,7 @@ export default {
       //加载遮罩的状态
       loading: true,
       //所有的echarts玫瑰图
-      range: [0, 5, 10, 15, 20], //要画的风速区间
+      range: [1, 3, 5, 7, 10, 15], //要画的风速区间
       vforList: [], //为了一个v-for就能遍历
       echartsList: null,
       //风速分布弹窗的数据
@@ -328,15 +328,19 @@ export default {
                   coordinateSystem: 'polar',
                   name: key,
                   stack: 'a',
-                  // emphasis: {
-                  //   focus: 'self',
-                  // },
                 })
               }
             }
-            this.echartsList[ele.siteValue - 1][ele.heightValue - 1].setOption({
-              series: seriesData,
-            })
+            var option =
+              this.echartsList[ele.siteValue - 1][
+                ele.heightValue - 1
+              ].getOption()
+            option.series = seriesData
+
+            this.echartsList[ele.siteValue - 1][ele.heightValue - 1].setOption(
+              option,
+              { notMerge: true }
+            )
             this.loading = false
           })
           .catch((e) => {
