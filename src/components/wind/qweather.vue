@@ -304,7 +304,11 @@ export default {
 
         windList.push({
           name: time.toString(),
-          value: [chartTime, element.windSpeed, element.wind360],
+          value: [
+            chartTime,
+            (element.windSpeed / 3.6).toFixed(2),
+            element.wind360,
+          ],
         })
       })
       var option = {
@@ -336,7 +340,7 @@ export default {
           {
             type: 'value',
             axisLabel: {
-              formatter: '{value} km/h',
+              formatter: '{value} m/s',
             },
           },
         ],
