@@ -89,8 +89,9 @@ export default {
       //加载遮罩的状态
       loading: true,
       //所有的echarts玫瑰图
+      range: [0, 5, 10, 15, 20], //要画的风速区间
       vforList: [], //为了一个v-for就能遍历
-      echartsList: [],
+      echartsList: null,
       //风速分布弹窗的数据
       dialogVisible: false,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
@@ -98,21 +99,15 @@ export default {
     }
   },
   watch: {
-    dateValue(newVal, oldVal) {
-      this.echartsList.forEach((echartsObj) => {
-        echartsObj.dispose()
-      })
-      this.echartsList = []
-      this.loading = true
-      console.log(this.dateValue)
-      this.drawRoseData()
+    dateValue() {
+      this.redrawRose()
     },
   },
   methods: {
     clearFilter() {
       this.siteValue = []
       this.heightValue = []
-      this.dateValue = []
+      this.dateValue = null
     },
     fetchFilterData() {
       getSiteData()
@@ -142,9 +137,16 @@ export default {
                   })
                 })
               })
-
+              // 有问题的代码(改一个值会导致其他值一起改掉，会出错)
+              // this.echartsList = new Array(this.siteOptions.length).fill(
+              //   new Array(this.heightOptions.length).fill(null)
+              // )
+              this.echartsList = new Array(this.siteOptions.length)
+              for (var i = 0; i < this.siteOptions.length; i++) {
+                this.echartsList[i] = new Array(this.heightOptions.length)
+              }
               this.$nextTick(() => {
-                this.drawRoseData()
+                this.drawRoseData(this.range)
               })
             })
             .catch((e) => {
@@ -156,46 +158,39 @@ export default {
         })
     },
     drawRoseData() {
-      var that = this
-      const range = [0, 5, 10, 15, 20] //表示风速范围[0,5),[5,10),[10,15),[15,20),[20,inf)
-      this.siteOptions.forEach((site) => {
-        this.heightOptions.forEach((height) => {
-          drawSingleRose(site, height, range, that)
-        })
-      })
-
-      function drawSingleRose(site, height, range) {
+      this.vforList.forEach((item) => {
+        //
         const data = {
-          site: site.label,
-          height: height.label,
-          range: range,
+          site: item.siteLabel,
+          height: item.heightLabel,
+          range: this.range,
           dateBegin: null,
           dateEnd: null,
         }
-
-        if (that.dateValue !== null) {
-          var YY0 = that.dateValue[0].getFullYear()
-          var MM0 = that.dateValue[0].getMonth() + 1
-          var DD0 = that.dateValue[0].getDate()
-          var hh0 = that.dateValue[0].getHours()
-          var mm0 = that.dateValue[0].getMinutes()
-          var ss0 = that.dateValue[0].getSeconds()
-          var YY1 = that.dateValue[1].getFullYear()
-          var MM1 = that.dateValue[1].getMonth() + 1
-          var DD1 = that.dateValue[1].getDate()
-          var hh1 = that.dateValue[1].getHours()
-          var mm1 = that.dateValue[1].getMinutes()
-          var ss1 = that.dateValue[1].getSeconds()
+        if (this.dateValue !== null) {
+          var YY0 = this.dateValue[0].getFullYear()
+          var MM0 = this.dateValue[0].getMonth() + 1
+          var DD0 = this.dateValue[0].getDate()
+          var hh0 = this.dateValue[0].getHours()
+          var mm0 = this.dateValue[0].getMinutes()
+          var ss0 = this.dateValue[0].getSeconds()
+          var YY1 = this.dateValue[1].getFullYear()
+          var MM1 = this.dateValue[1].getMonth() + 1
+          var DD1 = this.dateValue[1].getDate()
+          var hh1 = this.dateValue[1].getHours()
+          var mm1 = this.dateValue[1].getMinutes()
+          var ss1 = this.dateValue[1].getSeconds()
           data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
           data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
         }
-        console.log(data)
         postData(data)
           .then((res) => {
             var roseData = res.data
-            that.echartsList.push(
-              echarts.init(document.getElementById(site.label + height.label))
-            )
+
+            this.echartsList[item.siteValue - 1][item.heightValue - 1] =
+              echarts.init(
+                document.getElementById(item.siteLabel + item.heightLabel)
+              )
             var seriesData = []
             //极坐标堆叠图的数据是从正北方向顺时针排布
             for (var key in roseData) {
@@ -221,7 +216,7 @@ export default {
 
             var option = {
               // title: {
-              //   text: '风向玫瑰图（极坐标堆叠图）',
+              //   text: `${item.siteLabel} ${item.heightLabel}风向玫瑰图`,
               // },
               angleAxis: {
                 startAngle: 90 + 360 / 16 / 2,
@@ -269,30 +264,86 @@ export default {
               },
             }
 
-            option &&
-              that.echartsList[that.echartsList.length - 1].setOption(option)
-            that.loading = false
-            that.echartsList[that.echartsList.length - 1].on(
+            this.echartsList[item.siteValue - 1][
+              item.heightValue - 1
+            ].setOption(option)
+            this.loading = false
+            this.echartsList[item.siteValue - 1][item.heightValue - 1].on(
               'click',
               (params) => {
-                that.drawDistributeParams = {
+                this.drawDistributeParams = {
                   dataIndex: params.dataIndex,
                 }
                 console.log(params.dataIndex)
-                that.dialogVisible = true
+                this.dialogVisible = true
               }
             )
-
-            window.onresize = () => {
-              that.echartsList[that.echartsList.length - 1].resize()
-            }
           })
           .catch((e) => {
             console.log(e)
           })
-      }
+      })
     },
-
+    redrawRose() {
+      this.loading = true
+      this.vforList.forEach((ele) => {
+        var data = {
+          site: ele.siteLabel,
+          height: ele.heightLabel,
+          range: this.range,
+          dateBegin: null,
+          dateEnd: null,
+        }
+        if (this.dateValue !== null) {
+          var YY0 = this.dateValue[0].getFullYear()
+          var MM0 = this.dateValue[0].getMonth() + 1
+          var DD0 = this.dateValue[0].getDate()
+          var hh0 = this.dateValue[0].getHours()
+          var mm0 = this.dateValue[0].getMinutes()
+          var ss0 = this.dateValue[0].getSeconds()
+          var YY1 = this.dateValue[1].getFullYear()
+          var MM1 = this.dateValue[1].getMonth() + 1
+          var DD1 = this.dateValue[1].getDate()
+          var hh1 = this.dateValue[1].getHours()
+          var mm1 = this.dateValue[1].getMinutes()
+          var ss1 = this.dateValue[1].getSeconds()
+          data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
+          data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+        }
+        postData(data)
+          .then((res) => {
+            var roseData = res.data
+            var seriesData = []
+            for (var key in roseData) {
+              var barData = []
+              roseData[key].forEach((dirData) => {
+                barData[dirData.direction] = dirData.frequency
+              })
+              if (roseData[key].length != 0) {
+                seriesData.push({
+                  animationDuration: 0,
+                  type: 'bar',
+                  // barWidth: '100%',
+                  data: barData,
+                  coordinateSystem: 'polar',
+                  name: key,
+                  stack: 'a',
+                  // emphasis: {
+                  //   focus: 'self',
+                  // },
+                })
+              }
+            }
+            this.echartsList[ele.siteValue - 1][ele.heightValue - 1].setOption({
+              series: seriesData,
+            })
+            this.loading = false
+          })
+          .catch((e) => {
+            console.log(e)
+          })
+      })
+    },
     drawDistribute() {
       this.distributeChart = echarts.init(this.$refs.distributeChart)
       var option = {
@@ -340,7 +391,6 @@ export default {
       this.distributeChart = null
     },
   },
-  created() {},
   mounted() {
     this.fetchFilterData()
   },
