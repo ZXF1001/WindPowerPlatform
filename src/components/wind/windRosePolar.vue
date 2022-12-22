@@ -40,23 +40,22 @@
                  @click="clearFilter">清除</el-button>
     </div>
     <!-- 遍历的风玫瑰图 -->
-    <div v-for="site in siteOptions"
-         :key="site.value"
-         v-show="(siteValue.indexOf(site.value)!=-1)||(siteValue.length==0)"
-         class="siteGroup">
-      <el-divider content-position="left">{{site.label}}测风塔</el-divider>
-      <el-card class="card"
-               shadow="never"
-               v-for="height in heightOptions"
-               :key="height.value"
-               v-show="(heightValue.indexOf(height.value)!=-1)||(heightValue.length==0)"
-               v-loading="loading">
-        <p class="title">{{site.label}}测风塔{{height.label}}数据</p>
-        <div class="windrose"
-             ref="roseChart"
-             :id="site.label+height.label"></div>
-      </el-card>
 
+    <div class="roseGroup">
+      <div v-for="options in vforList"
+           :key="options.value">
+        <!-- <el-divider content-position="left"
+                    v-if="options.heightValue==1&&(siteValue.indexOf(options.siteValue)!=-1)">{{options.siteLabel}}测风塔</el-divider> -->
+        <el-card class="card"
+                 shadow="never"
+                 v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))"
+                 v-loading="loading">
+          <p class="title">{{options.siteLabel}}测风塔{{options.heightLabel}}数据</p>
+          <div class="windrose"
+               ref="roseChart"
+               :id="options.siteLabel+options.heightLabel"></div>
+        </el-card>
+      </div>
     </div>
     <!-- 点击玫瑰图弹窗 -->
     <el-dialog title="xxx的风速分布"
@@ -90,6 +89,7 @@ export default {
       //加载遮罩的状态
       loading: true,
       //所有的echarts玫瑰图
+      vforList: [], //为了一个v-for就能遍历
       echartsList: [],
       //风速分布弹窗的数据
       dialogVisible: false,
@@ -102,6 +102,7 @@ export default {
     clearFilter() {
       this.siteValue = []
       this.heightValue = []
+      this.dateValue = []
     },
     fetchFilterData() {
       getSiteData()
@@ -118,6 +119,17 @@ export default {
                 this.heightOptions.push({
                   value: this.heightOptions.length + 1,
                   label: height,
+                })
+              })
+              this.siteOptions.forEach((siteValue) => {
+                this.heightOptions.forEach((heightValue) => {
+                  this.vforList.push({
+                    value: this.vforList.length,
+                    siteLabel: siteValue.label,
+                    siteValue: siteValue.value,
+                    heightLabel: heightValue.label,
+                    heightValue: heightValue.value,
+                  })
                 })
               })
 
@@ -323,7 +335,7 @@ export default {
 .windrose {
   height: 300px;
 }
-.siteGroup {
+.roseGroup {
   display: flex; //弹性布局
   // justify-content: space-between; //中间空隙自适应
   flex-wrap: wrap; //自适应分行
