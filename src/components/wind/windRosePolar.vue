@@ -57,18 +57,13 @@
         </el-card>
       </div>
     </div>
-    <!-- 点击玫瑰图弹窗 -->
-    <el-dialog title="xxx的风速分布"
+    <el-dialog :title="dialogTitle"
                :visible.sync="dialogVisible"
                width="60%"
-               @opened="drawDistribute"
-               @close="closeDialog">
-      <div class="windDistribute"
-           ref="distributeChart"></div>
-      <span slot="footer">
-        <el-button type="primary"
-                   @click="dialogVisible = false">确 定</el-button>
-      </span>
+               @opened="parentDrawDistribute"
+               @close="parentCloseDialog">
+      <ws-distri-dialog :selectedSpan="drawDistributeParams"
+                        ref="distriDialog"></ws-distri-dialog>
     </el-dialog>
   </div>
 </template>
@@ -76,8 +71,10 @@
 <script>
 import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
 import { postData } from '@/api/wind/postRoseData.js'
+import wsDistriDialog from '@/components/wind/windRose/wsDistriDialog.vue'
 import * as echarts from 'echarts'
 export default {
+  components: { wsDistriDialog },
   data() {
     return {
       //筛选框的数据
@@ -94,8 +91,8 @@ export default {
       echartsList: null,
       //风速分布弹窗的数据
       dialogVisible: false,
+      dialogTitle: null,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
-      distributeChart: null,
     }
   },
   watch: {
@@ -281,10 +278,33 @@ export default {
             this.echartsList[item.siteValue - 1][item.heightValue - 1].on(
               'click',
               (params) => {
+                const dirList = [
+                  'N',
+                  'NNE',
+                  'NE',
+                  'NEE',
+                  'E',
+                  'SEE',
+                  'SE',
+                  'SSE',
+                  'S',
+                  'SSW',
+                  'SW',
+                  'SWW',
+                  'W',
+                  'NWW',
+                  'NW',
+                  'NNW',
+                ]
+                this.dialogTitle = `${item.siteLabel}站点 ${
+                  item.heightLabel
+                }高度 ${dirList[params.dataIndex]}方向风速分布数据`
                 this.drawDistributeParams = {
-                  dataIndex: params.dataIndex,
+                  siteValue: item.siteValue,
+                  heightValue: item.heightValue,
+                  dirIndex: params.dataIndex,
+                  dateRange: this.dateValue,
                 }
-                console.log(params.dataIndex)
                 this.dialogVisible = true
               }
             )
@@ -358,51 +378,11 @@ export default {
           })
       })
     },
-    drawDistribute() {
-      this.distributeChart = echarts.init(this.$refs.distributeChart)
-      var option = {
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow',
-          },
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true,
-        },
-        xAxis: [
-          {
-            type: 'category',
-            data: [3, 4, 5, 6, 7, 8, 9],
-            axisTick: {
-              alignWithLabel: true,
-            },
-          },
-        ],
-        yAxis: [
-          {
-            type: 'value',
-          },
-        ],
-        series: [
-          {
-            name: 'Speed',
-            type: 'bar',
-            barWidth: '100%',
-            data: [10, 52, 200, 334, 390, 330, 220],
-          },
-        ],
-      }
-      option && this.distributeChart.setOption(option)
+    parentDrawDistribute() {
+      this.$refs.distriDialog.drawDistribute()
     },
-    closeDialog() {
-      //在这里销毁当前玫瑰图的曲线数据
-      console.log('close')
-      this.distributeChart.dispose()
-      this.distributeChart = null
+    parentCloseDialog() {
+      this.$refs.distriDialog.closeDialog()
     },
   },
   mounted() {
@@ -441,9 +421,6 @@ export default {
       text-align: center;
     }
   }
-}
-.windDistribute {
-  height: 300px;
 }
 </style>
 
