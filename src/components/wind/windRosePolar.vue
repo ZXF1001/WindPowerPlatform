@@ -184,13 +184,12 @@ export default {
           .then((res) => {
             var roseData = res.data
             const colorBar = [
-              '#404588',
-              '#2e6d8e',
-              '#20a486',
-              '#5bc863',
-              '#e7e419',
-              '#fbbb2e',
-              '#d05d24',
+              '#453781',
+              '#32648e',
+              '#238a8d',
+              '#29af7f',
+              '#74d055',
+              '#fde725',
             ]
 
             this.echartsList[item.siteValue - 1][item.heightValue - 1] =
