@@ -70,7 +70,7 @@
 
 <script>
 import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
-import { postData } from '@/api/wind/postRoseData.js'
+import { post4WDData } from '@/api/wind/postRoseData.js'
 import wsDistriDialog from '@/components/wind/windRose/wsDistriDialog.vue'
 import * as echarts from 'echarts'
 export default {
@@ -180,7 +180,7 @@ export default {
           data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
           data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
         }
-        postData(data)
+        post4WDData(data)
           .then((res) => {
             var roseData = res.data
             const colorBar = [
@@ -299,8 +299,8 @@ export default {
                   item.heightLabel
                 }高度 ${dirList[params.dataIndex]}方向风速分布数据`
                 this.drawDistributeParams = {
-                  siteValue: item.siteValue,
-                  heightValue: item.heightValue,
+                  siteLabel: item.siteLabel,
+                  heightLabel: item.heightLabel,
                   dirIndex: params.dataIndex,
                   dateRange: this.dateValue,
                 }
@@ -339,7 +339,7 @@ export default {
           data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
           data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
         }
-        postData(data)
+        post4WDData(data)
           .then((res) => {
             var roseData = res.data
             var seriesData = []
