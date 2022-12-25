@@ -1,7 +1,7 @@
 <template>
   <!-- 点击玫瑰图弹窗 -->
   <div>
-    <h3>{{selectedSpan}}</h3>
+    <!-- <h3>{{selectedSpan}}</h3> -->
     <div class="windDistribute"
          ref="distributeChart"></div>
     <!-- <span slot="footer">
@@ -47,60 +47,91 @@ export default {
           console.log(res.data)
           var maxV = 0
           var minV = 0
+          var countSum = 0
           res.data.forEach((range) => {
             maxV =
               parseInt(range.rangeStart) > maxV
                 ? parseInt(range.rangeStart)
                 : maxV
+            countSum += parseInt(range.count)
           })
-          var speedList = new Array(maxV - minV + 1).fill(0)
-          for (let i = 0; i < speedList.length; i++) {
-            speedList[i] += i
-          }
+          const delta = 1 //表示单个速度范围的跨度，与后端一致
+          var seriesData = []
+
           var countList = new Array(maxV - minV + 1).fill(0)
           res.data.forEach((range) => {
             countList[parseInt(range.rangeStart)] = parseInt(range.count)
           })
-          console.log(speedList)
-          console.log(countList)
+          for (let i = 0; i < maxV - minV + 1; i++) {
+            seriesData.push([i + delta / 2, countList[i] / countSum])
+          }
+          //
+          //
+
+          //
           this.distributeChart = echarts.init(this.$refs.distributeChart)
           var option = {
             tooltip: {
               trigger: 'axis',
               axisPointer: {
                 type: 'shadow',
+                // formatter: 'some text {value} some text',
               },
+              formatter: function (params) {
+                console.log(params[0])
+                var str = `风速：${params[0].data[0] - delta / 2}-${
+                  params[0].data[0] + delta / 2
+                } m/s<br>频率：${(100 * params[0].data[1]).toFixed(2)}%`
+                return str
+              },
+              // valueFormatter: (value) => (100 * value).toFixed(2) + '%',
             },
             grid: {
-              left: '3%',
-              right: '4%',
-              bottom: '3%',
+              left: 45,
+              right: '5%',
+              bottom: 35,
+              top: '3%',
               containLabel: true,
             },
             xAxis: [
               {
-                type: 'category',
-                data: speedList,
-                axisTick: {
-                  alignWithLabel: true,
+                name: 'Speed',
+                nameLocation: 'center',
+                nameGap: 35,
+                interval: 1,
+                max: function (value) {
+                  return value.max + delta / 2
+                },
+                splitLine: {
+                  show: false,
                 },
               },
             ],
             yAxis: [
               {
+                name: 'Frequency',
+                nameGap: 45,
+                nameLocation: 'center',
                 type: 'value',
+                axisLabel: {
+                  formatter: function (value) {
+                    return value * 100 + '%'
+                  },
+                },
               },
             ],
             series: [
               {
-                name: 'Speed',
                 type: 'bar',
                 barWidth: '100%',
-                data: countList,
+                data: seriesData,
               },
             ],
           }
           option && this.distributeChart.setOption(option)
+          window.onresize = () => {
+            this.distributeChart.resize()
+          }
         })
         .catch((e) => {
           console.log(e)

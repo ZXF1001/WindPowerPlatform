@@ -297,7 +297,7 @@ export default {
                 ]
                 this.dialogTitle = `${item.siteLabel}站点 ${
                   item.heightLabel
-                }高度 ${dirList[params.dataIndex]}方向风速分布数据`
+                }高度 ${dirList[params.dataIndex]}方向风速分布`
                 this.drawDistributeParams = {
                   siteLabel: item.siteLabel,
                   heightLabel: item.heightLabel,
