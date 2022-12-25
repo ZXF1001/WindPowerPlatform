@@ -50,7 +50,7 @@
                  shadow="never"
                  v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))"
                  v-loading="loading">
-          <p class="title">{{options.siteLabel}}测风塔{{options.heightLabel}}数据</p>
+          <p class="title">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
           <div class="windrose"
                ref="roseChart"
                :id="options.siteLabel+options.heightLabel"></div>
@@ -73,6 +73,7 @@ import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
 import { post4WDData } from '@/api/wind/postRoseData.js'
 import wsDistriDialog from '@/components/wind/windRose/wsDistriDialog.vue'
 import * as echarts from 'echarts'
+import colorBar from '@/json/windRose/colorBar.json'
 export default {
   components: { wsDistriDialog },
   data() {
@@ -86,7 +87,7 @@ export default {
       //加载遮罩的状态
       loading: true,
       //所有的echarts玫瑰图
-      range: [1, 3, 5, 7, 10, 15], //要画的风速区间
+      range: [2, 5, 10, 15, 20, 25], //要画的风速区间
       vforList: [], //为了一个v-for就能遍历
       echartsList: null,
       //风速分布弹窗的数据
@@ -183,22 +184,33 @@ export default {
         post4WDData(data)
           .then((res) => {
             var roseData = res.data
-            const colorBar = [
-              '#453781',
-              '#32648e',
-              '#238a8d',
-              '#29af7f',
-              '#74d055',
-              '#fde725',
-            ]
+
+            // const colorBar = [
+            //   '#453781', //0-5
+            //   '#32648e', //5-10
+            //   '#238a8d', //10-15
+            //   '#29af7f', //15-20
+            //   '#74d055', //20-25
+            //   '#fde725', //25-
+            // ]
 
             this.echartsList[item.siteValue - 1][item.heightValue - 1] =
               echarts.init(
                 document.getElementById(item.siteLabel + item.heightLabel)
               )
             var seriesData = []
+            var color = []
             //极坐标堆叠图的数据是从正北方向顺时针排布
             for (var key in roseData) {
+              if (roseData[key].length != 0) {
+                var index = Math.round(
+                  (this.range.indexOf(parseInt(key.split('-')[0])) /
+                    (this.range.length - 1)) *
+                    (colorBar.length - 1)
+                )
+                color.push(colorBar[index])
+              }
+
               var barData = []
               roseData[key].forEach((dirData) => {
                 barData[dirData.direction] = dirData.frequency
@@ -220,10 +232,24 @@ export default {
             }
 
             var option = {
-              color: colorBar,
+              color: color,
               // title: {
               //   text: `${item.siteLabel} ${item.heightLabel}风向玫瑰图`,
               // },
+              tooltip: {
+                trigger: 'item',
+                axisPointer: {
+                  type: 'shadow',
+                },
+                confine: true,
+                borderColor: '#333',
+                padding: [5, 10],
+                position: 'top',
+                formatter: '点击查看该方向的风速分布',
+                textStyle: {
+                  fontSize: 13,
+                },
+              },
               angleAxis: {
                 startAngle: 90 + 360 / 16 / 2,
                 type: 'category',
@@ -266,7 +292,7 @@ export default {
                 // orient: 'vertical',
                 x: 'center',
                 y: 'bottom',
-                // data: Object.keys(roseData),
+                formatter: '{name} m/s',
               },
             }
 
@@ -341,9 +367,20 @@ export default {
         }
         post4WDData(data)
           .then((res) => {
+            var color = []
             var roseData = res.data
             var seriesData = []
             for (var key in roseData) {
+              if (roseData[key].length != 0) {
+                var index = Math.round(
+                  (this.range.indexOf(parseInt(key.split('-')[0])) /
+                    (this.range.length - 1)) *
+                    (colorBar.length - 1)
+                )
+                color.push(colorBar[index])
+              }
+              console.log('key:' + key)
+              console.log(parseInt(key.split('-')[0]))
               var barData = []
               roseData[key].forEach((dirData) => {
                 barData[dirData.direction] = dirData.frequency
@@ -360,11 +397,13 @@ export default {
                 })
               }
             }
+
             var option =
               this.echartsList[ele.siteValue - 1][
                 ele.heightValue - 1
               ].getOption()
             option.series = seriesData
+            option.color = color
 
             this.echartsList[ele.siteValue - 1][ele.heightValue - 1].setOption(
               option,
@@ -420,6 +459,9 @@ export default {
       text-align: center;
     }
   }
+}
+/deep/.el-dialog__body {
+  padding-top: 10px;
 }
 </style>
 

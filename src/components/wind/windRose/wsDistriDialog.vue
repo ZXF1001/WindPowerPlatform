@@ -14,6 +14,7 @@
 <script>
 import * as echarts from 'echarts'
 import { post4WSData } from '@/api/wind/postRoseData'
+import colorBar from '@/json/windRose/colorBar.json'
 export default {
   name: 'wsDistriDialog',
   props: ['selectedSpan'],
@@ -55,6 +56,12 @@ export default {
                 : maxV
             countSum += parseInt(range.count)
           })
+
+          if (maxV >= colorBar.length) {
+            for (let i = 0; i < maxV + 1; i++) {
+              colorBar.push(colorBar[colorBar.length - 1])
+            }
+          }
           const delta = 1 //表示单个速度范围的跨度，与后端一致
           var seriesData = []
 
@@ -65,14 +72,20 @@ export default {
           for (let i = 0; i < maxV - minV + 1; i++) {
             seriesData.push([i + delta / 2, countList[i] / countSum])
           }
-          //
-          //
-
-          //
+          // const colorBar = [
+          //   '#453781', //0-5
+          //   '#32648e', //5-10
+          //   '#238a8d', //10-15
+          //   '#29af7f', //15-20
+          //   '#74d055', //20-25
+          //   '#fde725', //25-
+          // ]
           this.distributeChart = echarts.init(this.$refs.distributeChart)
           var option = {
+            color: colorBar,
             toolbox: {
               top: 0,
+              right: '5%',
               feature: {
                 saveAsImage: {},
                 magicType: {
@@ -80,9 +93,11 @@ export default {
                   option: {
                     line: {
                       smooth: true,
-
-                      animationDuration: 1000,
-                      animationEasing: 'cubicOut',
+                      symbol: 'none',
+                      lineStyle: {
+                        color: '#5470c6',
+                      },
+                      // colorBy: 'data',
                     },
                     bar: {
                       animationEasing: 'cubicOut',
@@ -104,7 +119,6 @@ export default {
                 } m/s<br>频率：${(100 * params[0].data[1]).toFixed(2)}%`
                 return str
               },
-              // valueFormatter: (value) => (100 * value).toFixed(2) + '%',
             },
             grid: {
               left: 45,
@@ -144,9 +158,13 @@ export default {
             animationEasing: 'cubicOut',
             series: [
               {
+                colorBy: 'data',
                 type: 'bar',
                 barWidth: '100%',
                 data: seriesData,
+                itemStyle: {
+                  borderColor: '#111',
+                },
               },
             ],
           }
