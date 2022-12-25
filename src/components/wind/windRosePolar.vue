@@ -461,7 +461,7 @@ export default {
   }
 }
 /deep/.el-dialog__body {
-  padding-top: 10px;
+  padding-top: 0px;
 }
 </style>
 

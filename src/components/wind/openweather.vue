@@ -35,7 +35,11 @@
         </el-card>
       </el-col>
     </el-row>
-
+    <el-card>
+      <!-- 风速风向折线图 -->
+      <div class="linechart"
+           ref="Wecharts"></div>
+    </el-card>
     <div class="row">
       <el-card>
         <!-- 温湿度折线图 -->
@@ -48,11 +52,6 @@
              ref="Hecharts"></div>
       </el-card>
     </div>
-    <el-card>
-      <!-- 风速风向折线图 -->
-      <div class="linechart"
-           ref="Wecharts"></div>
-    </el-card>
 
   </div>
 </template>

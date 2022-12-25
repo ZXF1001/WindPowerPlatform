@@ -49,6 +49,7 @@ export default {
           var maxV = 0
           var minV = 0
           var countSum = 0
+
           res.data.forEach((range) => {
             maxV =
               parseInt(range.rangeStart) > maxV
@@ -189,6 +190,6 @@ export default {
 </script>
 <style lang="less" scoped>
 .windDistribute {
-  height: 400px;
+  height: 60vh;
 }
 </style>
