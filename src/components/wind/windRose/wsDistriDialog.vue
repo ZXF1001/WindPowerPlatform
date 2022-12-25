@@ -71,6 +71,26 @@ export default {
           //
           this.distributeChart = echarts.init(this.$refs.distributeChart)
           var option = {
+            toolbox: {
+              top: 0,
+              feature: {
+                saveAsImage: {},
+                magicType: {
+                  type: ['line', 'bar'],
+                  option: {
+                    line: {
+                      smooth: true,
+
+                      animationDuration: 1000,
+                      animationEasing: 'cubicOut',
+                    },
+                    bar: {
+                      animationEasing: 'cubicOut',
+                    },
+                  },
+                },
+              },
+            },
             tooltip: {
               trigger: 'axis',
               axisPointer: {
@@ -90,7 +110,7 @@ export default {
               left: 45,
               right: '5%',
               bottom: 35,
-              top: '3%',
+              top: 50,
               containLabel: true,
             },
             xAxis: [
@@ -120,6 +140,8 @@ export default {
                 },
               },
             ],
+            animationDuration: 500,
+            animationEasing: 'cubicOut',
             series: [
               {
                 type: 'bar',
