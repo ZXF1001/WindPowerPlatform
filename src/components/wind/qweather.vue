@@ -2,41 +2,74 @@
   <div>
     <el-row>
       <!-- 左栏 -->
-      <el-col :span="5">
-        <el-card class="now">
-          <h2>当前天气</h2>
-          <p>{{nowUpdateTime?"最近更新时间："+nowUpdateTime:"更新中"}}</p>
+      <el-col :span="6">
+        <el-card class="now weatherRow">
+          <h3 class="weatherTitle">当前天气</h3>
+          <p class="weatherTime">{{nowUpdateTime?nowUpdateTime+"更新":"更新中"}}</p>
           <div class="weatherdata">
-            <span v-if="nowWeather.temp">温度：{{nowWeather.temp}}°C</span>
-            <span v-if="nowWeather.humidity">湿度：{{nowWeather.humidity}}%</span>
-            <span v-if="nowWeather.windSpeed">风速：{{(nowWeather.windSpeed/3.6).toFixed(2)}}m/s</span>
-            <span v-if="nowWeather.windDir">风向：{{nowWeather.windDir}}</span>
-            <span v-if="nowWeather.wind360">角度：{{nowWeather.wind360}}°</span>
+            <div class="tempAndType">
+              <i :class="'qi-'+nowWeather.icon"></i>
+              <div class="tempNumAndUnit"
+                   v-if="nowWeather.temp">
+                <span class="tempNum">{{nowWeather.temp}}</span>
+                <span class="tempUnit">°C</span>
+              </div>
+              <p class="weatherType">{{nowWeather.text}}</p>
+            </div>
+            <div class="otherWeather">
+              <div class="items"
+                   v-if="nowWeather.humidity">
+                <span class="title">湿度</span>
+                <span class="value">{{nowWeather.humidity}}%</span>
+              </div>
+              <div class="items"
+                   v-if="nowWeather.windSpeed">
+                <span class="title">风速</span>
+                <span class="value">{{(nowWeather.windSpeed/3.6).toFixed(2)}} m/s</span>
+              </div>
+              <div class="items"
+                   v-if="nowWeather.windDir">
+                <span class="title">风向</span>
+                <span class="value">{{nowWeather.windDir}}</span>
+              </div>
+              <div class="items"
+                   v-if="nowWeather.pressure">
+                <span class="title">气压</span>
+                <span class="value">{{nowWeather.pressure/10}} kPa</span>
+              </div>
+            </div>
+
           </div>
         </el-card>
       </el-col>
       <!-- 右栏 -->
-      <el-col :span="19">
-        <el-card class="future">
-          <h2>未来24小时天气</h2>
-          <p>{{hourlyUpdateTime?"最近更新时间："+hourlyUpdateTime:"更新中"}}</p>
+      <el-col :span="18">
+        <el-card class="future weatherRow">
+          <h3 class="weatherTitle">未来24小时天气</h3>
+          <p class="weatherTime">{{hourlyUpdateTime?hourlyUpdateTime+"更新":"更新中"}}</p>
+
           <div class="hourlyDatas scroller">
             <div v-for="item in hourlyWeather"
                  :key="item.fxTime"
                  class="hourlyData">
-              <span v-if="item.fxTime"
-                    class="time">时间：{{returnDayHour(item.fxTime)}}</span>
-              <span v-if="item.temp">温度：{{item.temp}}°C</span>
-              <span v-if="item.humidity">湿度：{{item.humidity}}%</span>
-              <span v-if="item.windSpeed">风速：{{(item.windSpeed/3.6).toFixed(2)}}m/s</span>
-              <span v-if="item.windDir">风向：{{item.windDir}}</span>
-              <span v-if="item.wind360">角度：{{item.wind360}}°</span>
+              <span class="time">{{returnHour(item.fxTime)}} 时</span>
+
+              <div class="valueAndIcon">
+                <i :class="'qi-'+item.icon" />
+                <div class="value">{{item.temp}}°C</div>
+              </div>
+              <div class="valueAndIcon">
+                <i class="qi-wind" />
+                <div class="value">{{item.windSpeed}}m/s</div>
+              </div>
+
             </div>
+
           </div>
         </el-card>
       </el-col>
     </el-row>
-    <el-card>
+    <el-card class="Wecharts">
       <!-- 风速风向折线图 -->
       <div class="linechart"
            ref="Wecharts"></div>
@@ -59,6 +92,7 @@
 
 <script>
 import { getQ24hWeather, getQNowWeather } from '../../api/wind/getWeather'
+import 'qweather-icons/font/qweather-icons.css'
 import * as echarts from 'echarts'
 export default {
   data() {
@@ -74,12 +108,10 @@ export default {
     }
   },
   methods: {
-    returnDayHour(date) {
-      // 输入json日期时间，返回屏幕显示的日期时间
+    returnHour(date) {
+      // 输入json日期时间，返回今天/明天+时间
       var dateObj = new Date(date)
-      var Day = dateObj.getDate()
-      var Hour = dateObj.getHours()
-      var returnTime = `${Day}日${Hour < 10 ? '0' + Hour : Hour}时`
+      var returnTime = dateObj.getHours()
       return returnTime
     },
     draw24hWeather(lat, lng) {
@@ -96,10 +128,8 @@ export default {
             var Hour = now.getHours()
             var Minute = now.getMinutes()
             var Second = now.getSeconds()
-            this.hourlyUpdateTime = `${Month}月${Day}日 ${
-              Hour < 10 ? '0' + Hour : Hour
-            }:${Minute < 10 ? '0' + Minute : Minute}:${
-              Second < 10 ? '0' + Second : Second
+            this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
+              Minute < 10 ? '0' + Minute : Minute
             }`
           } else {
             //执行没得到数据的代码
@@ -115,15 +145,13 @@ export default {
           if (res.data.code == '200') {
             this.nowWeather = res.data.now
             var now = new Date(res.data.now.obsTime)
-            var Month = now.getMonth() + 1
-            var Day = now.getDate()
+            // var Month = now.getMonth() + 1
+            // var Date = now.getDate()
             var Hour = now.getHours()
             var Minute = now.getMinutes()
-            var Second = now.getSeconds()
-            this.nowUpdateTime = `${Month}月${Day}日 ${
-              Hour < 10 ? '0' + Hour : Hour
-            }:${Minute < 10 ? '0' + Minute : Minute}:${
-              Second < 10 ? '0' + Second : Second
+            // var Second = now.getSeconds()
+            this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
+              Minute < 10 ? '0' + Minute : Minute
             }`
           } else {
             //执行没得到数据的代码
@@ -387,26 +415,97 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.weatherRow {
+  height: 250px;
+  .weatherTitle {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-size: 15px;
+  }
+  .weatherTime {
+    margin: 5px 0px;
+    font-size: 8px;
+    color: #333;
+  }
+}
 .now {
   width: 95%;
-  height: 280px;
   .weatherdata {
-    span {
-      display: block;
+    .tempAndType {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+      i {
+        font-size: 80px;
+        margin-right: 5px;
+      }
+      .tempNumAndUnit {
+        display: flex;
+        align-items: center;
+        margin-right: 40px;
+        .tempNum {
+          font-size: 60px;
+        }
+        .tempUnit {
+          font-size: 30px;
+          padding-bottom: 15px;
+        }
+      }
+      .weatherType {
+        font-size: 20px;
+        font-weight: bold;
+      }
+    }
+    .otherWeather {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      // border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+      .items {
+        .title {
+          font-size: 12px;
+          display: block;
+        }
+        .value {
+          display: block;
+        }
+      }
     }
   }
 }
 .future {
-  height: 280px;
   .hourlyDatas {
     overflow-x: scroll;
     display: flex;
     justify-content: space-between;
+    position: absolute;
+    bottom: 7px;
+    width: calc(
+      18 / 24 * 100% - 40px
+    ); // 这是因为右边列的span为19，所以width=19/24*100%-2*20px（padding=20px）
     .hourlyData {
-      margin-bottom: 10px;
-      span {
+      margin-bottom: 5px;
+      margin-right: 8px;
+      padding: 5px 20px;
+      border: solid 1px rgba(0, 0, 0, 0.12);
+      border-radius: 4px;
+      // height: 135px;
+      .time {
         display: block;
-        width: 180px;
+        text-align: center;
+        margin: 10px 0px;
+      }
+
+      .valueAndIcon {
+        display: flex;
+        align-items: center;
+        i {
+          font-size: 35px;
+        }
+        .value {
+          margin-left: 10px;
+        }
       }
     }
   }
@@ -428,7 +527,9 @@ export default {
     border-radius: 2em;
   }
 }
-
+.Wecharts {
+  margin-top: 10px;
+}
 .row {
   margin-top: 10px;
   display: flex;
@@ -438,9 +539,7 @@ export default {
     width: 49.5%;
   }
 }
-h2 {
-  margin-top: 0px;
-}
+
 .linechart {
   height: 280px;
 }

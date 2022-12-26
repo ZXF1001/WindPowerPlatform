@@ -87,7 +87,7 @@ export default {
       //加载遮罩的状态
       loading: true,
       //所有的echarts玫瑰图
-      range: [2, 5, 10, 15, 20, 25], //要画的风速区间
+      range: [0, 3, 5, 7, 9, 11, 13, 15], //要画的风速区间
       vforList: [], //为了一个v-for就能遍历
       echartsList: null,
       //风速分布弹窗的数据
@@ -284,8 +284,8 @@ export default {
                 },
               },
               polar: {
-                center: ['50%', '38%'],
-                radius: '68%', //半径大小
+                center: ['50%', '35%'],
+                radius: '72%', //半径大小
               },
               series: seriesData,
               legend: {
@@ -445,7 +445,7 @@ export default {
   }
 }
 .windrose {
-  height: 300px;
+  height: 340px;
 }
 .roseGroup {
   display: flex; //弹性布局

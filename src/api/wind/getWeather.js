@@ -1,7 +1,6 @@
-import httpQweather from "../../utils/requestQweather.js";
 import httpOpenWeather from "../../utils/requestOpenWeather.js";
-//请求和风天气数据
-//这里可以改成格式化字符串好看一点
+import httpQweather from "../../utils/requestQweather.js";
+//*请求和风天气数据grid-weather/now?
 export const getQ24hWeather = (lat, lng) => {
   var url = `/24h?location=${lng},${lat}&key=a1d4666305e340d2949e735377311cca`;
   return httpQweather.get(url);

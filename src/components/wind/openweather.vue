@@ -35,7 +35,7 @@
         </el-card>
       </el-col>
     </el-row>
-    <el-card>
+    <el-card class="Wecharts">
       <!-- 风速风向折线图 -->
       <div class="linechart"
            ref="Wecharts"></div>
@@ -439,7 +439,9 @@ export default {
     border-radius: 2em;
   }
 }
-
+.Wecharts {
+  margin-top: 10px;
+}
 .row {
   margin-top: 10px;
   display: flex;

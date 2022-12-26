@@ -2,7 +2,7 @@ import axios from "axios";
 
 const httpQweather = axios.create({
   // 通用请求地址前缀
-  baseURL: "https://devapi.qweather.com/v7/weather",
+  baseURL: "https://devapi.qweather.com/v7/grid-weather",
   // headers: { "X-Requested-With": "XMLHttpRequest" },
   timeout: 10000,
 });

@@ -17,11 +17,7 @@
                  :lazy="true">
       <qweather></qweather>
     </el-tab-pane>
-    <el-tab-pane label="openweather"
-                 name="openweather"
-                 :lazy="true">
-      <openweather></openweather>
-    </el-tab-pane>
+
     <el-tab-pane label="流线图"
                  name="streamline"
                  :lazy="true">
@@ -41,7 +37,6 @@ import windRosePolar from '../components/wind/windRosePolar.vue'
 import streamline from '../components/wind/streamline.vue'
 import speedLine from '../components/wind/speedLine.vue'
 import qweather from '../components/wind/qweather.vue'
-import openweather from '../components/wind/openweather.vue'
 
 export default {
   components: {
@@ -50,7 +45,6 @@ export default {
     streamline,
     speedLine,
     qweather,
-    openweather,
   },
   data() {
     return {
