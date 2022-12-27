@@ -25,7 +25,7 @@
               <div class="items"
                    v-if="nowWeather.windSpeed">
                 <span class="title">风速</span>
-                <span class="value">{{(nowWeather.windSpeed/3.6).toFixed(2)}} m/s</span>
+                <span class="value">{{(nowWeather.windSpeed/3.6).toFixed(1)}} m/s</span>
               </div>
               <div class="items"
                    v-if="nowWeather.windDir">
@@ -60,7 +60,7 @@
               </div>
               <div class="valueAndIcon">
                 <i class="qi-wind" />
-                <div class="value">{{item.windSpeed}}m/s</div>
+                <div class="value">{{(item.windSpeed/3.6).toFixed(1)}}m/s</div>
               </div>
 
             </div>
@@ -70,17 +70,20 @@
       </el-col>
     </el-row>
     <el-card class="Wecharts">
+      <h3 class="weatherTitle">未来24小时风速风向</h3>
       <!-- 风速风向折线图 -->
       <div class="linechart"
            ref="Wecharts"></div>
     </el-card>
     <div class="row">
       <el-card>
+        <h3 class="weatherTitle">未来24小时温度</h3>
         <!-- 温湿度折线图 -->
         <div class="linechart"
              ref="Techarts"></div>
       </el-card>
       <el-card>
+        <h3 class="weatherTitle">未来24小时湿度</h3>
         <!-- 温湿度折线图 -->
         <div class="linechart"
              ref="Hecharts"></div>
@@ -123,11 +126,8 @@ export default {
             this.drawHumid(res.data.hourly)
             this.drawWind(res.data.hourly)
             var now = new Date(res.data.updateTime)
-            var Month = now.getMonth() + 1
-            var Day = now.getDate()
             var Hour = now.getHours()
             var Minute = now.getMinutes()
-            var Second = now.getSeconds()
             this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
               Minute < 10 ? '0' + Minute : Minute
             }`
@@ -187,12 +187,10 @@ export default {
       })
       var option = {
         color: '#ee6666',
-        title: {
-          text: '未来24小时温度',
-        },
+
         tooltip: {
           trigger: 'axis',
-
+          valueFormatter: (value) => value + '°C',
           // formatter:{}
         },
 
@@ -200,6 +198,7 @@ export default {
           containLabel: true,
           left: '2%',
           right: '3%',
+          top: '10%',
           bottom: '2%',
         },
 
@@ -256,18 +255,18 @@ export default {
       })
       var option = {
         color: '#5470c6',
-        title: {
-          text: '未来24小时湿度',
-        },
+
         tooltip: {
           trigger: 'axis',
           // formatter:{}
+          valueFormatter: (value) => value + '%',
         },
 
         grid: {
           containLabel: true,
           left: '2%',
           right: '3%',
+          top: '10%',
           bottom: '2%',
         },
         // toolbox: {
@@ -333,18 +332,17 @@ export default {
           name: time.toString(),
           value: [
             chartTime,
-            (element.windSpeed / 3.6).toFixed(2),
+            (element.windSpeed / 3.6).toFixed(1),
             element.wind360,
           ],
         })
       })
       var option = {
         color: '#73c0de',
-        title: {
-          text: '未来24小时风速风向',
-        },
+
         tooltip: {
           trigger: 'axis',
+          valueFormatter: (value) => value + ' m/s',
           // formatter:{}
         },
 
@@ -352,6 +350,7 @@ export default {
           containLabel: true,
           left: '2%',
           right: '3%',
+          top: '10%',
           bottom: '2%',
         },
 
@@ -417,16 +416,16 @@ export default {
 <style lang="less" scoped>
 .weatherRow {
   height: 250px;
-  .weatherTitle {
-    margin-top: 0px;
-    margin-bottom: 0px;
-    font-size: 15px;
-  }
-  .weatherTime {
-    margin: 5px 0px;
-    font-size: 8px;
-    color: #333;
-  }
+}
+.weatherTitle {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 15px;
+}
+.weatherTime {
+  margin: 5px 0px;
+  font-size: 8px;
+  color: #333;
 }
 .now {
   width: 95%;
@@ -452,7 +451,7 @@ export default {
         }
       }
       .weatherType {
-        font-size: 20px;
+        font-size: 25px;
         font-weight: bold;
       }
     }
@@ -487,7 +486,7 @@ export default {
     .hourlyData {
       margin-bottom: 5px;
       margin-right: 8px;
-      padding: 5px 20px;
+      padding: 5px 15px;
       border: solid 1px rgba(0, 0, 0, 0.12);
       border-radius: 4px;
       // height: 135px;
@@ -495,13 +494,14 @@ export default {
         display: block;
         text-align: center;
         margin: 10px 0px;
+        font-size: 14px;
       }
 
       .valueAndIcon {
         display: flex;
         align-items: center;
         i {
-          font-size: 35px;
+          font-size: 30px;
         }
         .value {
           margin-left: 10px;
