@@ -214,20 +214,8 @@ export default {
           ]
           data.forEach((cluster) => {
             var markerList = []
-            var bound = {
-              top: cluster.turbine[0].lng,
-              bottom: cluster.turbine[0].lng,
-              left: cluster.turbine[0].lat,
-              right: cluster.turbine[0].lat,
-            }
-            cluster.turbine.forEach((turbine) => {
-              bound.top = turbine.lng > bound.top ? turbine.lng : bound.top
-              bound.bottom =
-                turbine.lng < bound.bottom ? turbine.lng : bound.bottom
-              bound.left = turbine.lat < bound.left ? turbine.lat : bound.left
-              bound.right =
-                turbine.lat > bound.right ? turbine.lat : bound.right
 
+            cluster.turbine.forEach((turbine) => {
               var tempMarker = L.circleMarker([turbine.lat, turbine.lng], {
                 radius: 5,
                 color: colorList[cluster.cluster_id - 1],
@@ -244,17 +232,9 @@ export default {
             var templayerGroup = L.layerGroup(markerList)
 
             templayerGroup.addTo(mapObj)
-            // 定义矩形的地理边界
-            var bounds = [
-              [bound.left, bound.top],
-              [bound.right, bound.bottom],
-            ]
 
-            // 创建一个橙色的矩形
-            var rec = L.rectangle(bounds, { color: '#ff7800', weight: 1 })
             this.layerGroup.push({
               name: cluster.cluster_name,
-              bound: rec,
               data: templayerGroup,
             })
           })
