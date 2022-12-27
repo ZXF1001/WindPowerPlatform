@@ -33,6 +33,12 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet/dist/leaflet'
+import 'leaflet-geotiff-2'
+
+// optional renderers
+import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
+import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
+import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty' // requires plotty
 import baseLayersData from '../../json/map/baseLayers.json'
 import { getMyTurbineData } from '../../api/wind/getMapData.js'
 export default {
@@ -119,27 +125,39 @@ export default {
           imperial: false,
         })
         .addTo(this.map)
+      const point1 = [41.55, 115.3]
+      const point2 = [41.05, 114.8]
+      const tiffUrl =
+        // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
+        'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
+
       // 画标记点
       this.drawMarker(this.map, layerControl)
 
-      // 定义图片图层
-      var imageUrl =
-        'https://www.energychina.press/fileNFNYJS/journal/article/nfnyjs/2017/1/PIC/2095-8676-04-01-006-F008.jpg'
-      // 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg'
-
-      const point1 = [41.55, 115.3]
-      const point2 = [41.05, 114.8]
-      this.drawContour(this.map, layerControl, imageUrl, point1, point2)
+      // 定义标量云图图层
+      this.drawContour(layerControl, tiffUrl, point1, point2)
     },
-    drawContour(mapObj, layerControlObj, imgUrl, point1, point2) {
-      // 以image形式绘制云图
-      var imgBounds = [point1, point2]
-      var contourLayer1 = L.imageOverlay(imgUrl, imgBounds, {
-        opacity: 0.5,
-      })
-      // contourLayer1.addTo(mapObj)
-      mapObj.addLayer(contourLayer1)
-      layerControlObj.addOverlay(contourLayer1, '风场云图')
+    drawContour(layerControlObj, url, point1, point2) {
+      const rendererOptions = {
+        band: 0,
+        displayMin: 1500,
+        displayMax: 2000,
+        applyDisplayRange: false,
+        clampLow: true,
+        clampHigh: true,
+        colorScale: 'viridis',
+      }
+
+      const renderer = new L.LeafletGeotiff.Plotty(rendererOptions)
+      const option = {
+        renderer: renderer,
+        bounds: [point1, point2],
+        useWorker: true,
+        noDataValue: null,
+        opacity: 0.75,
+      }
+      var layer = L.leafletGeotiff(url, option).addTo(this.map)
+      layerControlObj.addOverlay(layer, '风场云图2')
     },
     drawMarker(mapObj) {
       var groupByCluster = (res) => {
