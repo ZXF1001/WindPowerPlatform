@@ -21,6 +21,7 @@
                          style="display: block; padding-top: 10px;">{{cluster}}</el-checkbox>
 
           </el-checkbox-group>
+
         </div>
       </el-collapse-transition>
     </el-card>
@@ -33,13 +34,14 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet/dist/leaflet'
+import 'leaflet-canvas-marker'
 import 'leaflet-geotiff-2'
-
 // optional renderers
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty' // requires plotty
 import baseLayersData from '../../json/map/baseLayers.json'
+import Icon from '@/assets/logo.png'
 import { getMyTurbineData } from '../../api/wind/getMapData.js'
 export default {
   data() {
@@ -212,26 +214,29 @@ export default {
             '#95324E',
             '#F7AAAA',
           ]
+          var icon = L.icon({
+            iconUrl: Icon,
+            iconSize: [20, 18],
+            iconAnchor: [10, 9],
+          })
           data.forEach((cluster) => {
             var markerList = []
 
             cluster.turbine.forEach((turbine) => {
-              var tempMarker = L.circleMarker([turbine.lat, turbine.lng], {
-                radius: 5,
-                color: colorList[cluster.cluster_id - 1],
+              var tempMarker = L.marker([turbine.lat, turbine.lng], {
+                icon: icon,
               })
               var popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
                                   <span>所属集群：${cluster.cluster_name}</span><br>
                                   <span>经度：${turbine.lat}</span><br>
                                   <span>纬度：${turbine.lng}</span><br>
                                   <span>高程：${turbine.height}</span>`
+
               tempMarker.bindPopup(popupContent).openPopup()
               markerList.push(tempMarker)
             })
-
-            var templayerGroup = L.layerGroup(markerList)
-
-            templayerGroup.addTo(mapObj)
+            var templayerGroup = L.canvasIconLayer({}).addTo(this.map)
+            templayerGroup.addLayers(markerList)
 
             this.layerGroup.push({
               name: cluster.cluster_name,
