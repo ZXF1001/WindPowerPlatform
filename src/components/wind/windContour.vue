@@ -40,7 +40,11 @@ import 'leaflet-geotiff-2'
 // //import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
 // //import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
+//流线图插件
+import 'leaflet-velocity/dist/leaflet-velocity.css'
+import 'leaflet-velocity/dist/leaflet-velocity'
 //相关静态资源
+import data from '../../json/zb.json'
 import baseLayersData from '@/json/map/baseLayers.json'
 import Icon from '@/assets/windTurbineSvg/windturbine.svg'
 //请求风机点位的api
@@ -127,10 +131,6 @@ export default {
           imperial: false,
         })
         .addTo(this.map)
-
-      // 画标记点
-      this.drawMarker()
-
       // 定义标量云图图层
       const point1 = [40.7, 114]
       const point2 = [41.8, 115.8]
@@ -139,6 +139,9 @@ export default {
         'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
 
       this.drawContour(layerControl, tiffUrl, point1, point2)
+      this.drawStream(layerControl, data)
+      // 画标记点
+      this.drawMarker()
     },
     drawContour(layerControlObj, url, point1, point2) {
       const rendererOptions = {
@@ -161,6 +164,51 @@ export default {
       }
       var layer = L.leafletGeotiff(url, option).addTo(this.map)
       layerControlObj.addOverlay(layer, '风场云图2')
+    },
+    drawStream(layerControlObj, windData) {
+      //封装的绘制风场流场方法，windData有格式要求
+      const n = windData[0].header.nx * windData[0].header.ny //网格数
+      var minMag = Math.sqrt(
+        Math.pow(windData[0].data[0], 2) + Math.pow(windData[1].data[0], 2)
+      )
+      var maxMag = 0
+      var mag = 0
+      for (var i = 0; i < n; i++) {
+        mag = Math.sqrt(
+          Math.pow(windData[0].data[i], 2) + Math.pow(windData[1].data[i], 2)
+        )
+        minMag = mag < minMag ? mag : minMag
+        maxMag = mag > maxMag ? mag : maxMag
+      }
+      var velocityLayer1 = L.velocityLayer({
+        displayValues: true,
+        displayOptions: {
+          velocityType: '',
+          position: 'bottomright',
+          emptyString: '此处没有风数据',
+          angleConvention: 'meteoCCW',
+          showCardinal: true,
+          speedUnit: 'm/s',
+          directionString: '风向',
+          speedString: '风速',
+        },
+        data: windData,
+        minVelocity: minMag,
+        maxVelocity: maxMag,
+        velocityScale: 0.005,
+        frameRate: 40,
+        // particleAge: 20,
+        // lineWidth: 2,
+        // particleMultiplier: 0.005,
+        // colorScale:[],
+      })
+      this.map.addLayer(velocityLayer1)
+      layerControlObj.addOverlay(velocityLayer1, '风场流线')
+      //挂载map对象移动事件（隐藏流线）
+      this.map.on('moveend', () => {
+        velocityLayer1.remove()
+        this.map.addLayer(velocityLayer1)
+      })
     },
     drawMarker() {
       var groupByCluster = (res) => {
@@ -194,27 +242,27 @@ export default {
       getMyTurbineData()
         .then((res) => {
           var data = groupByCluster(res)
-          var colorList = [
-            '#5470c6',
-            '#91cc75',
-            '#fac858',
-            '#ee6666',
-            '#73c0de',
-            '#3ba272',
-            '#fc8452',
-            '#9a60b4',
-            '#ea7ccc',
-            '#A6ACAF',
-            '#27AE60',
-            '#00FFFF',
-            '#000080',
-            '#FF0000',
-            '#FFFF00',
-            '#00FF00',
-            '#28ED9C',
-            '#95324E',
-            '#F7AAAA',
-          ]
+          // var colorList = [
+          //   '#5470c6',
+          //   '#91cc75',
+          //   '#fac858',
+          //   '#ee6666',
+          //   '#73c0de',
+          //   '#3ba272',
+          //   '#fc8452',
+          //   '#9a60b4',
+          //   '#ea7ccc',
+          //   '#A6ACAF',
+          //   '#27AE60',
+          //   '#00FFFF',
+          //   '#000080',
+          //   '#FF0000',
+          //   '#FFFF00',
+          //   '#00FF00',
+          //   '#28ED9C',
+          //   '#95324E',
+          //   '#F7AAAA',
+          // ]
           console.log('Icon')
           console.log(Icon)
 

@@ -17,13 +17,7 @@
                  :lazy="true">
       <qweather></qweather>
     </el-tab-pane>
-
-    <el-tab-pane label="流线图"
-                 name="streamline"
-                 :lazy="true">
-      <streamline></streamline>
-    </el-tab-pane>
-    <el-tab-pane label="风资源云图"
+    <el-tab-pane label="风资源图"
                  name="contour"
                  :lazy="true">
       <wind-contour></wind-contour>
@@ -34,7 +28,6 @@
 <script>
 import windContour from '../components/wind/windContour.vue'
 import windRosePolar from '../components/wind/windRosePolar.vue'
-import streamline from '../components/wind/streamline.vue'
 import speedLine from '../components/wind/speedLine.vue'
 import qweather from '../components/wind/qweather.vue'
 
@@ -42,7 +35,6 @@ export default {
   components: {
     windContour,
     windRosePolar,
-    streamline,
     speedLine,
     qweather,
   },
