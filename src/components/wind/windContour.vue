@@ -5,7 +5,6 @@
            @click="isShow = !isShow">
         <h4 class="title">集群列表<i class="el-icon-arrow-down el-icon--right"></i></h4>
       </div>
-      <el-button @click="test">ccc</el-button>
       <el-collapse-transition>
         <div class="select scroller"
              v-loading="loading"
@@ -35,15 +34,17 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet/dist/leaflet'
-import 'leaflet-canvas-marker'
+import '@panzhiyue/leaflet-canvasmarker' //canvas渲染marker的插件
+//geotiff渲染插件
 import 'leaflet-geotiff-2'
-// optional renderers
-import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
-import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
-import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty' // requires plotty
-import baseLayersData from '../../json/map/baseLayers.json'
-import Icon from '@/assets/logo.png'
-import { getMyTurbineData } from '../../api/wind/getMapData.js'
+// //import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
+// //import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
+import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
+//相关静态资源
+import baseLayersData from '@/json/map/baseLayers.json'
+import Icon from '@/assets/windTurbineSvg/windturbine.svg'
+//请求风机点位的api
+import { getMyTurbineData } from '@/api/wind/getMapData.js'
 export default {
   data() {
     return {
@@ -58,7 +59,6 @@ export default {
     }
   },
   methods: {
-    test() {},
     //多选框相关方法
     handleCheckAllChange(val) {
       this.checkedClusters = val ? this.clusterOptions : []
@@ -103,14 +103,11 @@ export default {
         // crs: L.CRS.EPSG3857,
         attributionControl: false,
         zoomControl: false,
-        center: [41.05, 114.8],
+        center: [41.25, 114.9],
         zoom: 9,
         layers: baseLayers['天地图地形'], //默认加载图层
-        // zoomAnimation:false,
-        // markerZoomAnimation: false,
         preferCanvas: true,
       })
-      // map.dragging.disable() // 禁止平移
       // 定义图层控件
       var layerControl = L.control
         .layers(
@@ -130,16 +127,17 @@ export default {
           imperial: false,
         })
         .addTo(this.map)
-      const point1 = [41.55, 115.3]
-      const point2 = [41.05, 114.8]
+
+      // 画标记点
+      this.drawMarker()
+
+      // 定义标量云图图层
+      const point1 = [40.7, 114]
+      const point2 = [41.8, 115.8]
       const tiffUrl =
         // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
         'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
 
-      // 画标记点
-      this.drawMarker(this.map, layerControl)
-
-      // 定义标量云图图层
       this.drawContour(layerControl, tiffUrl, point1, point2)
     },
     drawContour(layerControlObj, url, point1, point2) {
@@ -164,7 +162,7 @@ export default {
       var layer = L.leafletGeotiff(url, option).addTo(this.map)
       layerControlObj.addOverlay(layer, '风场云图2')
     },
-    drawMarker(mapObj) {
+    drawMarker() {
       var groupByCluster = (res) => {
         //把数据库返回的零散数据按集群id整合
         var clusterIdList = []
@@ -217,10 +215,14 @@ export default {
             '#95324E',
             '#F7AAAA',
           ]
+          console.log('Icon')
+          console.log(Icon)
+
           var icon = L.icon({
             iconUrl: Icon,
-            iconSize: [20, 18],
-            iconAnchor: [10, 9],
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -15],
           })
           data.forEach((cluster) => {
             var markerList = []
@@ -235,10 +237,12 @@ export default {
                                   <span>纬度：${turbine.lng}</span><br>
                                   <span>高程：${turbine.height}</span>`
 
-              tempMarker.bindPopup(popupContent).openPopup()
+              tempMarker.bindPopup(popupContent)
               markerList.push(tempMarker)
             })
-            var templayerGroup = L.canvasIconLayer({}).addTo(this.map)
+            var templayerGroup = L.canvasMarkerLayer({
+              collisionFlg: false, // 碰撞检测
+            }).addTo(this.map)
             templayerGroup.addLayers(markerList)
 
             this.layerGroup.push({
