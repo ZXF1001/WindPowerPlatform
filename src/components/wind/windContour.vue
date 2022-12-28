@@ -25,7 +25,7 @@
         </div>
       </el-collapse-transition>
     </el-card>
-    <div id='contourMap'>
+    <div id='map'>
 
     </div>
   </div>
@@ -102,7 +102,7 @@ export default {
         }
       })
 
-      this.map = L.map('contourMap', {
+      this.map = L.map('map', {
         //参考坐标系
         // crs: L.CRS.EPSG3857,
         attributionControl: false,
@@ -132,22 +132,22 @@ export default {
         })
         .addTo(this.map)
       // 定义标量云图图层
-      const point1 = [40.7, 114]
-      const point2 = [41.8, 115.8]
       const tiffUrl =
         // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
-        'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
+        // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
+        'http://localhost/geotiff/testout.tif'
 
-      this.drawContour(layerControl, tiffUrl, point1, point2)
+      this.drawContour(layerControl, tiffUrl)
       this.drawStream(layerControl, data)
       // 画标记点
       this.drawMarker()
     },
-    drawContour(layerControlObj, url, point1, point2) {
+    drawContour(layerControlObj, url) {
       const rendererOptions = {
         band: 0,
-        displayMin: 1500,
-        displayMax: 2000,
+        displayMin: 1,
+        displayMax: 5,
+        //todo 这里要加上自动识别范围的功能
         applyDisplayRange: false,
         clampLow: true,
         clampHigh: true,
@@ -157,7 +157,10 @@ export default {
       const renderer = new L.LeafletGeotiff.Plotty(rendererOptions)
       const option = {
         renderer: renderer,
-        bounds: [point1, point2],
+        // bounds: [
+        //   [40.7, 114],
+        //   [41.8, 115.8],
+        // ],
         useWorker: true,
         noDataValue: null,
         opacity: 0.75,
@@ -358,7 +361,7 @@ export default {
     }
   }
 }
-#contourMap {
+#map {
   height: calc(100vh - 154px);
 }
 </style>
