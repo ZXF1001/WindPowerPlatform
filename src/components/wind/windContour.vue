@@ -5,6 +5,7 @@
            @click="isShow = !isShow">
         <h4 class="title">集群列表<i class="el-icon-arrow-down el-icon--right"></i></h4>
       </div>
+      <el-button @click="test">ccc</el-button>
       <el-collapse-transition>
         <div class="select scroller"
              v-loading="loading"
@@ -34,7 +35,7 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet/dist/leaflet'
-import '@/utils/leaflet.canvas-markers'
+import 'leaflet-canvas-marker'
 import 'leaflet-geotiff-2'
 // optional renderers
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
@@ -57,6 +58,7 @@ export default {
     }
   },
   methods: {
+    test() {},
     //多选框相关方法
     handleCheckAllChange(val) {
       this.checkedClusters = val ? this.clusterOptions : []
@@ -105,7 +107,8 @@ export default {
         zoom: 9,
         layers: baseLayers['天地图地形'], //默认加载图层
         // zoomAnimation:false,
-        markerZoomAnimation: false,
+        // markerZoomAnimation: false,
+        preferCanvas: true,
       })
       // map.dragging.disable() // 禁止平移
       // 定义图层控件
