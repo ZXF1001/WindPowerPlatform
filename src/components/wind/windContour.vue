@@ -34,7 +34,7 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet/dist/leaflet'
-import 'leaflet-canvas-marker'
+import '@/utils/leaflet.canvas-markers'
 import 'leaflet-geotiff-2'
 // optional renderers
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
