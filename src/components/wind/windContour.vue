@@ -45,7 +45,7 @@ import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
 import 'leaflet-velocity/dist/leaflet-velocity.css'
 import 'leaflet-velocity/dist/leaflet-velocity'
 //相关静态资源
-import data from '../../json/zb.json'
+import data from '@/json/zb.json'
 import baseLayersData from '@/json/map/baseLayers.json'
 import Icon from '@/assets/windTurbineSvg/windturbine.svg'
 //请求风机点位的api
@@ -327,6 +327,7 @@ export default {
   mounted() {
     this.initMap()
   },
+  //! 要加一个beforeDestory(){}
 }
 </script>
 <style lang="less" scoped>

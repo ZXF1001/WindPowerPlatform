@@ -1,15 +1,15 @@
 <template>
   <el-card class="map">
     <div v-loading="loading">
-      <el-row>
-        <el-col :span="3">
-          <div class="left">
-            <!-- <el-button @click="conventGPS"
-                     size="mini">执行gps转化</el-button> -->
+      <el-container>
+        <el-aside width="auto">
+          <div class="select scroller"
+               v-loading="loading"
+               v-show="isShow">
             <el-checkbox :indeterminate="isIndeterminate"
                          v-model="checkAll"
                          @change="handleCheckAllChange">全选</el-checkbox>
-            <div style="margin: 15px 0;"></div>
+            <div style="margin: 10px 0;"></div>
             <el-checkbox-group v-model="checkedClusters"
                                @change="handleCheckedClustersChange">
               <el-checkbox v-for="cluster in clusterOptions"
@@ -19,40 +19,46 @@
 
             </el-checkbox-group>
           </div>
-        </el-col>
-        <el-col :span="21">
-          <div class="right">
-            <div id="container"></div>
-          </div>
-        </el-col>
-      </el-row>
+        </el-aside>
+        <el-main>
+          <div id="map"></div>
+        </el-main>
+      </el-container>
 
     </div>
   </el-card>
 </template>
 
 <script>
-//准备工作
-import { getOverviewTurbineData } from '../../api/overview/getMapData.js'
-import AMapLoader from '@amap/amap-jsapi-loader'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet/dist/leaflet'
+import '@panzhiyue/leaflet-canvasmarker' //canvas渲染marker的插件
+//geotiff渲染插件
+import 'leaflet-geotiff-2'
+import GeoTIFF from 'geotiff'
+// //import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
+// //import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
+import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
+//流线图插件
+import 'leaflet-velocity/dist/leaflet-velocity.css'
+import 'leaflet-velocity/dist/leaflet-velocity'
+//相关静态资源
+import data from '@/json/zb.json'
+import baseLayersData from '@/json/map/baseLayers.json'
 import Icon from '@/assets/windTurbineSvg/windturbine.svg'
-window._AMapSecurityConfig = {
-  securityJsCode: '1260f13fffc52b86824606929288ef75',
-}
+//请求风机点位的api
+import { getMyTurbineData } from '@/api/wind/getMapData.js'
 export default {
   data() {
     return {
+      isShow: true,
       loading: true,
-      //多选框相关变量
       checkAll: true,
       clusterOptions: [],
       checkedClusters: [], //这是选中的集群Array
       isIndeterminate: false,
-      // 地图相关变量
-      globalAMap: null, //用于全局调用的AMap对象
-      map: null, //全局map对象
-      labelsLayerList: [], //绘制不同集群数据的图层列表
-      infoWindow: null, //地图标记弹窗
+      map: null,
+      layerGroup: [],
     }
   },
   methods: {
@@ -60,289 +66,301 @@ export default {
     handleCheckAllChange(val) {
       this.checkedClusters = val ? this.clusterOptions : []
       this.isIndeterminate = false
-      if (val) {
-        //全选
-        this.labelsLayerList.forEach((element) => {
-          element.layerData.show()
-        })
-      } else {
-        //全不选
-        this.labelsLayerList.forEach((element) => {
-          element.layerData.hide()
-        })
-      }
+      this.redrawMarker(this.map)
     },
-    //多选框相关方法
     handleCheckedClustersChange(value) {
       // 传入的是一个选中项目的Array
       var checkedCount = value.length
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
-      this.redrawMarker()
+      this.redrawMarker(this.map)
     },
-    //高德地图初始化，包括了画边界和画标记
+    // 挂载后初始化地图并加载标记
     initMap() {
-      AMapLoader.load({
-        key: 'f9cb65dd9831f33581c66e88ec5881a6',
-        version: '2.0',
-        // version: '2.1Beta',
-        plugins: [''],
+      var baseLayers = []
+      // 从底图列表baseLayers.json文件中读取底图
+      baseLayersData.forEach((element) => {
+        if ('annotationUrl' in element) {
+          //底图的标注annotation也要加进来
+          var map = L.tileLayer(element.url, {
+            minZoom: element.minZoom,
+            maxZoom: element.maxZoom,
+          })
+          var annotation = L.tileLayer(element.annotationUrl, {
+            minZoom: element.minZoom,
+            maxZoom: element.maxZoom,
+          })
+          baseLayers[element.name] = L.layerGroup([map, annotation])
+        } else {
+          //没有annotation就不用考虑组成图层组
+          baseLayers[element.name] = L.tileLayer(element.url, {
+            minZoom: element.minZoom,
+            maxZoom: element.maxZoom,
+          })
+        }
       })
-        .then((AMap) => {
-          this.globalAMap = AMap
-          this.map = new AMap.Map('container', {
-            viewMode: '3D', // 地图模式
-            // terrain: true, // 开启地形图
-            zoom: 9,
-            center: [114.88, 41.27565],
-            layers: [
-              //使用多个图层
-              new AMap.TileLayer.Satellite(),
-              new AMap.TileLayer.RoadNet(),
-            ],
-          })
-          this.map.plugin(['AMap.MapType', 'AMap.Scale'], () => {
-            //地图类型切换
-            var type = new AMap.MapType({
-              defaultType: 0,
-            })
-            this.map.addControl(type)
-            var scale = new AMap.Scale({
-              position: 'RB',
-            })
-            this.map.addControl(scale)
-          })
-          //拖动地图时不显示标记点以防卡顿
-          this.map.on('movestart', () => {
-            this.labelsLayerList.forEach((element) => {
-              element.layerData.hide()
-            })
-          })
-          this.map.on('moveend', () => {
-            this.redrawMarker()
-          })
-          this.map.on('complete', () => {
-            this.drawBounds(AMap) //绘制区域边界
-            //初始化信息窗口对象
-            this.infoWindow = new AMap.InfoWindow({
-              autoMove: false,
-              closeWhenClickMap: true, //点击地图隐藏窗体
-              content: '',
-              offset: new AMap.Pixel(0, -15),
-            })
-            this.getMassLabel(AMap)
-          })
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-    //画边界的方法
-    drawBounds(m_AMap) {
-      // 传入AMap对象，绘制区域边界
-      m_AMap.plugin('AMap.DistrictSearch', () => {
-        var districtSearch = new m_AMap.DistrictSearch({
-          level: 'district',
-          //  是否显示下级行政区级数，1表示返回下一级行政区
-          subdistrict: 0,
-          // 返回行政区边界坐标点
-          extensions: 'all',
-        })
-        // 搜索所有省/直辖市信息
-        districtSearch.search('张北县', (status, result) => {
-          if (status === 'complete') {
-            const bounds = result.districtList[0].boundaries
-            for (let i = 0; i < bounds.length; i++) {
-              new m_AMap.Polygon({
-                map: this.map, // 指定地图对象
-                strokeWeight: 2, // 轮廓线宽度
-                path: bounds[i], //轮廓线的节点坐标数组
-                fillOpacity: 0.1, //透明度
-                fillColor: '#256edc', //填充颜色
-                strokeColor: '#256edc', //线条颜色
-              })
-            }
-            // this.map.setFitView()
-          } else {
-            console.log('未查询到张北县信息！')
-          }
-        })
-      })
-    },
 
-    //画大量Label
-    getMassLabel(m_AMap) {
-      getOverviewTurbineData()
-        .then((res) => {
-          var icon = {
-            //标注的icon实例
-            type: 'image',
-            // image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
-            image: Icon,
-            size: [20, 20],
-            anchor: 'bottom-center',
+      this.map = L.map('map', {
+        //参考坐标系
+        // crs: L.CRS.EPSG3857,
+        attributionControl: false,
+        zoomControl: false,
+        center: [41.25, 114.9],
+        zoom: 9,
+        layers: baseLayers['天地图地形'], //默认加载图层
+        preferCanvas: true,
+      })
+      // 定义图层控件
+      var layerControl = L.control
+        .layers(
+          baseLayers,
+          {},
+          {
+            position: 'topright',
+            collapsed: true,
           }
-          var tmp = []
-          // res.data结构：
-          // [
-          //   {
-          //   "cluster_id": "No.1",
-          //   "turbine": [{
-          //     "turbine_id": "WT17-16",
-          //     "lat": "41.489795",
-          //     "lng": "114.824031",
-          //     "AMapPosition": [114.830369,41.491712],
-          //     "height": "1404.563873"},
-          //       ...,
-          //     ]
-          //   },
-          //   ...,
-          //   {...},
+        )
+        .addTo(this.map)
+      //定义比例尺控件
+      L.control
+        .scale({
+          position: 'bottomleft',
+          maxWidth: '100',
+          imperial: false,
+        })
+        .addTo(this.map)
+      // 定义标量云图图层
+      const tiffUrl =
+        // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
+        // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
+        'http://1.117.224.40/geotiff/testout.tif'
+
+      this.drawContour(layerControl, tiffUrl)
+      this.drawStream(layerControl, data)
+      // 画标记点
+      this.drawMarker()
+    },
+    drawContour(layerControlObj, url) {
+      const rendererOptions = {
+        band: 0,
+        displayMin: 0,
+        displayMax: 5,
+        //todo 这里要加上自动识别范围的功能(x)
+        applyDisplayRange: true,
+        clampLow: true,
+        clampHigh: true,
+        colorScale: 'viridis',
+      }
+
+      const renderer = new L.LeafletGeotiff.Plotty(rendererOptions)
+      // console.log(renderer.getColourbarDataUrl('rainbow'))
+      const option = {
+        renderer: renderer,
+        // bounds: [
+        //   [40.7, 114],
+        //   [41.8, 115.8],
+        // ],
+
+        useWorker: true,
+        noDataValue: -99,
+        sourceFunction: GeoTIFF.fromUrl,
+        opacity: 0.75,
+      }
+      var layer = L.leafletGeotiff(url, option)
+
+      layer.addTo(this.map)
+      layerControlObj.addOverlay(layer, '风场云图')
+    },
+    drawStream(layerControlObj, windData) {
+      //封装的绘制风场流场方法，windData有格式要求
+      const n = windData[0].header.nx * windData[0].header.ny //网格数
+      var minMag = Math.sqrt(
+        Math.pow(windData[0].data[0], 2) + Math.pow(windData[1].data[0], 2)
+      )
+      var maxMag = 0
+      var mag = 0
+      for (var i = 0; i < n; i++) {
+        mag = Math.sqrt(
+          Math.pow(windData[0].data[i], 2) + Math.pow(windData[1].data[i], 2)
+        )
+        minMag = mag < minMag ? mag : minMag
+        maxMag = mag > maxMag ? mag : maxMag
+      }
+      var velocityLayer1 = L.velocityLayer({
+        displayValues: true,
+        displayOptions: {
+          velocityType: '',
+          position: 'bottomright',
+          emptyString: '此处没有风数据',
+          angleConvention: 'meteoCCW',
+          showCardinal: true,
+          speedUnit: 'm/s',
+          directionString: '风向',
+          speedString: '风速',
+        },
+        data: windData,
+        minVelocity: minMag,
+        maxVelocity: maxMag,
+        velocityScale: 0.005,
+        frameRate: 40,
+        // particleAge: 20,
+        // lineWidth: 2,
+        // particleMultiplier: 0.005,
+        // colorScale:[],
+      })
+      this.map.addLayer(velocityLayer1)
+      layerControlObj.addOverlay(velocityLayer1, '风场流线')
+      //挂载map对象移动事件（隐藏流线）
+      this.map.on('moveend', () => {
+        velocityLayer1.remove()
+        this.map.addLayer(velocityLayer1)
+      })
+    },
+    drawMarker() {
+      var groupByCluster = (res) => {
+        //把数据库返回的零散数据按集群id整合
+        var clusterIdList = []
+        var data = []
+        res.data.forEach((turbineItem) => {
+          if (clusterIdList.indexOf(turbineItem.cluster_id) == -1) {
+            clusterIdList.push(turbineItem.cluster_id)
+            this.clusterOptions.push(turbineItem.cluster_name)
+            this.checkedClusters.push(turbineItem.cluster_name)
+            data.push({
+              cluster_id: turbineItem.cluster_id,
+              cluster_name: turbineItem.cluster_name,
+              turbine: [],
+            })
+          }
+          var index = data.findIndex(
+            (item) => item.cluster_id == turbineItem.cluster_id
+          )
+          data[index].turbine.push({
+            turbine_id: turbineItem.turbine_id,
+            lat: turbineItem.lat,
+            lng: turbineItem.lng,
+            height: turbineItem.height,
+          })
+        })
+        this.loading = false
+        return data
+      }
+      getMyTurbineData()
+        .then((res) => {
+          var data = groupByCluster(res)
+          // var colorList = [
+          //   '#5470c6',
+          //   '#91cc75',
+          //   '#fac858',
+          //   '#ee6666',
+          //   '#73c0de',
+          //   '#3ba272',
+          //   '#fc8452',
+          //   '#9a60b4',
+          //   '#ea7ccc',
+          //   '#A6ACAF',
+          //   '#27AE60',
+          //   '#00FFFF',
+          //   '#000080',
+          //   '#FF0000',
+          //   '#FFFF00',
+          //   '#00FF00',
+          //   '#28ED9C',
+          //   '#95324E',
+          //   '#F7AAAA',
           // ]
-          res.data.forEach((cluster) => {
-            tmp.push(cluster.cluster_id)
-            var labelMarkers = []
-            cluster.turbine.forEach((element) => {
-              // 创建labelMarker实例
-              var labelMarker = new m_AMap.LabelMarker({
-                id: element.turbine_id, // 此属性非绘制文字内容，仅最为标识使用
-                position: element.AMapPosition,
-                // zIndex: 16,
-                // 将第一步创建的 icon 对象传给 icon 属性
+          console.log('Icon')
+          console.log(Icon)
+
+          var icon = L.icon({
+            iconUrl: Icon,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -15],
+          })
+          data.forEach((cluster) => {
+            var markerList = []
+
+            cluster.turbine.forEach((turbine) => {
+              var tempMarker = L.marker([turbine.lat, turbine.lng], {
                 icon: icon,
               })
-              // 挂载标记点击事件
-              labelMarker.on('mouseover', () => {
-                var infoWindowContent = [
-                  '<h1 style="font-size; 18px;margin-top:0px">编号：' +
-                    element.turbine_id +
-                    '</p>',
-                  '<p style="font-size: 12px">集群编号：' +
-                    cluster.cluster_id +
-                    '</p>',
+              var popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
+                                  <span>所属集群：${cluster.cluster_name}</span><br>
+                                  <span>经度：${turbine.lat}</span><br>
+                                  <span>纬度：${turbine.lng}</span><br>
+                                  <span>高程：${turbine.height}</span>`
 
-                  '<p style="font-size: 12px">风力机坐标：(' +
-                    element.lat +
-                    ',' +
-                    element.lng +
-                    ')</p>',
-                  '<p style="font-size: 12px">风力机高程：' +
-                    element.height +
-                    '</p>',
-                ]
-                this.infoWindow.setContent(infoWindowContent.join(''))
-                this.infoWindow.open(this.map, labelMarker.getPosition())
-              })
-              labelMarker.on('mouseout', () => {
-                this.infoWindow.close()
-              })
-              labelMarker.on('dragstart', () => {
-                this.labelsLayerList.forEach((element) => {
-                  element.layerData.hide()
-                })
-              })
-              labelMarkers.push(labelMarker)
+              tempMarker.bindPopup(popupContent)
+              markerList.push(tempMarker)
             })
-            // 创建 AMap.LabelsLayer 图层
-            var labelsLayer = new m_AMap.LabelsLayer({
-              // zIndex: 1000,
-              collision: false,
-            })
-            labelsLayer.add(labelMarkers)
-            // 将图层添加到地图，一层表示一个集群
-            this.map.add(labelsLayer)
-            this.labelsLayerList.push({
-              cluster: cluster.cluster_id,
-              layerData: labelsLayer,
+            var templayerGroup = L.canvasMarkerLayer({
+              collisionFlg: false, // 碰撞检测
+            }).addTo(this.map)
+            templayerGroup.addLayers(markerList)
+
+            this.layerGroup.push({
+              name: cluster.cluster_name,
+              data: templayerGroup,
             })
           })
-          this.clusterOptions = tmp
-          this.checkedClusters = tmp
-          this.loading = false
+          // mapObj.on('zoomend', () => {})
         })
         .catch((e) => {
           console.log(e)
         })
     },
-
-    redrawMarker() {
-      this.labelsLayerList.forEach((layer) => {
-        if (this.checkedClusters.indexOf(layer.cluster) !== -1) {
-          layer.layerData.show()
+    redrawMarker(mapObj) {
+      console.log(this.layerGroup)
+      this.layerGroup.forEach((layer) => {
+        if (this.checkedClusters.indexOf(layer.name) !== -1) {
+          mapObj.addLayer(layer.data)
         } else {
-          layer.layerData.hide()
+          layer.data.remove()
         }
       })
     },
-    // conventGPS() {
-    //   axios
-    //     .get(
-    //       'https://mock.presstime.cn/mock/6389a56de7aea00081e03bbb/wp/zb_position'
-    //     )
-    //     .then((res) => {
-    //       //接收点位数据，加入转化后的高德坐标数据并输出
-    //       // console.log(res.data)
-    //       var tempjson = []
-    //       res.data.forEach((cluster) => {
-    //         // console.log(cluster)
-    //         var temp_turbine = []
-    //         cluster.turbine.forEach((turbine) => {
-    //           // console.log(turbine)
-    //           this.globalAMap.convertFrom(
-    //             [turbine.lng, turbine.lat],
-    //             'gps',
-    //             function (status, result) {
-    //               if (result.info === 'ok') {
-    //                 var lnglats = result.locations // Array.<LngLat>
-
-    //                 temp_turbine.push({
-    //                   turbine_id: turbine.turbine_id,
-    //                   lat: turbine.lat,
-    //                   lng: turbine.lng,
-    //                   AMapPosition: lnglats[0],
-    //                   height: turbine.height,
-    //                 })
-    //               }
-    //             }
-    //           )
-    //         })
-    //         tempjson.push({
-    //           cluster_id: cluster.cluster_id,
-    //           turbine: temp_turbine,
-    //         })
-    //       })
-    //       console.log(tempjson)
-    //     })
-    //     .catch((e) => {
-    //       console.log(e)
-    //     })
-    // },
   },
   mounted() {
     this.initMap()
   },
-  beforeDestroy() {
-    this.map.destroy()
-  },
+  beforeDestroy() {},
 }
 </script>
 
 <style lang="less" scoped>
 .map {
+  // height: calc(0.6 * (100vh - 171px));
   margin-bottom: 10px;
-}
-.left,
-#container {
-  height: calc(0.6 * (100vh - 238px));
-}
-.left {
-  overflow: scroll;
-  overflow-x: hidden;
-}
-#container {
-  padding: 0px;
-  margin: 0px;
-  width: 100%;
+
+  .scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 9px;
+  }
+
+  .scroller::-webkit-scrollbar-track {
+    background-color: #f9f9f9;
+    -webkit-border-radius: 2em;
+    -moz-border-radius: 2em;
+    border-radius: 2em;
+  }
+  .scroller::-webkit-scrollbar-thumb {
+    background-color: #dedede;
+    -webkit-border-radius: 2em;
+    -moz-border-radius: 2em;
+    border-radius: 2em;
+  }
+  .select,
+  #map {
+    height: calc(0.6 * (100vh - 238px));
+  }
+  .select {
+    margin-right: 5px;
+    overflow: auto;
+  }
+  .el-main {
+    padding: 0;
+  }
 }
 </style>
