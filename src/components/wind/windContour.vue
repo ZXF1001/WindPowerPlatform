@@ -37,6 +37,7 @@ import L from 'leaflet/dist/leaflet'
 import '@panzhiyue/leaflet-canvasmarker' //canvas渲染marker的插件
 //geotiff渲染插件
 import 'leaflet-geotiff-2'
+import GeoTIFF from 'geotiff'
 // //import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
 // //import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
@@ -135,7 +136,7 @@ export default {
       const tiffUrl =
         // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
         // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
-        'http://localhost/geotiff/testout.tif'
+        'http://1.117.224.40/geotiff/testout.tif'
 
       this.drawContour(layerControl, tiffUrl)
       this.drawStream(layerControl, data)
@@ -145,27 +146,32 @@ export default {
     drawContour(layerControlObj, url) {
       const rendererOptions = {
         band: 0,
-        displayMin: 1,
+        displayMin: 0,
         displayMax: 5,
         //todo 这里要加上自动识别范围的功能
-        applyDisplayRange: false,
+        applyDisplayRange: true,
         clampLow: true,
         clampHigh: true,
         colorScale: 'viridis',
       }
 
       const renderer = new L.LeafletGeotiff.Plotty(rendererOptions)
+      // console.log(renderer.getColourbarDataUrl('rainbow'))
       const option = {
         renderer: renderer,
         // bounds: [
         //   [40.7, 114],
         //   [41.8, 115.8],
         // ],
+
         useWorker: true,
-        noDataValue: null,
+        noDataValue: -99,
+        sourceFunction: GeoTIFF.fromUrl,
         opacity: 0.75,
       }
-      var layer = L.leafletGeotiff(url, option).addTo(this.map)
+      var layer = L.leafletGeotiff(url, option)
+
+      layer.addTo(this.map)
       layerControlObj.addOverlay(layer, '风场云图2')
     },
     drawStream(layerControlObj, windData) {
