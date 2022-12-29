@@ -3,9 +3,14 @@
 
     <el-menu default-active="overview"
              class="menu"
-             :collapse="isCollapse">
-      <!-- <el-button @click="isCollapse=!isCollapse">dd</el-button> -->
+             :collapse="isCollapse"
+             :collapse-transition="true">
+
       <div class="menuItem">
+        <el-menu-item index="collapse"
+                      @click="changeCollapse">
+          <div class="collapseWrap"><i :class="collapseIcon" /></div>
+        </el-menu-item>
         <el-menu-item v-for="item in menuData"
                       :key="item.name"
                       :index="item.name"
@@ -31,6 +36,13 @@
       padding-top: 10px;
     }
   }
+  .menu:not(.el-menu--collapse) {
+    width: 160px;
+    height: calc(100vh - 65px);
+  }
+  .collapseWrap {
+    text-align: center;
+  }
 }
 </style>
 <script>
@@ -38,6 +50,7 @@ export default {
   data() {
     return {
       isCollapse: false,
+      collapseIcon: 'el-icon-arrow-left',
       //左侧菜单项目动态储存在这里，方便权限管理（）
       menuData: [
         {
@@ -100,6 +113,12 @@ export default {
     }
   },
   methods: {
+    changeCollapse() {
+      this.isCollapse = !this.isCollapse
+      this.collapseIcon = ['el-icon-arrow-left', 'el-icon-arrow-right'][
+        Number(this.isCollapse)
+      ]
+    },
     clickMenu: function (item) {
       // console.log(item)
       if (this.$route.path !== item.path) {

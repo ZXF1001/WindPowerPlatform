@@ -5,7 +5,7 @@
       <common-header></common-header>
     </el-header>
     <el-container>
-      <el-aside width="150px">
+      <el-aside width="auto">
         <common-aside></common-aside>
       </el-aside>
       <el-main>
