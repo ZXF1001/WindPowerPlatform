@@ -1,11 +1,11 @@
-export default{
-  state:{
-    isCollapse:false,//控制左侧菜单的展开
+export default {
+  state: {
+    isCollapse: false, //控制左侧菜单的展开
   },
-  mutations:{
+  mutations: {
     //修改菜单展开的方法
-    collapseMenu(state){
-      state.isCollapse=!state.isCollapse
-    }
-  }
-}
+    collapseMenu(state) {
+      state.isCollapse = !state.isCollapse;
+    },
+  },
+};

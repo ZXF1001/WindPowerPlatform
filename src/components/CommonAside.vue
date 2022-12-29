@@ -1,10 +1,10 @@
 <template>
-  <el-col :span="25">
+  <el-col>
 
     <el-menu default-active="overview"
              class="menu"
              :collapse="isCollapse">
-
+      <!-- <el-button @click="isCollapse=!isCollapse">dd</el-button> -->
       <div class="menuItem">
         <el-menu-item v-for="item in menuData"
                       :key="item.name"
@@ -22,7 +22,7 @@
 .el-col {
   width: 100%;
 
-  .el-menu {
+  .menu {
     height: calc(100vh - 65px);
     h4 {
       text-align: center;
@@ -37,6 +37,7 @@
 export default {
   data() {
     return {
+      isCollapse: false,
       //左侧菜单项目动态储存在这里，方便权限管理（）
       menuData: [
         {
@@ -106,10 +107,10 @@ export default {
       }
     },
   },
-  computed: {
-    isCollapse() {
-      return this.$store.state.tab.isCollapse
-    },
-  },
+  // computed: {
+  //   isCollapse() {
+  //     return this.$store.state.tab.isCollapse
+  //   },
+  // },
 }
 </script>

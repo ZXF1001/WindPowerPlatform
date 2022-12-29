@@ -117,22 +117,9 @@ export default {
               clusterData.data.push({
                 name: this.latestDate.toString(),
                 value: [
-                  // [
-                  //   this.latestDate.getFullYear(),
-                  //   this.latestDate.getMonth() + 1,
-                  //   this.latestDate.getDate(),
-                  // ].join('/'),
-                  this.latestDate.getFullYear() +
-                    '/' +
-                    (this.latestDate.getMonth() + 1) +
-                    '/' +
-                    this.latestDate.getDate() +
-                    ' ' +
-                    this.latestDate.getHours() +
-                    ':' +
-                    this.latestDate.getMinutes() +
-                    ':' +
-                    this.latestDate.getSeconds(),
+                  `${this.latestDate.getFullYear()}/${
+                    this.latestDate.getMonth() + 1
+                  }/${this.latestDate.getDate()} ${this.latestDate.getHours()}:${this.latestDate.getMinutes()}:${this.latestDate.getSeconds()}`,
                   res.data.value[clusterData.name],
                 ],
               })

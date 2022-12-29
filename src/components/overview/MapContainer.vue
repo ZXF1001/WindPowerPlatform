@@ -35,6 +35,7 @@
 //准备工作
 import { getOverviewTurbineData } from '../../api/overview/getMapData.js'
 import AMapLoader from '@amap/amap-jsapi-loader'
+import Icon from '@/assets/windTurbineSvg/windturbine.svg'
 window._AMapSecurityConfig = {
   securityJsCode: '1260f13fffc52b86824606929288ef75',
 }
@@ -177,8 +178,9 @@ export default {
           var icon = {
             //标注的icon实例
             type: 'image',
-            image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
-            size: [8, 12],
+            // image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+            image: Icon,
+            size: [20, 20],
             anchor: 'bottom-center',
           }
           var tmp = []

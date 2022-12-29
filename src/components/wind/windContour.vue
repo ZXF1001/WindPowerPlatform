@@ -148,7 +148,7 @@ export default {
         band: 0,
         displayMin: 0,
         displayMax: 5,
-        //todo 这里要加上自动识别范围的功能
+        //todo 这里要加上自动识别范围的功能(x)
         applyDisplayRange: true,
         clampLow: true,
         clampHigh: true,
@@ -172,7 +172,7 @@ export default {
       var layer = L.leafletGeotiff(url, option)
 
       layer.addTo(this.map)
-      layerControlObj.addOverlay(layer, '风场云图2')
+      layerControlObj.addOverlay(layer, '风场云图')
     },
     drawStream(layerControlObj, windData) {
       //封装的绘制风场流场方法，windData有格式要求

@@ -108,48 +108,44 @@ export default {
       this.dateValue = null
     },
     fetchFilterData() {
-      getSiteData()
+      Promise.all([getSiteData(), getHeightData()])
         .then((res) => {
-          res.data.forEach((site) => {
+          const siteRes = res[0].data
+          const heightRes = res[1].data
+          siteRes.forEach((site) => {
             this.siteOptions.push({
               value: this.siteOptions.length + 1,
               label: site,
             })
           })
-          getHeightData()
-            .then((res) => {
-              res.data.forEach((height) => {
-                this.heightOptions.push({
-                  value: this.heightOptions.length + 1,
-                  label: height,
-                })
-              })
-              this.siteOptions.forEach((siteValue) => {
-                this.heightOptions.forEach((heightValue) => {
-                  this.vforList.push({
-                    value: this.vforList.length,
-                    siteLabel: siteValue.label,
-                    siteValue: siteValue.value,
-                    heightLabel: heightValue.label,
-                    heightValue: heightValue.value,
-                  })
-                })
-              })
-              // 有问题的代码(改一个值会导致其他值一起改掉，会出错)
-              // this.echartsList = new Array(this.siteOptions.length).fill(
-              //   new Array(this.heightOptions.length).fill(null)
-              // )
-              this.echartsList = new Array(this.siteOptions.length)
-              for (var i = 0; i < this.siteOptions.length; i++) {
-                this.echartsList[i] = new Array(this.heightOptions.length)
-              }
-              this.$nextTick(() => {
-                this.drawRoseData(this.range)
+          heightRes.forEach((height) => {
+            this.heightOptions.push({
+              value: this.heightOptions.length + 1,
+              label: height,
+            })
+          })
+          this.siteOptions.forEach((siteValue) => {
+            this.heightOptions.forEach((heightValue) => {
+              this.vforList.push({
+                value: this.vforList.length,
+                siteLabel: siteValue.label,
+                siteValue: siteValue.value,
+                heightLabel: heightValue.label,
+                heightValue: heightValue.value,
               })
             })
-            .catch((e) => {
-              console.log(e)
-            })
+          })
+          // 有问题的代码(改一个值会导致其他值一起改掉，会出错)
+          // this.echartsList = new Array(this.siteOptions.length).fill(
+          //   new Array(this.heightOptions.length).fill(null)
+          // )
+          this.echartsList = new Array(this.siteOptions.length)
+          for (var i = 0; i < this.siteOptions.length; i++) {
+            this.echartsList[i] = new Array(this.heightOptions.length)
+          }
+          this.$nextTick(() => {
+            this.drawRoseData(this.range)
+          })
         })
         .catch((e) => {
           console.log(e)
