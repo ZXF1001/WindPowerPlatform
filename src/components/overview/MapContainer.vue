@@ -1,3 +1,4 @@
+//! 注意：在这里的更改记得在wind/windContour下同步更改
 <template>
   <el-card class="map">
     <div v-loading="loading">
@@ -59,6 +60,7 @@ export default {
       isIndeterminate: false,
       map: null,
       layerGroup: [],
+      geolayer: null,
     }
   },
   methods: {
@@ -167,10 +169,9 @@ export default {
         sourceFunction: GeoTIFF.fromUrl,
         opacity: 0.75,
       }
-      var layer = L.leafletGeotiff(url, option)
+      this.geolayer = L.leafletGeotiff(url, option)
 
-      layer.addTo(this.map)
-      layerControlObj.addOverlay(layer, '风场云图')
+      layerControlObj.addOverlay(this.geolayer, '风场云图')
     },
     drawStream(layerControlObj, windData) {
       //封装的绘制风场流场方法，windData有格式要求
@@ -270,8 +271,6 @@ export default {
           //   '#95324E',
           //   '#F7AAAA',
           // ]
-          console.log('Icon')
-          console.log(Icon)
 
           var icon = L.icon({
             iconUrl: Icon,
@@ -312,7 +311,6 @@ export default {
         })
     },
     redrawMarker(mapObj) {
-      console.log(this.layerGroup)
       this.layerGroup.forEach((layer) => {
         if (this.checkedClusters.indexOf(layer.name) !== -1) {
           mapObj.addLayer(layer.data)
@@ -322,10 +320,43 @@ export default {
       })
     },
   },
+  computed: {
+    isCollapse() {
+      return this.$store.state.tab.isCollapse
+    },
+    geotiffMinAndMax() {
+      if (this.geolayer !== null) {
+        return [this.geolayer.min, this.geolayer.max]
+      } else {
+        return null
+      }
+    },
+  },
+  watch: {
+    isCollapse() {
+      setTimeout(() => {
+        this.map.invalidateSize(false)
+      }, 400)
+    },
+    geotiffMinAndMax() {
+      if (this.geotiffMinAndMax != null) {
+        this.geolayer.options.renderer.setDisplayRange(
+          this.geotiffMinAndMax[0],
+          this.geotiffMinAndMax[1]
+        )
+        this.geolayer.addTo(this.map)
+      }
+    },
+  },
   mounted() {
     this.initMap()
   },
-  beforeDestroy() {},
+  beforeDestroy() {
+    if (this.map) {
+      this.map.remove()
+      this.map = null
+    }
+  },
 }
 </script>
 
@@ -334,23 +365,6 @@ export default {
   // height: calc(0.6 * (100vh - 171px));
   margin-bottom: 10px;
 
-  .scroller::-webkit-scrollbar {
-    width: 8px;
-    height: 9px;
-  }
-
-  .scroller::-webkit-scrollbar-track {
-    background-color: #f9f9f9;
-    -webkit-border-radius: 2em;
-    -moz-border-radius: 2em;
-    border-radius: 2em;
-  }
-  .scroller::-webkit-scrollbar-thumb {
-    background-color: #dedede;
-    -webkit-border-radius: 2em;
-    -moz-border-radius: 2em;
-    border-radius: 2em;
-  }
   .select,
   #map {
     height: calc(0.6 * (100vh - 238px));

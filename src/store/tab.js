@@ -4,7 +4,7 @@ export default {
   },
   mutations: {
     //修改菜单展开的方法
-    collapseMenu(state) {
+    COLLAPSE_MENU(state) {
       state.isCollapse = !state.isCollapse;
     },
   },

@@ -45,7 +45,6 @@ export default {
       }
       post4WSData(data)
         .then((res) => {
-          console.log(res.data)
           var maxV = 0
           var minV = 0
           var countSum = 0
@@ -114,7 +113,6 @@ export default {
                 // formatter: 'some text {value} some text',
               },
               formatter: function (params) {
-                console.log(params[0])
                 var str = `风速：${params[0].data[0] - delta / 2}-${
                   params[0].data[0] + delta / 2
                 } m/s<br>频率：${(100 * params[0].data[1]).toFixed(2)}%`
@@ -183,6 +181,7 @@ export default {
       if (this.distributeChart !== null) {
         this.distributeChart.dispose()
         this.distributeChart = null
+        window.onresize = () => {}
       }
     },
   },

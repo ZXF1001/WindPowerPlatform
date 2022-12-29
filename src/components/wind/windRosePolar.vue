@@ -375,8 +375,6 @@ export default {
                 )
                 color.push(colorBar[index])
               }
-              console.log('key:' + key)
-              console.log(parseInt(key.split('-')[0]))
               var barData = []
               roseData[key].forEach((dirData) => {
                 barData[dirData.direction] = dirData.frequency

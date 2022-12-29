@@ -1,3 +1,4 @@
+//! 注意：在这里的更改记得在overview/mapContainer下同步更改
 <template>
   <div style="height=100%">
     <el-card class="floating">
@@ -61,6 +62,7 @@ export default {
       isIndeterminate: false,
       map: null,
       layerGroup: [],
+      geolayer: null,
     }
   },
   methods: {
@@ -156,7 +158,6 @@ export default {
       }
 
       const renderer = new L.LeafletGeotiff.Plotty(rendererOptions)
-      // console.log(renderer.getColourbarDataUrl('rainbow'))
       const option = {
         renderer: renderer,
         // bounds: [
@@ -169,10 +170,9 @@ export default {
         sourceFunction: GeoTIFF.fromUrl,
         opacity: 0.75,
       }
-      var layer = L.leafletGeotiff(url, option)
+      this.geolayer = L.leafletGeotiff(url, option)
 
-      layer.addTo(this.map)
-      layerControlObj.addOverlay(layer, '风场云图')
+      layerControlObj.addOverlay(this.geolayer, '风场云图')
     },
     drawStream(layerControlObj, windData) {
       //封装的绘制风场流场方法，windData有格式要求
@@ -272,8 +272,6 @@ export default {
           //   '#95324E',
           //   '#F7AAAA',
           // ]
-          console.log('Icon')
-          console.log(Icon)
 
           var icon = L.icon({
             iconUrl: Icon,
@@ -314,7 +312,6 @@ export default {
         })
     },
     redrawMarker(mapObj) {
-      console.log(this.layerGroup)
       this.layerGroup.forEach((layer) => {
         if (this.checkedClusters.indexOf(layer.name) !== -1) {
           mapObj.addLayer(layer.data)
@@ -324,10 +321,43 @@ export default {
       })
     },
   },
+  computed: {
+    isCollapse() {
+      return this.$store.state.tab.isCollapse
+    },
+    geotiffMinAndMax() {
+      if (this.geolayer !== null) {
+        return [this.geolayer.min, this.geolayer.max]
+      } else {
+        return null
+      }
+    },
+  },
+  watch: {
+    isCollapse() {
+      setTimeout(() => {
+        this.map.invalidateSize(false)
+      }, 400)
+    },
+    geotiffMinAndMax() {
+      if (this.geotiffMinAndMax != null) {
+        this.geolayer.options.renderer.setDisplayRange(
+          this.geotiffMinAndMax[0],
+          this.geotiffMinAndMax[1]
+        )
+        this.geolayer.addTo(this.map)
+      }
+    },
+  },
   mounted() {
     this.initMap()
   },
-  //! 要加一个beforeDestory(){}
+  beforeDestroy() {
+    if (this.map) {
+      this.map.remove()
+      this.map = null
+    }
+  },
 }
 </script>
 <style lang="less" scoped>
@@ -341,26 +371,11 @@ export default {
   top: 15px;
   .select {
     margin-top: 10px;
+    min-height: 60px;
     max-height: calc(100vh - 280px);
     overflow: auto;
   }
-  .scroller::-webkit-scrollbar {
-    width: 8px;
-    height: 9px;
-  }
 
-  .scroller::-webkit-scrollbar-track {
-    background-color: #f9f9f9;
-    -webkit-border-radius: 2em;
-    -moz-border-radius: 2em;
-    border-radius: 2em;
-  }
-  .scroller::-webkit-scrollbar-thumb {
-    background-color: #dedede;
-    -webkit-border-radius: 2em;
-    -moz-border-radius: 2em;
-    border-radius: 2em;
-  }
   .collapse {
     cursor: pointer;
     .title {

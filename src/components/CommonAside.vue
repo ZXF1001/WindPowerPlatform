@@ -7,10 +7,14 @@
              :collapse-transition="true">
 
       <div class="menuItem">
-        <el-menu-item index="collapse"
-                      @click="changeCollapse">
-          <div class="collapseWrap"><i :class="collapseIcon" /></div>
-        </el-menu-item>
+        <el-tooltip content="展开"
+                    placement="right"
+                    :disabled="!isCollapse">
+          <el-menu-item index="collapse"
+                        @click="changeCollapse">
+            <div class="collapseWrap"><i :class="collapseIcon" /></div>
+          </el-menu-item>
+        </el-tooltip>
         <el-menu-item v-for="item in menuData"
                       :key="item.name"
                       :index="item.name"
@@ -49,7 +53,6 @@
 export default {
   data() {
     return {
-      isCollapse: false,
       collapseIcon: 'el-icon-arrow-left',
       //左侧菜单项目动态储存在这里，方便权限管理（）
       menuData: [
@@ -114,22 +117,21 @@ export default {
   },
   methods: {
     changeCollapse() {
-      this.isCollapse = !this.isCollapse
+      this.$store.commit('COLLAPSE_MENU')
       this.collapseIcon = ['el-icon-arrow-left', 'el-icon-arrow-right'][
         Number(this.isCollapse)
       ]
     },
     clickMenu: function (item) {
-      // console.log(item)
       if (this.$route.path !== item.path) {
         this.$router.push(item.path)
       }
     },
   },
-  // computed: {
-  //   isCollapse() {
-  //     return this.$store.state.tab.isCollapse
-  //   },
-  // },
+  computed: {
+    isCollapse() {
+      return this.$store.state.tab.isCollapse
+    },
+  },
 }
 </script>
