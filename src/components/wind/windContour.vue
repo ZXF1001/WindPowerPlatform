@@ -39,8 +39,6 @@ import '@panzhiyue/leaflet-canvasmarker' //canvas渲染marker的插件
 //geotiff渲染插件
 import 'leaflet-geotiff-2'
 import GeoTIFF from 'geotiff'
-// //import 'leaflet-geotiff-2/dist/leaflet-geotiff-rgb'
-// //import 'leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows'
 import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
 //流线图插件
 import 'leaflet-velocity/dist/leaflet-velocity.css'
@@ -48,7 +46,8 @@ import 'leaflet-velocity/dist/leaflet-velocity'
 //相关静态资源
 import data from '@/json/zb.json'
 import baseLayersData from '@/json/map/baseLayers.json'
-import Icon from '@/assets/windTurbineSvg/windturbine.svg'
+import importAllSVG from '@/assets/windTurbineSvg/import.js'
+
 //请求风机点位的api
 import { getMyTurbineData } from '@/api/wind/getMapData.js'
 export default {
@@ -289,15 +288,15 @@ export default {
           //   '#F7AAAA',
           // ]
 
-          var icon = L.icon({
-            iconUrl: Icon,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12],
-            popupAnchor: [0, -15],
-          })
-          data.forEach((cluster) => {
+          var Icons = importAllSVG()
+          data.forEach((cluster, index) => {
             var markerList = []
-
+            var icon = L.icon({
+              iconUrl: Icons[index],
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+              popupAnchor: [0, -15],
+            })
             cluster.turbine.forEach((turbine) => {
               var tempMarker = L.marker([turbine.lat, turbine.lng], {
                 icon: icon,
