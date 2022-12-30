@@ -212,12 +212,28 @@ export default {
         // colorScale:[],
       })
       this.map.addLayer(velocityLayer1)
-      layerControlObj.addOverlay(velocityLayer1, '风场流线')
-      //挂载map对象移动事件（隐藏流线）
-      this.map.on('moveend', () => {
-        velocityLayer1.remove()
-        this.map.addLayer(velocityLayer1)
+      const velocityName = '风场流线'
+      layerControlObj.addOverlay(velocityLayer1, velocityName)
+
+      // <<这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来
+      var streamlineSelected = true
+      this.map.on('overlayremove', (event) => {
+        if (event.name === velocityName) {
+          streamlineSelected = false
+        }
       })
+      this.map.on('overlayadd', (event) => {
+        if (event.name === velocityName) {
+          streamlineSelected = true
+        }
+      })
+      this.map.on('moveend', () => {
+        if (streamlineSelected === true) {
+          velocityLayer1.remove()
+          this.map.addLayer(velocityLayer1)
+        }
+      })
+      // 这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来>>
     },
     drawMarker() {
       var groupByCluster = (res) => {
@@ -362,7 +378,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .floating {
-  z-index: 9999;
+  z-index: 2000;
   position: absolute;
   padding: 0px;
   // text-align: center;
