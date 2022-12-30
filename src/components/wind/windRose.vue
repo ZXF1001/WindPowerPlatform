@@ -423,9 +423,6 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-/deep/.el-card__body {
-  padding: 15px;
-}
 .filterbox {
   margin-bottom: 10px;
   .el-select,
@@ -438,19 +435,23 @@ export default {
     margin-left: 5px;
   }
 }
-.windrose {
-  height: 340px;
-}
+
 .roseGroup {
   display: flex; //弹性布局
   // justify-content: space-between; //中间空隙自适应
   flex-wrap: wrap; //自适应分行
+  /deep/.el-card__body {
+    padding: 15px;
+  }
   .card {
     width: 280px;
     margin: 5px;
     .title {
       margin: 0px 0px 10px 0px;
       text-align: center;
+    }
+    .windrose {
+      height: 340px;
     }
   }
 }

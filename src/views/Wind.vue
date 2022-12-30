@@ -5,7 +5,7 @@
     <el-tab-pane label="风玫瑰图"
                  name="windrose"
                  :lazy="true">
-      <wind-rose-polar></wind-rose-polar>
+      <wind-rose></wind-rose>
     </el-tab-pane>
     <el-tab-pane label="风速信息"
                  name="speedLine"
@@ -27,14 +27,14 @@
 
 <script>
 import windContour from '../components/wind/windContour.vue'
-import windRosePolar from '../components/wind/windRosePolar.vue'
+import windRose from '../components/wind/windRose.vue'
 import speedLine from '../components/wind/speedLine.vue'
 import qweather from '../components/wind/qweather.vue'
 
 export default {
   components: {
     windContour,
-    windRosePolar,
+    windRose,
     speedLine,
     qweather,
   },
