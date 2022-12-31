@@ -13,7 +13,7 @@
 
 <script>
 import * as echarts from 'echarts'
-import { post4WSData } from '@/api/wind/postRoseData'
+import { post4WSData } from '@/api/wind/post4RoseData'
 import colorBar from '@/json/windRose/colorBar.json'
 export default {
   name: 'wsDistriDialog',

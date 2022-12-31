@@ -70,7 +70,7 @@
 
 <script>
 import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
-import { post4WDData } from '@/api/wind/postRoseData.js'
+import { post4WDData } from '@/api/wind/post4RoseData.js'
 import wsDistriDialog from '@/components/wind/windRose/wsDistriDialog.vue'
 import * as echarts from 'echarts'
 import colorBar from '@/json/windRose/colorBar.json'

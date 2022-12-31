@@ -26,7 +26,6 @@
         </el-option>
       </el-select>
       <el-select v-model="timeRangeValue"
-                 multiple
                  collapse-tags
                  placeholder="选择时间范围"
                  size="small">
@@ -40,6 +39,9 @@
       <el-button size="mini"
                  plain
                  @click="clearFilter">清除</el-button>
+      <el-button size="mini"
+                 plain
+                 @click="test">test</el-button>
     </div>
     <!-- 遍历的风速-时间图 -->
     <div v-for="options in vforList"
@@ -59,8 +61,8 @@
 
 <script>
 import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
+import { post4SpeedTimeData } from '@/api/wind/post4SpeedTimeData'
 import * as echarts from 'echarts'
-
 export default {
   data() {
     return {
@@ -69,13 +71,13 @@ export default {
       heightOptions: [],
       siteValue: [],
       heightValue: [],
-      timeRangeValue: [],
+      timeRangeValue: '',
       timeRangeOptions: [
         { label: '近一小时', value: 1 },
         { label: '近一天', value: 2 },
         { label: '近一周', value: 3 },
         { label: '近一月', value: 4 },
-        { label: '近半年', value: 5 },
+        { label: '近一季度', value: 5 },
         { label: '近一年', value: 6 },
         { label: '自定义', value: 7 },
       ],
@@ -83,6 +85,23 @@ export default {
     }
   },
   methods: {
+    test() {
+      const data = {
+        site: '0305',
+        height: '70m',
+        type: 'user-defined',
+        dateBegin: '2016-2-10 11:30',
+        dateEnd: '2016-2-11 1:30',
+      }
+      console.log(data)
+      post4SpeedTimeData(data)
+        .then((res) => {
+          console.log(res)
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
     clearFilter() {
       this.siteValue = []
       this.heightValue = []
