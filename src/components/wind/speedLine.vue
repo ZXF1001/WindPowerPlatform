@@ -28,15 +28,26 @@
       <el-select v-model="timeRangeValue"
                  placeholder="选择时间范围"
                  size="small">
-        <el-option v-for="timeRange in timeRangeOptions"
-                   :key="timeRange.value"
-                   :label="timeRange.label"
-                   :value="timeRange.value">
-        </el-option>
+        <el-option-group>
+          <el-option v-for="timeRange in timeRangeOptions"
+                     :key="timeRange.value"
+                     :label="timeRange.label"
+                     :value="timeRange.value">
+          </el-option>
+        </el-option-group>
+        <el-option-group>
+          <el-option label="打开范围选择器..."
+                     :value="7">
+          </el-option>
+        </el-option-group>
       </el-select>
-      <el-button size="mini"
-                 plain
-                 @click="clearFilter">重置</el-button>
+      <el-popconfirm title="确定重置吗？"
+                     @confirm="clearFilter">
+        <el-button slot="reference"
+                   size="mini"
+                   plain>重置</el-button>
+      </el-popconfirm>
+
       <el-button size="mini"
                  plain
                  @click="test">test</el-button>
@@ -99,7 +110,6 @@ export default {
         { label: '近一月', value: 4 },
         { label: '近一季度', value: 5 },
         { label: '近一年', value: 6 },
-        { label: '打开日期选择器...', value: 7 },
       ],
       userDefinedTimeRangeValue: null,
       dialogVisible: false,
@@ -144,7 +154,7 @@ export default {
       this.dialogVisible = false
     },
     handleDialogConfirm() {
-      if (this.timeRangeOptions.length === 7 + 1) {
+      if (this.timeRangeOptions.length === 6 + 1) {
         this.timeRangeOptions.splice(
           this.timeRangeOptions.findIndex((item) => item.value == 0),
           1
@@ -163,7 +173,7 @@ export default {
       this.timeRangeValue = 1
       this.oldTimeRangeValue = 1
       this.userDefinedTimeRangeValue = null
-      if (this.timeRangeOptions.length === 7 + 1) {
+      if (this.timeRangeOptions.length === 6 + 1) {
         this.timeRangeOptions.splice(
           this.timeRangeOptions.findIndex((item) => item.value == 0),
           1

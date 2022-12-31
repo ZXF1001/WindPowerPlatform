@@ -35,9 +35,12 @@
                       end-placeholder="结束日期">
       </el-date-picker>
 
-      <el-button size="mini"
-                 plain
-                 @click="clearFilter">重置</el-button>
+      <el-popconfirm title="确定重置吗？"
+                     @confirm="clearFilter">
+        <el-button slot="reference"
+                   size="mini"
+                   plain>重置</el-button>
+      </el-popconfirm>
     </div>
     <!-- 遍历的风玫瑰图 -->
 
