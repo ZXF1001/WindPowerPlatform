@@ -97,7 +97,6 @@ export default {
                       lineStyle: {
                         color: '#5470c6',
                       },
-                      // colorBy: 'data',
                     },
                     bar: {
                       animationEasing: 'cubicOut',

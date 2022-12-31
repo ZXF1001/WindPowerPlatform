@@ -300,8 +300,8 @@ export default {
               })
               var popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
                                   <span>所属集群：${cluster.cluster_name}</span><br>
-                                  <span>经度：${turbine.lat}</span><br>
-                                  <span>纬度：${turbine.lng}</span><br>
+                                  <span>经度：${turbine.lng}</span><br>
+                                  <span>纬度：${turbine.lat}</span><br>
                                   <span>高程：${turbine.height}</span>`
 
               tempMarker.bindPopup(popupContent)

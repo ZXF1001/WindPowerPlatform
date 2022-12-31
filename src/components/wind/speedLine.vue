@@ -34,7 +34,6 @@
                    :value="timeRange.value">
         </el-option>
       </el-select>
-
       <el-button size="mini"
                  plain
                  @click="clearFilter">重置</el-button>
@@ -57,19 +56,23 @@
     <!-- 选择自定义日期的弹窗 -->
     <el-dialog title="自定义日期"
                :visible.sync="dialogVisible"
+               :close-on-click-modal="false"
+               :close-on-press-escape="false"
+               :show-close="false"
                width="40%">
-
-      <el-date-picker v-model="userDefinedTimeRangeValue"
-                      type="datetimerange"
-                      range-separator="至"
-                      start-placeholder="开始日期"
-                      end-placeholder="结束日期">
-      </el-date-picker>
-
+      <div class="datepickerWrap">
+        <el-date-picker v-model="userDefinedTimeRangeValue"
+                        type="datetimerange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期">
+        </el-date-picker>
+      </div>
       <span slot="footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button @click="handleDialogCancel">取 消</el-button>
         <el-button type="primary"
-                   @click="dialogVisible = false">确 定</el-button>
+                   :disabled="confirmDisable"
+                   @click="handleDialogConfirm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -88,6 +91,7 @@ export default {
       siteValue: [],
       heightValue: [],
       timeRangeValue: 1,
+      oldTimeRangeValue: 1,
       timeRangeOptions: [
         { label: '近一小时', value: 1 },
         { label: '近一天', value: 2 },
@@ -95,43 +99,76 @@ export default {
         { label: '近一月', value: 4 },
         { label: '近一季度', value: 5 },
         { label: '近一年', value: 6 },
-        { label: '自定义', value: 7 },
+        { label: '打开日期选择器...', value: 7 },
       ],
       userDefinedTimeRangeValue: null,
       dialogVisible: false,
+
       vforList: [],
     }
   },
   watch: {
-    timeRangeValue(newVal) {
+    timeRangeValue(newVal, oldVal) {
+      this.oldTimeRangeValue = oldVal
       if (newVal === 7) {
+        // 7表示自定义的选项序号
         this.dialogVisible = true
       }
     },
   },
+  computed: {
+    confirmDisable() {
+      return this.userDefinedTimeRangeValue === null ? true : false
+    },
+  },
   methods: {
     test() {
-      const data = {
-        site: '0305',
-        height: '70m',
-        type: 'user-defined',
-        dateBegin: '2016-2-10 11:30',
-        dateEnd: '2016-2-11 1:30',
-      }
-      console.log(data)
-      post4SpeedTimeData(data)
-        .then((res) => {
-          console.log(res)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+      // const data = {
+      //   site: '0305',
+      //   height: '70m',
+      //   type: 'user-defined',
+      //   dateBegin: '2016-2-10 11:30',
+      //   dateEnd: '2016-2-11 1:30',
+      // }
+      // console.log(data)
+      // post4SpeedTimeData(data)
+      //   .then((res) => {
+      //     console.log(res)
+      //   })
+      //   .catch((e) => {
+      //     console.log(e)
+      //   })
     },
-
+    handleDialogCancel() {
+      this.timeRangeValue = this.oldTimeRangeValue
+      this.dialogVisible = false
+    },
+    handleDialogConfirm() {
+      if (this.timeRangeOptions.length === 7 + 1) {
+        this.timeRangeOptions.splice(
+          this.timeRangeOptions.findIndex((item) => item.value == 0),
+          1
+        )
+      }
+      this.timeRangeOptions.push({
+        label: '自定义范围',
+        value: 0,
+      })
+      this.timeRangeValue = 0
+      this.dialogVisible = false
+    },
     clearFilter() {
       this.siteValue = []
       this.heightValue = []
       this.timeRangeValue = 1
+      this.oldTimeRangeValue = 1
+      this.userDefinedTimeRangeValue = null
+      if (this.timeRangeOptions.length === 7 + 1) {
+        this.timeRangeOptions.splice(
+          this.timeRangeOptions.findIndex((item) => item.value == 0),
+          1
+        )
+      }
     },
     fetchFilterData() {
       Promise.all([getSiteData(), getHeightData()])
@@ -193,7 +230,9 @@ export default {
     margin-left: 5px;
   }
 }
-
+.datepickerWrap {
+  text-align: center;
+}
 .card {
   margin-top: 5px;
   margin-bottom: 10px;
