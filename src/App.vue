@@ -39,4 +39,22 @@ body,
   -moz-border-radius: 2em;
   border-radius: 2em;
 }
+
+.scroller-large::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scroller-large::-webkit-scrollbar-track {
+  background-color: #eee;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
+}
+.scroller-large::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
+}
 </style>

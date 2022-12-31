@@ -26,7 +26,6 @@
         </el-option>
       </el-select>
       <el-select v-model="timeRangeValue"
-                 collapse-tags
                  placeholder="选择时间范围"
                  size="small">
         <el-option v-for="timeRange in timeRangeOptions"
@@ -38,7 +37,7 @@
 
       <el-button size="mini"
                  plain
-                 @click="clearFilter">清除</el-button>
+                 @click="clearFilter">重置</el-button>
       <el-button size="mini"
                  plain
                  @click="test">test</el-button>
@@ -55,7 +54,24 @@
              :id="options.siteLabel+options.heightLabel"></div>
       </el-card>
     </div>
+    <!-- 选择自定义日期的弹窗 -->
+    <el-dialog title="自定义日期"
+               :visible.sync="dialogVisible"
+               width="40%">
 
+      <el-date-picker v-model="userDefinedTimeRangeValue"
+                      type="datetimerange"
+                      range-separator="至"
+                      start-placeholder="开始日期"
+                      end-placeholder="结束日期">
+      </el-date-picker>
+
+      <span slot="footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary"
+                   @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -71,7 +87,7 @@ export default {
       heightOptions: [],
       siteValue: [],
       heightValue: [],
-      timeRangeValue: '',
+      timeRangeValue: 1,
       timeRangeOptions: [
         { label: '近一小时', value: 1 },
         { label: '近一天', value: 2 },
@@ -81,8 +97,17 @@ export default {
         { label: '近一年', value: 6 },
         { label: '自定义', value: 7 },
       ],
+      userDefinedTimeRangeValue: null,
+      dialogVisible: false,
       vforList: [],
     }
+  },
+  watch: {
+    timeRangeValue(newVal) {
+      if (newVal === 7) {
+        this.dialogVisible = true
+      }
+    },
   },
   methods: {
     test() {
@@ -102,10 +127,11 @@ export default {
           console.log(e)
         })
     },
+
     clearFilter() {
       this.siteValue = []
       this.heightValue = []
-      this.dateValue = null
+      this.timeRangeValue = 1
     },
     fetchFilterData() {
       Promise.all([getSiteData(), getHeightData()])

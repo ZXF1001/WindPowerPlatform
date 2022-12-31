@@ -1,5 +1,4 @@
 <template>
-
   <el-container>
     <el-header>
       <common-header></common-header>
@@ -8,15 +7,13 @@
       <el-aside width="auto">
         <common-aside></common-aside>
       </el-aside>
-      <el-main>
+      <el-main class="scroller-large">
         <!-- <keep-alive> -->
         <router-view></router-view>
         <!-- </keep-alive> -->
       </el-main>
     </el-container>
-
   </el-container>
-
 </template>
 
 <style lang="less" scoped>

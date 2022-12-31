@@ -37,7 +37,7 @@
 
       <el-button size="mini"
                  plain
-                 @click="clearFilter">清除</el-button>
+                 @click="clearFilter">重置</el-button>
     </div>
     <!-- 遍历的风玫瑰图 -->
 
