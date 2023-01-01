@@ -51,6 +51,7 @@
                  plain
                  @click="test">test</el-button>
     </div>
+
     <!-- 选择自定义日期的弹窗 -->
     <el-dialog title="自定义日期"
                :visible.sync="dialogVisible"
@@ -66,6 +67,17 @@
                         start-placeholder="开始日期"
                         end-placeholder="结束日期">
         </el-date-picker>
+        <div class="granularity">
+          <span class="title">时间粒度：</span>
+          <el-radio v-model="granularityRadio"
+                    label="raw">原始数据</el-radio>
+          <el-radio v-model="granularityRadio"
+                    label="hour"
+                    :disabled="hourRadioDisabled">小时平均</el-radio>
+          <el-radio v-model="granularityRadio"
+                    label="day"
+                    :disabled="dayRadioDisabled">日平均</el-radio>
+        </div>
       </div>
       <span slot="footer">
         <el-button @click="handleDialogCancel">取 消</el-button>
@@ -79,14 +91,17 @@
          :key="options.value">
       <el-card class="card"
                shadow='never'
+               v-loading="loading"
                v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))">
-        <p class="title">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
+        <div class="title">
+          <p class="titleleft">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
+          <p class="titleright">{{showTimescale}}</p>
+        </div>
         <div class="windChart"
              ref="windChart"
              :id="'speedLine'+options.siteLabel+options.heightLabel"></div>
       </el-card>
     </div>
-
   </div>
 </template>
 
@@ -113,9 +128,11 @@ export default {
         { label: '近一年', value: 6, type: '1y' },
       ],
       userDefinedTimeRangeValue: null,
+      granularityRadio: 'raw',
       dialogVisible: false,
       echartsList: null,
       vforList: [],
+      loading: false,
     }
   },
   watch: {
@@ -129,12 +146,75 @@ export default {
       }
     },
   },
+  computed: {
+    hourRadioDisabled() {
+      if (this.userDefinedTimeRangeValue) {
+        const YY0 = this.userDefinedTimeRangeValue[0].getFullYear()
+        const YY1 = this.userDefinedTimeRangeValue[1].getFullYear()
+        const MM0 = this.userDefinedTimeRangeValue[0].getMonth() + 1
+        const MM1 = this.userDefinedTimeRangeValue[1].getMonth() + 1
+        const DD0 = this.userDefinedTimeRangeValue[0].getDate()
+        const DD1 = this.userDefinedTimeRangeValue[1].getDate()
+        const hh0 = this.userDefinedTimeRangeValue[0].getHours()
+        const hh1 = this.userDefinedTimeRangeValue[1].getHours()
+        return YY0 === YY1 && MM0 === MM1 && DD0 === DD1 && hh0 === hh1
+          ? true
+          : false
+      } else {
+        return true
+      }
+    },
+    dayRadioDisabled() {
+      if (this.userDefinedTimeRangeValue) {
+        const YY0 = this.userDefinedTimeRangeValue[0].getFullYear()
+        const YY1 = this.userDefinedTimeRangeValue[1].getFullYear()
+        const MM0 = this.userDefinedTimeRangeValue[0].getMonth() + 1
+        const MM1 = this.userDefinedTimeRangeValue[1].getMonth() + 1
+        const DD0 = this.userDefinedTimeRangeValue[0].getDate()
+        const DD1 = this.userDefinedTimeRangeValue[1].getDate()
+        return YY0 === YY1 && MM0 === MM1 && DD0 === DD1 ? true : false
+      } else {
+        return true
+      }
+    },
+    showTimescale() {
+      if (this.timeRangeValue === 0) {
+        return ''
+      } else if (this.timeRangeValue <= 6) {
+        return this.timeRangeOptions[
+          this.timeRangeOptions.findIndex(
+            (item) => item.value == this.timeRangeValue
+          )
+        ].label
+      } else {
+        const YY0 = this.userDefinedTimeRangeValue[0].getFullYear()
+        const YY1 = this.userDefinedTimeRangeValue[1].getFullYear()
+        const MM0 = this.userDefinedTimeRangeValue[0].getMonth() + 1
+        const MM1 = this.userDefinedTimeRangeValue[1].getMonth() + 1
+        const DD0 = this.userDefinedTimeRangeValue[0].getDate()
+        const DD1 = this.userDefinedTimeRangeValue[1].getDate()
+        const hh0 = this.userDefinedTimeRangeValue[0].getHours()
+        const hh1 = this.userDefinedTimeRangeValue[1].getHours()
+        const mm0 = this.userDefinedTimeRangeValue[0].getMinutes()
+        const mm1 = this.userDefinedTimeRangeValue[1].getMinutes()
+        const ss0 = this.userDefinedTimeRangeValue[0].getSeconds()
+        const ss1 = this.userDefinedTimeRangeValue[1].getSeconds()
+        return `${YY0}年${MM0}月${DD0}日${hh0 < 10 ? '0' + hh0 : hh0}:${
+          mm0 < 10 ? '0' + mm0 : mm0
+        }:${ss0 < 10 ? '0' + ss0 : ss0}——${YY1}年${MM1}月${DD1}日${
+          hh1 < 10 ? '0' + hh1 : hh1
+        }:${mm1 < 10 ? '0' + mm1 : mm1}:${ss1 < 10 ? '0' + ss1 : ss1}`
+      }
+    },
+  },
   methods: {
     test() {
       console.log(this.echartsList)
     },
     handleDialogCancel() {
       this.timeRangeValue = this.oldTimeRangeValue
+      this.userDefinedTimeRangeValue = null
+      this.granularityRadio = 'raw'
       this.dialogVisible = false
     },
     handleDialogConfirm() {
@@ -209,6 +289,7 @@ export default {
         })
     },
     drawLineCharts() {
+      this.loading = true
       //遍历之前先确定时间范围
       const selectedIndex = this.timeRangeOptions.findIndex(
         (item) => item.value == this.timeRangeValue
@@ -219,6 +300,7 @@ export default {
         type: this.timeRangeOptions[selectedIndex].type,
         dateBegin: null,
         dateEnd: null,
+        granularity: null,
       }
       if (data.type === 'user-defined' && this.userDefinedTimeRangeValue) {
         const datetime = this.userDefinedTimeRangeValue
@@ -236,12 +318,13 @@ export default {
         var ss1 = datetime[1].getSeconds()
         data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
         data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+        data.granularity = this.granularityRadio
       }
       //遍历获取数据并画图
       this.vforList.forEach((item) => {
         data.site = item.siteLabel
         data.height = item.heightLabel
-        post4SpeedTimeData(data) //! 这里要根据时间跨度选择数据粒度
+        post4SpeedTimeData(data)
           .then((res) => {
             if (!this.echartsList[item.siteValue - 1][item.heightValue - 1]) {
               this.echartsList[item.siteValue - 1][item.heightValue - 1] =
@@ -252,7 +335,9 @@ export default {
                 )
             }
 
-            var chartData = []
+            var avgData = []
+            var maxData = []
+            var minData = []
             res.data.forEach((item) => {
               var time = new Date(item.datetime)
               var chartTime =
@@ -267,18 +352,26 @@ export default {
                 time.getMinutes() +
                 ':' +
                 time.getSeconds()
-              chartData.push({
+              avgData.push({
                 name: time.toString(),
-                value: [chartTime, item.speed, item.degree],
+                value: [chartTime, item.speed],
+              })
+              maxData.push({
+                name: time.toString(),
+                value: [chartTime, item.maxSpeed],
+              })
+              minData.push({
+                name: time.toString(),
+                value: [chartTime, item.minSpeed],
               })
             })
             var option = {
-              color: '#73c0de',
-
+              color: ['#5470c6', '#73c0de', '#9fdede'],
               tooltip: {
                 trigger: 'axis',
                 valueFormatter: (value) => value + ' m/s',
               },
+              legend: {},
 
               grid: {
                 containLabel: true,
@@ -306,12 +399,26 @@ export default {
               ],
               series: [
                 {
-                  name: '风速',
-                  data: chartData,
+                  name: '最大风速',
+                  data: maxData,
                   type: 'line',
-                  smooth: true,
-                  // animationDuration: 0,
-                  // symbol: 'arrow',
+                  symbol: 'none',
+                  // symbolSize: [8, 15],
+                  // symbolRotate: (value) => 180 - value[2],
+                },
+                {
+                  name: '平均风速',
+                  data: avgData,
+                  type: 'line',
+                  symbol: 'none',
+                  // symbolSize: [8, 15],
+                  // symbolRotate: (value) => 180 - value[2],
+                },
+                {
+                  name: '最小风速',
+                  data: minData,
+                  type: 'line',
+                  symbol: 'none',
                   // symbolSize: [8, 15],
                   // symbolRotate: (value) => 180 - value[2],
                 },
@@ -320,6 +427,7 @@ export default {
             this.echartsList[item.siteValue - 1][
               item.heightValue - 1
             ].setOption(option)
+            this.loading = false
           })
           .catch((e) => {
             console.log(e)
@@ -356,12 +464,24 @@ export default {
 .datepickerWrap {
   text-align: center;
 }
+.granularity {
+  margin-top: 20px;
+  .title {
+    margin-right: 20px;
+  }
+}
 .card {
   margin-top: 5px;
   margin-bottom: 10px;
   .title {
-    margin: 0px 0px 10px 0px;
+    display: flex;
+    justify-content: space-between;
+    .titleleft,
+    .titleright {
+      margin: 0px 0px 10px 0px;
+    }
   }
+
   .windChart {
     height: 280px;
   }
