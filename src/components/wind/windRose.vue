@@ -5,7 +5,6 @@
       <span>筛选条件：</span>
       <el-select v-model="siteValue"
                  multiple
-                 collapse-tags
                  placeholder="选择测风塔"
                  size="small">
         <el-option v-for="site in siteOptions"
@@ -16,7 +15,6 @@
       </el-select>
       <el-select v-model="heightValue"
                  multiple
-                 collapse-tags
                  placeholder="选择高度"
                  size="small">
         <el-option v-for="height in heightOptions"
@@ -56,7 +54,7 @@
           <p class="title">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
           <div class="windrose"
                ref="roseChart"
-               :id="options.siteLabel+options.heightLabel"></div>
+               :id="'windRose'+options.siteLabel+options.heightLabel"></div>
         </el-card>
       </div>
     </div>
@@ -147,7 +145,7 @@ export default {
             this.echartsList[i] = new Array(this.heightOptions.length)
           }
           this.$nextTick(() => {
-            this.drawRoseData(this.range)
+            this.drawRoseData()
           })
         })
         .catch((e) => {
@@ -155,47 +153,41 @@ export default {
         })
     },
     drawRoseData() {
+      var dateBegin = null
+      var dateEnd = null
+      if (this.dateValue) {
+        var YY0 = this.dateValue[0].getFullYear()
+        var MM0 = this.dateValue[0].getMonth() + 1
+        var DD0 = this.dateValue[0].getDate()
+        var hh0 = this.dateValue[0].getHours()
+        var mm0 = this.dateValue[0].getMinutes()
+        var ss0 = this.dateValue[0].getSeconds()
+        var YY1 = this.dateValue[1].getFullYear()
+        var MM1 = this.dateValue[1].getMonth() + 1
+        var DD1 = this.dateValue[1].getDate()
+        var hh1 = this.dateValue[1].getHours()
+        var mm1 = this.dateValue[1].getMinutes()
+        var ss1 = this.dateValue[1].getSeconds()
+        dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
+        dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+      }
       this.vforList.forEach((item) => {
-        //
         const data = {
           site: item.siteLabel,
           height: item.heightLabel,
           range: this.range,
-          dateBegin: null,
-          dateEnd: null,
+          dateBegin: dateBegin,
+          dateEnd: dateEnd,
         }
-        if (this.dateValue !== null) {
-          var YY0 = this.dateValue[0].getFullYear()
-          var MM0 = this.dateValue[0].getMonth() + 1
-          var DD0 = this.dateValue[0].getDate()
-          var hh0 = this.dateValue[0].getHours()
-          var mm0 = this.dateValue[0].getMinutes()
-          var ss0 = this.dateValue[0].getSeconds()
-          var YY1 = this.dateValue[1].getFullYear()
-          var MM1 = this.dateValue[1].getMonth() + 1
-          var DD1 = this.dateValue[1].getDate()
-          var hh1 = this.dateValue[1].getHours()
-          var mm1 = this.dateValue[1].getMinutes()
-          var ss1 = this.dateValue[1].getSeconds()
-          data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
-          data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
-        }
+
         post4WDData(data)
           .then((res) => {
             var roseData = res.data
-
-            // const colorBar = [
-            //   '#453781', //0-5
-            //   '#32648e', //5-10
-            //   '#238a8d', //10-15
-            //   '#29af7f', //15-20
-            //   '#74d055', //20-25
-            //   '#fde725', //25-
-            // ]
-
             this.echartsList[item.siteValue - 1][item.heightValue - 1] =
               echarts.init(
-                document.getElementById(item.siteLabel + item.heightLabel)
+                document.getElementById(
+                  'windRose' + item.siteLabel + item.heightLabel
+                )
               )
             var seriesData = []
             var color = []
@@ -340,77 +332,78 @@ export default {
     },
     redrawRose() {
       this.loading = true
+      var data = {
+        site: null,
+        height: null,
+        range: this.range,
+        dateBegin: null,
+        dateEnd: null,
+      }
+      if (this.dateValue !== null) {
+        var YY0 = this.dateValue[0].getFullYear()
+        var MM0 = this.dateValue[0].getMonth() + 1
+        var DD0 = this.dateValue[0].getDate()
+        var hh0 = this.dateValue[0].getHours()
+        var mm0 = this.dateValue[0].getMinutes()
+        var ss0 = this.dateValue[0].getSeconds()
+        var YY1 = this.dateValue[1].getFullYear()
+        var MM1 = this.dateValue[1].getMonth() + 1
+        var DD1 = this.dateValue[1].getDate()
+        var hh1 = this.dateValue[1].getHours()
+        var mm1 = this.dateValue[1].getMinutes()
+        var ss1 = this.dateValue[1].getSeconds()
+        data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
+        data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+      }
       this.vforList.forEach((ele) => {
-        var data = {
-          site: ele.siteLabel,
-          height: ele.heightLabel,
-          range: this.range,
-          dateBegin: null,
-          dateEnd: null,
-        }
-        if (this.dateValue !== null) {
-          var YY0 = this.dateValue[0].getFullYear()
-          var MM0 = this.dateValue[0].getMonth() + 1
-          var DD0 = this.dateValue[0].getDate()
-          var hh0 = this.dateValue[0].getHours()
-          var mm0 = this.dateValue[0].getMinutes()
-          var ss0 = this.dateValue[0].getSeconds()
-          var YY1 = this.dateValue[1].getFullYear()
-          var MM1 = this.dateValue[1].getMonth() + 1
-          var DD1 = this.dateValue[1].getDate()
-          var hh1 = this.dateValue[1].getHours()
-          var mm1 = this.dateValue[1].getMinutes()
-          var ss1 = this.dateValue[1].getSeconds()
-          data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
-          data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
-        }
-        post4WDData(data)
-          .then((res) => {
-            var color = []
-            var roseData = res.data
-            var seriesData = []
-            for (var key in roseData) {
-              if (roseData[key].length != 0) {
-                var index = Math.round(
-                  (this.range.indexOf(parseInt(key.split('-')[0])) /
-                    (this.range.length - 1)) *
-                    (colorBar.length - 1)
-                )
-                color.push(colorBar[index])
-              }
-              var barData = []
-              roseData[key].forEach((dirData) => {
-                barData[dirData.direction] = dirData.frequency
-              })
-              if (roseData[key].length != 0) {
-                seriesData.push({
-                  animationDuration: 0,
-                  type: 'bar',
-                  // barWidth: '100%',
-                  data: barData,
-                  coordinateSystem: 'polar',
-                  name: key,
-                  stack: 'a',
+        (data.site = ele.siteLabel),
+          (data.height = ele.heightLabel),
+          post4WDData(data)
+            .then((res) => {
+              var color = []
+              var roseData = res.data
+              var seriesData = []
+              for (var key in roseData) {
+                if (roseData[key].length != 0) {
+                  var index = Math.round(
+                    (this.range.indexOf(parseInt(key.split('-')[0])) /
+                      (this.range.length - 1)) *
+                      (colorBar.length - 1)
+                  )
+                  color.push(colorBar[index])
+                }
+                var barData = []
+                roseData[key].forEach((dirData) => {
+                  barData[dirData.direction] = dirData.frequency
                 })
+                if (roseData[key].length != 0) {
+                  seriesData.push({
+                    animationDuration: 0,
+                    type: 'bar',
+                    // barWidth: '100%',
+                    data: barData,
+                    coordinateSystem: 'polar',
+                    name: key,
+                    stack: 'a',
+                  })
+                }
               }
-            }
 
-            var option =
+              var option =
+                this.echartsList[ele.siteValue - 1][
+                  ele.heightValue - 1
+                ].getOption()
+              option.series = seriesData
+              option.color = color
+
               this.echartsList[ele.siteValue - 1][
                 ele.heightValue - 1
-              ].getOption()
-            option.series = seriesData
-            option.color = color
-
-            this.echartsList[ele.siteValue - 1][ele.heightValue - 1].setOption(
-              option,
-              { notMerge: true }
-            )
-            this.loading = false
-          })
-          .catch((e) => {
-            console.log(e)
-          })
+              ].setOption(option, { notMerge: true })
+              this.loading = false
+            })
+            .catch((e) => {
+              console.log(e)
+            })
       })
     },
     parentDrawDistribute() {

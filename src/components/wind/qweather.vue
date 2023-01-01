@@ -25,7 +25,7 @@
               <div class="items"
                    v-if="nowWeather.windSpeed">
                 <span class="title">风速</span>
-                <span class="value">{{(nowWeather.windSpeed/3.6).toFixed(1)}} m/s</span>
+                <span class="value">{{(nowWeather.windSpeed/3.6).toFixed(1)}}m/s</span>
               </div>
               <div class="items"
                    v-if="nowWeather.windDir">
@@ -35,7 +35,7 @@
               <div class="items"
                    v-if="nowWeather.pressure">
                 <span class="title">气压</span>
-                <span class="value">{{nowWeather.pressure/10}} kPa</span>
+                <span class="value">{{nowWeather.pressure/10}}kPa</span>
               </div>
             </div>
 
@@ -60,6 +60,7 @@
               </div>
               <div class="valueAndIcon">
                 <i class="qi-wind" />
+                <!-- 通过旋转风icon表示风向 -->
                 <div class="value">{{(item.windSpeed/3.6).toFixed(1)}}m/s</div>
               </div>
 
@@ -468,6 +469,7 @@ export default {
         }
         .value {
           display: block;
+          font-size: 16px;
         }
       }
     }

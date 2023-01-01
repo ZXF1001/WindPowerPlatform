@@ -5,7 +5,6 @@
       <span>筛选条件：</span>
       <el-select v-model="siteValue"
                  multiple
-                 collapse-tags
                  placeholder="选择测风塔"
                  size="small">
         <el-option v-for="site in siteOptions"
@@ -16,7 +15,6 @@
       </el-select>
       <el-select v-model="heightValue"
                  multiple
-                 collapse-tags
                  placeholder="选择高度"
                  size="small">
         <el-option v-for="height in heightOptions"
@@ -29,17 +27,18 @@
                  placeholder="选择时间范围"
                  size="small">
         <el-option-group>
+          <el-option label="打开范围选择器..."
+                     :value="0">
+          </el-option>
+        </el-option-group>
+        <el-option-group>
           <el-option v-for="timeRange in timeRangeOptions"
                      :key="timeRange.value"
                      :label="timeRange.label"
                      :value="timeRange.value">
           </el-option>
         </el-option-group>
-        <el-option-group>
-          <el-option label="打开范围选择器..."
-                     :value="7">
-          </el-option>
-        </el-option-group>
+
       </el-select>
       <el-popconfirm title="确定重置吗？"
                      @confirm="clearFilter">
@@ -52,18 +51,6 @@
                  plain
                  @click="test">test</el-button>
     </div>
-    <!-- 遍历的风速-时间图 -->
-    <div v-for="options in vforList"
-         :key="options.value">
-      <el-card class="card"
-               shadow='never'
-               v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))">
-        <p class="title">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
-        <div class="windChart"
-             ref="windChart"
-             :id="options.siteLabel+options.heightLabel"></div>
-      </el-card>
-    </div>
     <!-- 选择自定义日期的弹窗 -->
     <el-dialog title="自定义日期"
                :visible.sync="dialogVisible"
@@ -74,6 +61,7 @@
       <div class="datepickerWrap">
         <el-date-picker v-model="userDefinedTimeRangeValue"
                         type="datetimerange"
+                        :default-value="new Date('2016/1/1')"
                         range-separator="至"
                         start-placeholder="开始日期"
                         end-placeholder="结束日期">
@@ -82,10 +70,23 @@
       <span slot="footer">
         <el-button @click="handleDialogCancel">取 消</el-button>
         <el-button type="primary"
-                   :disabled="confirmDisable"
+                   :disabled="userDefinedTimeRangeValue === null"
                    @click="handleDialogConfirm">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 遍历的风速-时间图 -->
+    <div v-for="options in vforList"
+         :key="options.value">
+      <el-card class="card"
+               shadow='never'
+               v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))">
+        <p class="title">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
+        <div class="windChart"
+             ref="windChart"
+             :id="'speedLine'+options.siteLabel+options.heightLabel"></div>
+      </el-card>
+    </div>
+
   </div>
 </template>
 
@@ -104,50 +105,33 @@ export default {
       timeRangeValue: 1,
       oldTimeRangeValue: 1,
       timeRangeOptions: [
-        { label: '近一小时', value: 1 },
-        { label: '近一天', value: 2 },
-        { label: '近一周', value: 3 },
-        { label: '近一月', value: 4 },
-        { label: '近一季度', value: 5 },
-        { label: '近一年', value: 6 },
+        { label: '近一小时', value: 1, type: '1h' },
+        { label: '近一天', value: 2, type: '1d' },
+        { label: '近一周', value: 3, type: '1w' },
+        { label: '近一月', value: 4, type: '1m' },
+        { label: '近一季度', value: 5, type: '1q' },
+        { label: '近一年', value: 6, type: '1y' },
       ],
       userDefinedTimeRangeValue: null,
       dialogVisible: false,
-
+      echartsList: null,
       vforList: [],
     }
   },
   watch: {
     timeRangeValue(newVal, oldVal) {
       this.oldTimeRangeValue = oldVal
-      if (newVal === 7) {
+      if (newVal === 0) {
         // 7表示自定义的选项序号
         this.dialogVisible = true
+      } else {
+        this.drawLineCharts()
       }
-    },
-  },
-  computed: {
-    confirmDisable() {
-      return this.userDefinedTimeRangeValue === null ? true : false
     },
   },
   methods: {
     test() {
-      // const data = {
-      //   site: '0305',
-      //   height: '70m',
-      //   type: 'user-defined',
-      //   dateBegin: '2016-2-10 11:30',
-      //   dateEnd: '2016-2-11 1:30',
-      // }
-      // console.log(data)
-      // post4SpeedTimeData(data)
-      //   .then((res) => {
-      //     console.log(res)
-      //   })
-      //   .catch((e) => {
-      //     console.log(e)
-      //   })
+      console.log(this.echartsList)
     },
     handleDialogCancel() {
       this.timeRangeValue = this.oldTimeRangeValue
@@ -156,15 +140,16 @@ export default {
     handleDialogConfirm() {
       if (this.timeRangeOptions.length === 6 + 1) {
         this.timeRangeOptions.splice(
-          this.timeRangeOptions.findIndex((item) => item.value == 0),
+          this.timeRangeOptions.findIndex((item) => item.value == 6 + 1),
           1
         )
       }
       this.timeRangeOptions.push({
         label: '自定义范围',
-        value: 0,
+        value: 6 + 1,
+        type: 'user-defined',
       })
-      this.timeRangeValue = 0
+      this.timeRangeValue = 6 + 1
       this.dialogVisible = false
     },
     clearFilter() {
@@ -211,18 +196,146 @@ export default {
           this.echartsList = new Array(this.siteOptions.length)
           for (var i = 0; i < this.siteOptions.length; i++) {
             this.echartsList[i] = new Array(this.heightOptions.length)
+            for (var j = 0; j < this.heightOptions.length; j++) {
+              this.echartsList[i][j] = null
+            }
           }
           this.$nextTick(() => {
-            // this.drawRoseData(this.range)
+            this.drawLineCharts()
           })
         })
         .catch((e) => {
           console.log(e)
         })
     },
+    drawLineCharts() {
+      //遍历之前先确定时间范围
+      const selectedIndex = this.timeRangeOptions.findIndex(
+        (item) => item.value == this.timeRangeValue
+      )
+      var data = {
+        site: null,
+        height: null,
+        type: this.timeRangeOptions[selectedIndex].type,
+        dateBegin: null,
+        dateEnd: null,
+      }
+      if (data.type === 'user-defined' && this.userDefinedTimeRangeValue) {
+        const datetime = this.userDefinedTimeRangeValue
+        var YY0 = datetime[0].getFullYear()
+        var MM0 = datetime[0].getMonth() + 1
+        var DD0 = datetime[0].getDate()
+        var hh0 = datetime[0].getHours()
+        var mm0 = datetime[0].getMinutes()
+        var ss0 = datetime[0].getSeconds()
+        var YY1 = datetime[1].getFullYear()
+        var MM1 = datetime[1].getMonth() + 1
+        var DD1 = datetime[1].getDate()
+        var hh1 = datetime[1].getHours()
+        var mm1 = datetime[1].getMinutes()
+        var ss1 = datetime[1].getSeconds()
+        data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
+        data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+      }
+      //遍历获取数据并画图
+      this.vforList.forEach((item) => {
+        data.site = item.siteLabel
+        data.height = item.heightLabel
+        post4SpeedTimeData(data) //! 这里要根据时间跨度选择数据粒度
+          .then((res) => {
+            if (!this.echartsList[item.siteValue - 1][item.heightValue - 1]) {
+              this.echartsList[item.siteValue - 1][item.heightValue - 1] =
+                echarts.init(
+                  document.getElementById(
+                    'speedLine' + item.siteLabel + item.heightLabel
+                  )
+                )
+            }
+
+            var chartData = []
+            res.data.forEach((item) => {
+              var time = new Date(item.datetime)
+              var chartTime =
+                time.getFullYear() +
+                '/' +
+                (time.getMonth() + 1) +
+                '/' +
+                time.getDate() +
+                ' ' +
+                time.getHours() +
+                ':' +
+                time.getMinutes() +
+                ':' +
+                time.getSeconds()
+              chartData.push({
+                name: time.toString(),
+                value: [chartTime, item.speed, item.degree],
+              })
+            })
+            var option = {
+              color: '#73c0de',
+
+              tooltip: {
+                trigger: 'axis',
+                valueFormatter: (value) => value + ' m/s',
+              },
+
+              grid: {
+                containLabel: true,
+                left: '2%',
+                right: '3%',
+                top: '10%',
+                bottom: '2%',
+              },
+
+              xAxis: {
+                type: 'time',
+
+                // splitNumber: 11,
+                // axisTick: {
+                //   alignWithLabel: true,
+                // },
+              },
+              yAxis: [
+                {
+                  type: 'value',
+                  axisLabel: {
+                    formatter: '{value} m/s',
+                  },
+                },
+              ],
+              series: [
+                {
+                  name: '风速',
+                  data: chartData,
+                  type: 'line',
+                  smooth: true,
+                  // animationDuration: 0,
+                  // symbol: 'arrow',
+                  // symbolSize: [8, 15],
+                  // symbolRotate: (value) => 180 - value[2],
+                },
+              ],
+            }
+            this.echartsList[item.siteValue - 1][
+              item.heightValue - 1
+            ].setOption(option)
+          })
+          .catch((e) => {
+            console.log(e)
+          })
+      })
+    },
   },
   mounted() {
     this.fetchFilterData()
+    window.onresize = () => {
+      this.echartsList.forEach((sites) => {
+        sites.forEach((obj) => {
+          obj.resize()
+        })
+      })
+    }
   },
 }
 </script>
