@@ -108,6 +108,7 @@
 <script>
 import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
 import { post4SpeedTimeData } from '@/api/wind/post4SpeedTimeData'
+
 import * as echarts from 'echarts'
 export default {
   data() {
@@ -132,6 +133,7 @@ export default {
       dialogVisible: false,
       echartsList: null,
       vforList: [],
+      fetchController: null,
     }
   },
   watch: {
@@ -207,9 +209,7 @@ export default {
     },
   },
   methods: {
-    test() {
-      console.log(this.echartsList)
-    },
+    test() {},
     handleDialogCancel() {
       this.timeRangeValue = this.oldTimeRangeValue
       this.userDefinedTimeRangeValue = null
@@ -289,6 +289,7 @@ export default {
         })
     },
     drawLineCharts() {
+      this.abortController = new AbortController()
       this.vforList.forEach((item) => {
         item.loading = true
       })
@@ -326,7 +327,7 @@ export default {
       this.vforList.forEach((item) => {
         data.site = item.siteLabel
         data.height = item.heightLabel
-        post4SpeedTimeData(data)
+        post4SpeedTimeData(data, this.abortController)
           .then((res) => {
             if (!this.echartsList[item.siteValue - 1][item.heightValue - 1]) {
               this.echartsList[item.siteValue - 1][item.heightValue - 1] =
@@ -446,6 +447,9 @@ export default {
         })
       })
     }
+  },
+  beforeDestroy() {
+    if (this.abortController) this.abortController.abort()
   },
 }
 </script>

@@ -1,6 +1,6 @@
 import http from "@/utils/requestMyApi.js";
 
-export const post4WDData = (data) => {
+export const post4WDData = (data, abortController) => {
   // data格式为
   // {
   //   "site":"0305",
@@ -9,7 +9,9 @@ export const post4WDData = (data) => {
   //   "dateBegin":"2016-1-10 3:0:0"
   //   "dateEnd":"2016-1-10 13:0:0"
   // }
-  return http.post("/wd_static.php", data);
+  return http.post("/wd_static.php", data, {
+    signal: abortController.signal,
+  });
 };
 export const post4WSData = (data) => {
   // data格式为

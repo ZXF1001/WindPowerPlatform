@@ -98,6 +98,7 @@ export default {
       dialogVisible: false,
       dialogTitle: null,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
+      abortController: null,
     }
   },
   watch: {
@@ -167,6 +168,7 @@ export default {
         })
     },
     drawRoseData() {
+      this.abortController = new AbortController()
       var dateBegin = null
       var dateEnd = null
       if (this.dateValue) {
@@ -194,7 +196,7 @@ export default {
           dateEnd: dateEnd,
         }
 
-        post4WDData(data)
+        post4WDData(data, this.abortController)
           .then((res) => {
             var roseData = res.data
             this.echartsList[item.siteValue - 1][item.heightValue - 1] =
@@ -431,6 +433,9 @@ export default {
   },
   mounted() {
     this.fetchFilterData()
+  },
+  beforeDestroy() {
+    if (this.abortController) this.abortController.abort()
   },
 }
 </script>

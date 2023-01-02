@@ -1,6 +1,6 @@
 import http from "@/utils/requestMyApi.js";
 
-export const post4SpeedTimeData = (data) => {
+export const post4SpeedTimeData = (data, abortController) => {
   // data格式为
   // {
   //   "site":"0305",
@@ -11,5 +11,7 @@ export const post4SpeedTimeData = (data) => {
   //   "granularity":"hour"
   // }
   // 如果type不为"user-defined",dateBegin和detaEnd为空
-  return http.post("/ws_timeline.php", data);
+  return http.post("/ws_timeline.php", data, {
+    signal: abortController.signal,
+  });
 };

@@ -3,24 +3,24 @@
            :before-leave="beforeTagsLeave">
 
     <el-tab-pane label="风玫瑰图"
-                 name="windrose"
+                 name="windRose"
                  :lazy="true">
-      <wind-rose></wind-rose>
+      <wind-rose v-if="existList.windRose"></wind-rose>
     </el-tab-pane>
     <el-tab-pane label="风速信息"
                  name="speedLine"
                  :lazy="true">
-      <speed-line></speed-line>
+      <speed-line v-if="existList.speedLine"></speed-line>
     </el-tab-pane>
     <el-tab-pane label="和风天气"
                  name="weather"
                  :lazy="true">
-      <qweather></qweather>
+      <qweather v-if="existList.weather"></qweather>
     </el-tab-pane>
     <el-tab-pane label="风资源图"
                  name="contour"
                  :lazy="true">
-      <wind-contour></wind-contour>
+      <wind-contour v-if="existList.contour"></wind-contour>
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -40,11 +40,20 @@ export default {
   },
   data() {
     return {
-      activeName: 'windrose',
+      activeName: 'windRose',
+      existList: {
+        windRose: true,
+        speedLine: true,
+        weather: true,
+        contour: true,
+      },
     }
   },
   methods: {
-    beforeTagsLeave() {},
+    beforeTagsLeave(newTab, oldTab) {
+      this.existList[newTab] = true
+      this.existList[oldTab] = false
+    },
   },
 }
 </script>
