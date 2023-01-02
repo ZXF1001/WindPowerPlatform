@@ -65,10 +65,9 @@
                         :default-value="new Date('2016/1/1')"
                         range-separator="至"
                         start-placeholder="开始日期"
-                        end-placeholder="结束日期">
-        </el-date-picker>
+                        end-placeholder="结束日期" />
         <div class="granularity">
-          <span class="title">时间粒度：</span>
+          <span class="title">时间分辨率：</span>
           <el-radio v-model="granularityRadio"
                     label="raw">原始数据</el-radio>
           <el-radio v-model="granularityRadio"
@@ -99,7 +98,7 @@
         </div>
         <div class="windChart"
              ref="windChart"
-             :id="'speedLine'+options.siteLabel+options.heightLabel"></div>
+             :id="'speedLine'+options.siteLabel+options.heightLabel" />
       </el-card>
     </div>
   </div>

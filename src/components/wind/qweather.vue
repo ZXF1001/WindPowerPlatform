@@ -90,7 +90,6 @@
              ref="Hecharts"></div>
       </el-card>
     </div>
-
   </div>
 </template>
 

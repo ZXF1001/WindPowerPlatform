@@ -22,21 +22,27 @@
                  :lazy="true">
       <wind-contour v-if="existList.contour"></wind-contour>
     </el-tab-pane>
+    <el-tab-pane label="上传数据"
+                 name="uploadWindData"
+                 :lazy="true">
+      <upload-wind-data v-if="existList.uploadWindData"></upload-wind-data>
+    </el-tab-pane>
   </el-tabs>
 </template>
 
 <script>
-import windContour from '../components/wind/windContour.vue'
-import windRose from '../components/wind/windRose.vue'
-import speedLine from '../components/wind/speedLine.vue'
-import qweather from '../components/wind/qweather.vue'
-
+import windContour from '@/components/wind/windContour.vue'
+import windRose from '@/components/wind/windRose.vue'
+import speedLine from '@/components/wind/speedLine.vue'
+import qweather from '@/components/wind/qweather.vue'
+import uploadWindData from '@/components/wind/uploadWindData.vue'
 export default {
   components: {
     windContour,
     windRose,
     speedLine,
     qweather,
+    uploadWindData,
   },
   data() {
     return {
@@ -46,6 +52,7 @@ export default {
         speedLine: true,
         weather: true,
         contour: true,
+        uploadWindData: true,
       },
     }
   },
