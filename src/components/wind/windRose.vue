@@ -50,8 +50,12 @@
         <el-card class="card"
                  shadow="never"
                  v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))"
-                 v-loading="loading">
-          <p class="title">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
+                 v-loading="options.loading">
+          <div class="title">
+            <p class="titleleft">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
+            <el-button type="text"
+                       @click="drawPDF(options.siteLabel,options.heightLabel)">风速PDF</el-button>
+          </div>
           <div class="windrose"
                ref="roseChart"
                :id="'windRose'+options.siteLabel+options.heightLabel"></div>
@@ -86,7 +90,6 @@ export default {
       heightValue: [],
       dateValue: null,
       //加载遮罩的状态
-      loading: true,
       //所有的echarts玫瑰图
       range: [0, 3, 5, 7, 9, 11, 13, 15], //要画的风速区间
       vforList: [], //为了一个v-for就能遍历
@@ -107,6 +110,16 @@ export default {
       this.siteValue = []
       this.heightValue = []
       this.dateValue = null
+    },
+    drawPDF(site, height) {
+      this.dialogTitle = `${site}站点 ${height}高度风速概率密度函数`
+      this.drawDistributeParams = {
+        siteLabel: site,
+        heightLabel: height,
+        dirIndex: 'all',
+        dateRange: this.dateValue,
+      }
+      this.dialogVisible = true
     },
     fetchFilterData() {
       Promise.all([getSiteData(), getHeightData()])
@@ -133,6 +146,7 @@ export default {
                 siteValue: siteValue.value,
                 heightLabel: heightValue.label,
                 heightValue: heightValue.value,
+                loading: true,
               })
             })
           })
@@ -290,7 +304,7 @@ export default {
             this.echartsList[item.siteValue - 1][
               item.heightValue - 1
             ].setOption(option)
-            this.loading = false
+            item.loading = false
             this.echartsList[item.siteValue - 1][item.heightValue - 1].on(
               'click',
               (params) => {
@@ -331,7 +345,9 @@ export default {
       })
     },
     redrawRose() {
-      this.loading = true
+      this.vforList.forEach((item) => {
+        item.loading = true
+      })
       var data = {
         site: null,
         height: null,
@@ -399,7 +415,7 @@ export default {
               this.echartsList[ele.siteValue - 1][
                 ele.heightValue - 1
               ].setOption(option, { notMerge: true })
-              this.loading = false
+              ele.loading = false
             })
             .catch((e) => {
               console.log(e)
@@ -443,9 +459,14 @@ export default {
     width: 280px;
     margin: 5px;
     .title {
-      margin: 0px 0px 10px 0px;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .titleleft {
+        margin: 0px;
+      }
     }
+
     .windrose {
       height: 340px;
     }

@@ -91,7 +91,7 @@
          :key="options.value">
       <el-card class="card"
                shadow='never'
-               v-loading="loading"
+               v-loading="options.loading"
                v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))">
         <div class="title">
           <p class="titleleft">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
@@ -132,7 +132,6 @@ export default {
       dialogVisible: false,
       echartsList: null,
       vforList: [],
-      loading: false,
     }
   },
   watch: {
@@ -201,7 +200,7 @@ export default {
         const ss1 = this.userDefinedTimeRangeValue[1].getSeconds()
         return `${YY0}年${MM0}月${DD0}日${hh0 < 10 ? '0' + hh0 : hh0}:${
           mm0 < 10 ? '0' + mm0 : mm0
-        }:${ss0 < 10 ? '0' + ss0 : ss0}——${YY1}年${MM1}月${DD1}日${
+        }:${ss0 < 10 ? '0' + ss0 : ss0}至${YY1}年${MM1}月${DD1}日${
           hh1 < 10 ? '0' + hh1 : hh1
         }:${mm1 < 10 ? '0' + mm1 : mm1}:${ss1 < 10 ? '0' + ss1 : ss1}`
       }
@@ -270,6 +269,7 @@ export default {
                 siteValue: siteValue.value,
                 heightLabel: heightValue.label,
                 heightValue: heightValue.value,
+                loading: true,
               })
             })
           })
@@ -289,7 +289,9 @@ export default {
         })
     },
     drawLineCharts() {
-      this.loading = true
+      this.vforList.forEach((item) => {
+        item.loading = true
+      })
       //遍历之前先确定时间范围
       const selectedIndex = this.timeRangeOptions.findIndex(
         (item) => item.value == this.timeRangeValue
@@ -427,7 +429,7 @@ export default {
             this.echartsList[item.siteValue - 1][
               item.heightValue - 1
             ].setOption(option)
-            this.loading = false
+            item.loading = false
           })
           .catch((e) => {
             console.log(e)
