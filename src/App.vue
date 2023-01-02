@@ -22,18 +22,18 @@ body,
   font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
 }
-.scroller::-webkit-scrollbar {
+
+::-webkit-scrollbar {
   width: 8px;
   height: 9px;
 }
-
-.scroller::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background-color: #f9f9f9;
   -webkit-border-radius: 2em;
   -moz-border-radius: 2em;
   border-radius: 2em;
 }
-.scroller::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background-color: #dedede;
   -webkit-border-radius: 2em;
   -moz-border-radius: 2em;
