@@ -10,9 +10,25 @@
                  :auto-upload="false"
                  :on-change="handleChange">
         <el-button slot="trigger"
-                   size="small"
                    type="primary">选取文件</el-button>
       </el-upload>
+
+      <!-- 显示csv为表格 -->
+      <div v-show="headerData.length>0">
+        <p>前五行数据预览</p>
+        <el-checkbox v-model="firstLineAsHeader"
+                     @change="showAsTable(jsonData.slice(0, 5))">第一行数据作为表头</el-checkbox>
+        <el-table :data="tableData"
+                  max-height="300"
+                  border
+                  fit
+                  style="width: 100%">
+          <el-table-column v-for="item in headerData"
+                           :key="item.prop"
+                           :prop="item.prop"
+                           :label="item.label" />
+        </el-table>
+      </div>
       <!-- 显示所有字段并选择要上传的字段 -->
       <el-table :data="headerListData"
                 max-height="400"
@@ -41,24 +57,12 @@
 
         </el-table-column>
       </el-table>
-      <!-- 显示csv为表格 -->
-      <div v-show="headerData.length>0">
-        <p>前五行数据预览</p>
-        <el-checkbox v-model="firstLineAsHeader"
-                     @change="showAsTable(jsonData.slice(0, 5))">第一行数据作为表头</el-checkbox>
-        <el-table :data="tableData"
-                  max-height="300"
-                  border
-                  fit
-                  style="width: 100%">
-          <el-table-column v-for="item in headerData"
-                           :key="item.prop"
-                           :prop="item.prop"
-                           :label="item.label" />
-        </el-table>
-      </div>
-      <el-button size="small"
-                 type="success"
+
+      <!-- 显示数据信息的设置 -->
+      <el-input v-model="siteInfo"
+                placeholder="请输入站点"></el-input>
+      <!-- 上传按钮 -->
+      <el-button type="success"
                  @click="submitUpload">上传到服务器</el-button>
     </div>
 
@@ -67,6 +71,7 @@
 
 <script>
 import Papa from 'papaparse'
+import { createTable, upload2DB } from '@/api/wind/uploadData'
 export default {
   data() {
     return {
@@ -128,6 +133,7 @@ export default {
         },
       ],
       multipleSelection: [],
+      siteInfo: '',
     }
   },
   computed: {
@@ -146,7 +152,6 @@ export default {
   },
   methods: {
     handleChange() {
-      console.log('change')
       if (this.$refs.upload.uploadFiles.length !== 0) {
         if (this.$refs.upload.uploadFiles.length > 1) {
           this.$refs.upload.uploadFiles.shift()
@@ -241,15 +246,11 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
-      console.log(this.multipleSelection)
     },
     submitUpload() {
-      console.log('upload')
-      var uplaodData = []
       // 要把上传的数据变成
       // [{
-      //   date:"2022-12-23",
-      //   time:"11:30",
+      //   datetime:"2022-12-23 11:40:00",
       //   70m_v_avg:9.8,
       // },
       // {
@@ -257,16 +258,60 @@ export default {
       // },
       // ...]
       // 这样的形式
-      var data = this.jsonData
+      var data = JSON.parse(JSON.stringify(this.jsonData))
       if (this.firstLineAsHeader) {
         data.shift()
       }
+      var fieldData = JSON.parse(JSON.stringify(this.multipleSelection))
+      const fieldList = fieldData.map((item) => item.typeOptions[1])
+      const datetimeExist = fieldList.indexOf('datetime') !== -1
+      const dateExist = fieldList.indexOf('date') !== -1
+      const timeExist = fieldList.indexOf('time') !== -1
+      if (datetimeExist) {
+        //过滤multi列表里的d和t
+        fieldData = fieldData.filter(
+          (item) =>
+            item.typeOptions[1] !== 'date' && item.typeOptions[1] !== 'time'
+        )
+      } else {
+        if (dateExist && timeExist) {
+          //把d和t拼成一个dt,再删掉d和t
+          //修改字段表数据
+          fieldData.push({
+            index: data[0].length,
+            typeOptions: ['datetime', 'datetime'],
+          })
+          //找到时间日期所在的index,并合并加到dt字段
+          var indexOfDate = fieldData.filter(
+            (item) => item.typeOptions[1] === 'date'
+          )[0].index
+          var indexOfTime = fieldData.filter(
+            (item) => item.typeOptions[1] === 'time'
+          )[0].index
+          data.forEach((line) => {
+            var datetime = `${line[indexOfDate]} ${line[indexOfTime]}`
+            line.push(datetime)
+          })
+          //删除字段表的d,t信息
+          fieldData = fieldData.filter(
+            (item) =>
+              item.typeOptions[1] !== 'date' && item.typeOptions[1] !== 'time'
+          )
+        } else {
+          //报错:没有日期时间
+          alert('没有日期时间数据')
+        }
+      }
+      var uploadData = []
       data.forEach((line) => {
         //每一行jsondata的操作
 
         var tempRecord = {}
-        this.multipleSelection.forEach((field) => {
+        fieldData.forEach((field) => {
           //字段选择表中每个选中字段的操作
+          //查找有没有date/time/datetime字段
+
+          //如果是速度/角度字段,前面要加上高度
           if (field.typeOptions[0] === 'v' || field.typeOptions[0] === 'deg') {
             tempRecord[
               `${field.height}m_${field.typeOptions[0]}_${field.typeOptions[1]}`
@@ -275,9 +320,25 @@ export default {
             tempRecord[field.typeOptions[1]] = line[field.index]
           }
         })
-        uplaodData.push(tempRecord)
+        uploadData.push(tempRecord)
       })
-      console.log(uplaodData)
+      createTable({ site: this.siteInfo, data: uploadData[0] }).then((res) => {
+        const max_length = 1000
+        for (var i = 0; i < Math.floor(uploadData.length / max_length); i++) {
+          upload2DB({
+            site: this.siteInfo,
+            data: uploadData.slice(i * max_length, (i + 1) * max_length),
+          }).then((res) => {
+            console.log(res)
+          })
+        }
+        upload2DB({
+          site: this.siteInfo,
+          data: uploadData.slice(i * max_length),
+        }).then((res) => {
+          console.log(res)
+        })
+      })
     },
   },
 }
