@@ -6,15 +6,12 @@
                  action="#"
                  accept=".csv"
                  :show-file-list="false"
-                 drag
                  :file-list="fileList"
                  :auto-upload="false"
                  :on-change="handleChange">
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em>
-          <div class="el-upload__tip">（仅支持.csv格式）</div>
-        </div>
-
+        <el-button slot="trigger"
+                   size="small"
+                   type="primary">选取文件</el-button>
       </el-upload>
       <!-- 显示所有字段并选择要上传的字段 -->
       <el-table :data="headerListData"
@@ -24,31 +21,31 @@
                 @selection-change="handleSelectionChange"
                 style="width:40%">
         <el-table-column type="selection" />
-        <el-table-column prop="index"
-                         label="序号"
-                         width="60" />
         <el-table-column prop="dataHeader"
                          label="字段" />
-
         <el-table-column label="字段类型">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.typeOptions"
-                       placeholder="请选择"
-                       :disabled="(multipleSelection.map(item=>item.index).indexOf(scope.row.index))===-1">
-              <el-option v-for="item in typeOptions"
-                         :key="item.value"
-                         :label="item.label"
-                         :value="item.value">
-              </el-option>
-            </el-select>
+
+            <el-cascader v-model="scope.row.typeOptions"
+                         :options="typeOptions"
+                         :disabled="casaderDisabled(scope.row.index)"></el-cascader>
           </template>
+        </el-table-column>
+        <el-table-column prop="height"
+                         label="高度/[m]">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.height"
+                      :disabled="casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions)"
+                      placeholder="请输入内容"></el-input>
+          </template>
+
         </el-table-column>
       </el-table>
       <!-- 显示csv为表格 -->
       <div v-show="headerData.length>0">
         <p>前五行数据预览</p>
         <el-checkbox v-model="firstLineAsHeader"
-                     @change="showAsTable(jsonData10Lines)">第一行数据作为表头</el-checkbox>
+                     @change="showAsTable(jsonData.slice(0, 5))">第一行数据作为表头</el-checkbox>
         <el-table :data="tableData"
                   max-height="300"
                   border
@@ -75,19 +72,78 @@ export default {
     return {
       fileList: [],
       firstLineAsHeader: true, //第一行数据是否为表头
-      jsonData10Lines: [],
+      jsonData: [],
       headerData: [], //形如[{prop:"time",label:"time"},{prop:"velocity",label:"velocity"}]
       tableData: [], //形如[{time:"10:00",velocity:9.8},{...},...]
       headerListData: [], //形如[{dataHeader:header1OfCsv},{...},...]
       typeOptions: [
-        { value: 0, label: '日期' },
-        { value: 1, label: '时间' },
-        { value: 2, label: '速度' },
+        {
+          value: 'datetime',
+          label: '日期时间',
+          children: [
+            {
+              value: 'datetime',
+              label: '日期+时间',
+            },
+            { value: 'date', label: '日期' },
+            { value: 'time', label: '时间' },
+          ],
+        },
+
+        {
+          value: 'v',
+          label: '速度字段',
+          children: [
+            {
+              value: 'avg',
+              label: '平均速度',
+            },
+            {
+              value: 'max',
+              label: '最大速度',
+            },
+            {
+              value: 'min',
+              label: '最小速度',
+            },
+          ],
+        },
+        {
+          value: 'deg',
+          label: '风向角字段',
+          children: [
+            {
+              value: 'avg',
+              label: '平均风向角',
+            },
+            {
+              value: 'max',
+              label: '最大风向角',
+            },
+            {
+              value: 'min',
+              label: '最小风向角',
+            },
+          ],
+        },
       ],
       multipleSelection: [],
     }
   },
-
+  computed: {
+    casaderDisabled() {
+      return function (index) {
+        return (
+          this.multipleSelection.map((item) => item.index).indexOf(index) === -1
+        )
+      }
+    },
+    heightInputDisabled() {
+      return function (typeOptions) {
+        return typeOptions === null || typeOptions[0] === 'datetime'
+      }
+    },
+  },
   methods: {
     handleChange() {
       console.log('change')
@@ -112,8 +168,8 @@ export default {
                 //去除最后的空行
                 data.pop()
               }
-              this.jsonData10Lines = data.slice(0, 5)
-              this.showAsTable(this.jsonData10Lines) //显示为表格
+              this.jsonData = data
+              this.showAsTable(this.jsonData.slice(0, 5)) //显示为表格
             },
           })
         }
@@ -135,19 +191,21 @@ export default {
         return encoding
       }
     },
+
     showAsTable(jsonData) {
       this.headerData = []
       this.tableData = []
       this.headerListData = []
-      if (this.jsonData10Lines.length > 0) {
+      if (this.jsonData.length > 0) {
         if (this.firstLineAsHeader) {
           //第一行数据作为表头
           jsonData[0].forEach((element, index) => {
             this.headerData.push({ prop: index.toString(), label: element })
             this.headerListData.push({
               index: index,
-              typeOptions: null,
               dataHeader: element,
+              typeOptions: null,
+              height: null,
             })
           })
           for (let i = 1; i < jsonData.length; i++) {
@@ -166,8 +224,9 @@ export default {
             })
             this.headerListData.push({
               index: index,
-              typeOptions: null,
               dataHeader: index.toString(),
+              typeOptions: null,
+              height: null,
             })
           })
           for (let i = 0; i < jsonData.length; i++) {
@@ -186,6 +245,39 @@ export default {
     },
     submitUpload() {
       console.log('upload')
+      var uplaodData = []
+      // 要把上传的数据变成
+      // [{
+      //   date:"2022-12-23",
+      //   time:"11:30",
+      //   70m_v_avg:9.8,
+      // },
+      // {
+      //   ...
+      // },
+      // ...]
+      // 这样的形式
+      var data = this.jsonData
+      if (this.firstLineAsHeader) {
+        data.shift()
+      }
+      data.forEach((line) => {
+        //每一行jsondata的操作
+
+        var tempRecord = {}
+        this.multipleSelection.forEach((field) => {
+          //字段选择表中每个选中字段的操作
+          if (field.typeOptions[0] === 'v' || field.typeOptions[0] === 'deg') {
+            tempRecord[
+              `${field.height}m_${field.typeOptions[0]}_${field.typeOptions[1]}`
+            ] = line[field.index]
+          } else {
+            tempRecord[field.typeOptions[1]] = line[field.index]
+          }
+        })
+        uplaodData.push(tempRecord)
+      })
+      console.log(uplaodData)
     },
   },
 }
