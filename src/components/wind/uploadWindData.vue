@@ -202,45 +202,24 @@ export default {
       this.tableData = []
       this.headerListData = []
       if (this.jsonData.length > 0) {
-        if (this.firstLineAsHeader) {
-          //第一行数据作为表头
-          jsonData[0].forEach((element, index) => {
-            this.headerData.push({ prop: index.toString(), label: element })
-            this.headerListData.push({
-              index: index,
-              dataHeader: element,
-              typeOptions: null,
-              height: null,
-            })
+        jsonData[0].forEach((element, index) => {
+          this.headerData.push({
+            prop: index.toString(),
+            label: this.firstLineAsHeader ? element : index.toString(),
           })
-          for (let i = 1; i < jsonData.length; i++) {
-            var tableRecord = {}
-            jsonData[i].forEach((record, index) => {
-              tableRecord[this.headerData[index].prop] = record
-            })
-            this.tableData.push(tableRecord)
-          }
-        } else {
-          //第一行是数据
-          jsonData[0].forEach((element, index) => {
-            this.headerData.push({
-              prop: index.toString(),
-              label: index.toString(),
-            })
-            this.headerListData.push({
-              index: index,
-              dataHeader: index.toString(),
-              typeOptions: null,
-              height: null,
-            })
+          this.headerListData.push({
+            index: index,
+            dataHeader: this.firstLineAsHeader ? element : index.toString(),
+            typeOptions: null,
+            height: null,
           })
-          for (let i = 0; i < jsonData.length; i++) {
-            var tableRecord = {}
-            jsonData[i].forEach((record, index) => {
-              tableRecord[this.headerData[index].prop] = record
-            })
-            this.tableData.push(tableRecord)
-          }
+        })
+        for (let i = this.firstLineAsHeader ? 1 : 0; i < jsonData.length; i++) {
+          var tableRecord = {}
+          jsonData[i].forEach((record, index) => {
+            tableRecord[this.headerData[index].prop] = record
+          })
+          this.tableData.push(tableRecord)
         }
       }
     },
@@ -322,23 +301,28 @@ export default {
         })
         uploadData.push(tempRecord)
       })
-      createTable({ site: this.siteInfo, data: uploadData[0] }).then((res) => {
-        const max_length = 1000
-        for (var i = 0; i < Math.floor(uploadData.length / max_length); i++) {
+      createTable({ site: this.siteInfo, data: uploadData[0] })
+        .then(() => {
+          const max_length = 1000
+          for (var i = 0; i < Math.floor(uploadData.length / max_length); i++) {
+            //todo 这里改成await写法,加入进度条提示进度
+            upload2DB({
+              site: this.siteInfo,
+              data: uploadData.slice(i * max_length, (i + 1) * max_length),
+            }).then((res) => {
+              console.log(res)
+            })
+          }
           upload2DB({
             site: this.siteInfo,
-            data: uploadData.slice(i * max_length, (i + 1) * max_length),
+            data: uploadData.slice(i * max_length),
           }).then((res) => {
             console.log(res)
           })
-        }
-        upload2DB({
-          site: this.siteInfo,
-          data: uploadData.slice(i * max_length),
-        }).then((res) => {
-          console.log(res)
         })
-      })
+        .catch((e) => {
+          console.log(e)
+        })
     },
   },
 }
