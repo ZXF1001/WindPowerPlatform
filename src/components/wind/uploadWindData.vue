@@ -1,27 +1,28 @@
 <template>
   <div>
-
-    <div class="selectFile">
-      <el-upload ref="upload"
-                 action="#"
-                 accept=".csv"
-                 :show-file-list="false"
-                 :file-list="fileList"
-                 :auto-upload="false"
-                 :on-change="handleChange">
-        <el-button slot="trigger"
-                   type="primary">选取文件</el-button>
-      </el-upload>
-
+    <!-- 上传文件 -->
+    <el-upload ref="upload"
+               action="#"
+               accept=".csv"
+               :show-file-list="false"
+               :auto-upload="false"
+               :on-change="handleChange">
+      <el-button slot="trigger"
+                 type="primary">选取文件</el-button>
+      <el-button @click="test">test</el-button>
+      <span v-show="fileName">文件名：{{fileName}}</span>
+    </el-upload>
+    <div v-if="headerData.length>0">
       <!-- 显示csv为表格 -->
-      <div v-show="headerData.length>0">
-        <p>前五行数据预览</p>
+      <div>
+        <el-divider content-position="left">前十行数据预览</el-divider>
         <el-checkbox v-model="firstLineAsHeader"
-                     @change="showAsTable(jsonData.slice(0, 5))">第一行数据作为表头</el-checkbox>
+                     @change="showAsTable(jsonData.slice(0, 10))">第一行数据作为表头</el-checkbox>
         <el-table :data="tableData"
-                  max-height="300"
+                  height="calc(50vh - 170px)"
                   border
                   fit
+                  :key="sTable"
                   style="width: 100%">
           <el-table-column v-for="item in headerData"
                            :key="item.prop"
@@ -29,43 +30,58 @@
                            :label="item.label" />
         </el-table>
       </div>
-      <!-- 显示所有字段并选择要上传的字段 -->
-      <el-table :data="headerListData"
-                max-height="400"
-                border
-                fit
-                @selection-change="handleSelectionChange"
-                style="width:40%">
-        <el-table-column type="selection" />
-        <el-table-column prop="dataHeader"
-                         label="字段" />
-        <el-table-column label="字段类型">
-          <template slot-scope="scope">
+      <el-divider content-position="left">字段设置</el-divider>
+      <el-row>
+        <el-col :span="14">
+          <div class="left">
+            <!-- 显示所有字段并选择要上传的字段 -->
+            <el-table :data="headerListData"
+                      height="calc(50vh - 150px)"
+                      border
+                      fit
+                      @selection-change="handleSelectionChange">
+              <el-table-column type="selection" />
+              <el-table-column prop="dataHeader"
+                               label="字段" />
+              <el-table-column label="字段类型">
+                <template slot-scope="scope">
 
-            <el-cascader v-model="scope.row.typeOptions"
-                         :options="typeOptions"
-                         :disabled="casaderDisabled(scope.row.index)"></el-cascader>
-          </template>
-        </el-table-column>
-        <el-table-column prop="height"
-                         label="高度/[m]">
-          <template slot-scope="scope">
-            <el-input v-model="scope.row.height"
-                      :disabled="casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions)"
-                      placeholder="请输入内容"></el-input>
-          </template>
+                  <el-cascader v-model="scope.row.typeOptions"
+                               :options="typeOptions"
+                               :disabled="casaderDisabled(scope.row.index)"
+                               :props="{ expandTrigger: 'hover' }" />
+                </template>
+              </el-table-column>
+              <el-table-column prop="height"
+                               label="高度/[m]">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.height"
+                            :disabled="casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions)"
+                            placeholder="请输入内容" />
+                </template>
 
-        </el-table-column>
-      </el-table>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-col>
+        <el-col :span="10">
+          <el-card class="right"
+                   shadow="never">
+            <!-- 显示数据信息的设置 -->
+            <el-form :inline="true">
+              <el-form-item label="站点名（不要包含中文）">
+                <el-input v-model="siteInfo"
+                          placeholder="请输入站点"></el-input>
+              </el-form-item>
+            </el-form>
+            <!-- 上传按钮 -->
+            <el-button type="success"
+                       @click="submitUpload">上传到服务器</el-button>
+          </el-card>
+        </el-col>
+      </el-row>
 
-      <!-- 显示数据信息的设置 -->
-      <el-input v-model="siteInfo"
-                placeholder="请输入站点"></el-input>
-      <!-- 上传按钮 -->
-      <el-button type="success"
-                 @click="submitUpload">上传到服务器</el-button>
     </div>
-
   </div>
 </template>
 
@@ -75,12 +91,13 @@ import { createTable, upload2DB } from '@/api/wind/uploadData'
 export default {
   data() {
     return {
-      fileList: [],
+      fileName: null, //显示的文件名
       firstLineAsHeader: true, //第一行数据是否为表头
-      jsonData: [],
+      jsonData: [], //转换得到的json格式数据
       headerData: [], //形如[{prop:"time",label:"time"},{prop:"velocity",label:"velocity"}]
       tableData: [], //形如[{time:"10:00",velocity:9.8},{...},...]
       headerListData: [], //形如[{dataHeader:header1OfCsv},{...},...]
+      sTable: 1,
       typeOptions: [
         {
           value: 'datetime',
@@ -151,12 +168,17 @@ export default {
     },
   },
   methods: {
+    test() {
+      console.log('')
+    },
     handleChange() {
       if (this.$refs.upload.uploadFiles.length !== 0) {
         if (this.$refs.upload.uploadFiles.length > 1) {
           this.$refs.upload.uploadFiles.shift()
         }
         //把选择的csv文件显示在页面上
+        this.fileName = this.$refs.upload.uploadFiles[0].name
+        this.siteInfo = this.fileName.split('.')[0]
         var selectedFile = null
         selectedFile = this.$refs.upload.uploadFiles[0].raw
         var reader = new FileReader()
@@ -174,7 +196,7 @@ export default {
                 data.pop()
               }
               this.jsonData = data
-              this.showAsTable(this.jsonData.slice(0, 5)) //显示为表格
+              this.showAsTable(this.jsonData.slice(0, 10)) //显示为表格
             },
           })
         }
@@ -198,6 +220,7 @@ export default {
     },
 
     showAsTable(jsonData) {
+      ++this.sTable //这是为了刷新一下表格，避免高度改变后出现空白区域
       this.headerData = []
       this.tableData = []
       this.headerListData = []
@@ -328,4 +351,10 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+.left {
+  padding-right: 10px;
+}
+.right {
+  height: calc(50vh - 150px);
+}
 </style>
