@@ -15,7 +15,7 @@
     <div v-if="headerData.length>0">
       <!-- 显示csv为表格 -->
       <div>
-        <el-divider content-position="left">前十行数据预览</el-divider>
+        <el-divider content-position="left">前十行数据预览（共{{firstLineAsHeader?jsonData.length-1:jsonData.length}}行）</el-divider>
         <el-checkbox v-model="firstLineAsHeader"
                      @change="showAsTable(jsonData.slice(0, 10))">第一行数据作为表头</el-checkbox>
         <el-table :data="tableData"
@@ -30,9 +30,9 @@
                            :label="item.label" />
         </el-table>
       </div>
-      <el-divider content-position="left">字段设置</el-divider>
+      <el-divider content-position="left">数据设置</el-divider>
       <el-row>
-        <el-col :span="14">
+        <el-col :span="13">
           <div class="left">
             <!-- 显示所有字段并选择要上传的字段 -->
             <el-table :data="headerListData"
@@ -56,7 +56,7 @@
                                label="高度/[m]">
                 <template slot-scope="scope">
                   <el-input v-model="scope.row.height"
-                            :disabled="casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions)"
+                            v-show="!(casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions))"
                             placeholder="请输入内容" />
                 </template>
 
@@ -64,7 +64,7 @@
             </el-table>
           </div>
         </el-col>
-        <el-col :span="10">
+        <el-col :span="11">
           <el-card class="right"
                    shadow="never">
             <!-- 显示数据信息的设置 -->
@@ -76,6 +76,7 @@
             </el-form>
             <!-- 上传按钮 -->
             <el-button type="success"
+                       class="bottom"
                        @click="submitUpload">上传到服务器</el-button>
           </el-card>
         </el-col>
@@ -246,7 +247,9 @@ export default {
         }
       }
     },
+
     handleSelectionChange(val) {
+      //处理字段类型选择事件
       this.multipleSelection = val
     },
     submitUpload() {
@@ -269,6 +272,7 @@ export default {
       const datetimeExist = fieldList.indexOf('datetime') !== -1
       const dateExist = fieldList.indexOf('date') !== -1
       const timeExist = fieldList.indexOf('time') !== -1
+      var enableUpload = true
       if (datetimeExist) {
         //过滤multi列表里的d和t
         fieldData = fieldData.filter(
@@ -302,50 +306,72 @@ export default {
         } else {
           //报错:没有日期时间
           alert('没有日期时间数据')
+          enableUpload = false
         }
       }
-      var uploadData = []
-      data.forEach((line) => {
-        //每一行jsondata的操作
-
-        var tempRecord = {}
-        fieldData.forEach((field) => {
-          //字段选择表中每个选中字段的操作
-          //查找有没有date/time/datetime字段
-
-          //如果是速度/角度字段,前面要加上高度
-          if (field.typeOptions[0] === 'v' || field.typeOptions[0] === 'deg') {
-            tempRecord[
-              `${field.height}m_${field.typeOptions[0]}_${field.typeOptions[1]}`
-            ] = line[field.index]
-          } else {
-            tempRecord[field.typeOptions[1]] = line[field.index]
+      //检验是否有空的高度行
+      this.multipleSelection.forEach((element) => {
+        if (
+          element.typeOptions[0] === 'v' ||
+          element.typeOptions[0] === 'deg'
+        ) {
+          if (element.height === null) {
+            enableUpload = false
+            alert('请输入高度')
           }
-        })
-        uploadData.push(tempRecord)
+        }
       })
-      createTable({ site: this.siteInfo, data: uploadData[0] })
-        .then(() => {
-          const max_length = 1000
-          for (var i = 0; i < Math.floor(uploadData.length / max_length); i++) {
-            //todo 这里改成await写法,加入进度条提示进度
+      if (enableUpload) {
+        var uploadData = []
+        data.forEach((line) => {
+          //每一行jsondata的操作
+
+          var tempRecord = {}
+          fieldData.forEach((field) => {
+            //字段选择表中每个选中字段的操作
+            //查找有没有date/time/datetime字段
+
+            //如果是速度/角度字段,前面要加上高度
+            if (
+              field.typeOptions[0] === 'v' ||
+              field.typeOptions[0] === 'deg'
+            ) {
+              tempRecord[
+                `${field.height}m_${field.typeOptions[0]}_${field.typeOptions[1]}`
+              ] = line[field.index]
+            } else {
+              tempRecord[field.typeOptions[1]] = line[field.index]
+            }
+          })
+          uploadData.push(tempRecord)
+        })
+        createTable({ site: this.siteInfo, data: uploadData[0] })
+          .then(() => {
+            const max_length = 1000
+            for (
+              var i = 0;
+              i < Math.floor(uploadData.length / max_length);
+              i++
+            ) {
+              //todo 这里改成await写法,加入进度条提示进度
+              upload2DB({
+                site: this.siteInfo,
+                data: uploadData.slice(i * max_length, (i + 1) * max_length),
+              }).then((res) => {
+                console.log(res)
+              })
+            }
             upload2DB({
               site: this.siteInfo,
-              data: uploadData.slice(i * max_length, (i + 1) * max_length),
+              data: uploadData.slice(i * max_length),
             }).then((res) => {
               console.log(res)
             })
-          }
-          upload2DB({
-            site: this.siteInfo,
-            data: uploadData.slice(i * max_length),
-          }).then((res) => {
-            console.log(res)
           })
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+          .catch((e) => {
+            console.log(e)
+          })
+      }
     },
   },
 }
@@ -356,5 +382,9 @@ export default {
 }
 .right {
   height: calc(50vh - 150px);
+  .bottom {
+    position: absolute;
+    bottom: 20px;
+  }
 }
 </style>
