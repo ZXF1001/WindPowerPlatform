@@ -2,7 +2,7 @@ import axios from "axios";
 
 const http = axios.create({
   // 通用请求地址前缀
-  baseURL: "http://1.117.224.40/api",
+  baseURL: "http://1.117.224.40:8081/api",
   // headers: { "X-Requested-With": "XMLHttpRequest" },
   timeout: 30000,
 });

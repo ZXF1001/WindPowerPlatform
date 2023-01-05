@@ -9,7 +9,7 @@ export const post4WDData = (data, abortController) => {
   //   "dateBegin":"2016-1-10 3:0:0"
   //   "dateEnd":"2016-1-10 13:0:0"
   // }
-  return http.post("/wind/wd_static.php", data, {
+  return http.post("/wind/wd-stat", data, {
     signal: abortController.signal,
   });
 };
@@ -22,5 +22,5 @@ export const post4WSData = (data) => {
   //   "dateBegin":"2016-1-10 3:0:0",
   //   "dateEnd":"2016-1-10 13:0:0",
   // }
-  return http.post("/wind/ws_static.php", data);
+  return http.post("/wind/ws-stat", data);
 };

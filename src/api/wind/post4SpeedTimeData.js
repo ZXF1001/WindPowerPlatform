@@ -11,7 +11,7 @@ export const post4SpeedTimeData = (data, abortController) => {
   //   "granularity":"hour"
   // }
   // 如果type不为"user-defined",dateBegin和detaEnd为空
-  return http.post("/wind/ws_timeline.php", data, {
+  return http.post("/wind/ws-time", data, {
     signal: abortController.signal,
   });
 };

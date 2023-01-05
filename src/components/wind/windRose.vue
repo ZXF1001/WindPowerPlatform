@@ -376,7 +376,7 @@ export default {
       this.vforList.forEach((ele) => {
         (data.site = ele.siteLabel),
           (data.height = ele.heightLabel),
-          post4WDData(data)
+          post4WDData(data, this.abortController)
             .then((res) => {
               var color = []
               var roseData = res.data
