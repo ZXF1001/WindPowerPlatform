@@ -13,7 +13,6 @@
     "axios": "^1.2.0",
     "core-js": "^3.8.3",
     "echarts": "^5.4.0",
-    "echarts-extension-amap": "^1.11.0",
     "echarts-gl": "^2.0.9",
     "element-ui": "^2.15.12",
     "geotiff": "^2.0.7",

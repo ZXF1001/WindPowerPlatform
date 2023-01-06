@@ -6,3 +6,6 @@ export const getSiteData = () => {
 export const getHeightData = () => {
   return http.get("/wind/getHeight.php");
 };
+export const getSiteAndHeight = () => {
+  return http.get("/wind/site-and-height");
+};

@@ -11,6 +11,7 @@
                    :key="site.value"
                    :label="site.label"
                    :value="site.value">
+
         </el-option>
       </el-select>
       <el-select v-model="heightValue"
@@ -45,8 +46,6 @@
     <div class="roseGroup">
       <div v-for="options in vforList"
            :key="options.value">
-        <!-- <el-divider content-position="left"
-                    v-if="options.heightValue==1&&(siteValue.indexOf(options.siteValue)!=-1)">{{options.siteLabel}}测风塔</el-divider> -->
         <el-card class="card"
                  shadow="never"
                  v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))"
@@ -74,7 +73,7 @@
 </template>
 
 <script>
-import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
+import { getSiteAndHeight } from '@/api/wind/getFilterData'
 import { post4WDData } from '@/api/wind/post4RoseData.js'
 import wsDistriDialog from '@/components/wind/windRose/wsDistriDialog.vue'
 import * as echarts from 'echarts'
@@ -89,16 +88,14 @@ export default {
       siteValue: [],
       heightValue: [],
       dateValue: null,
-      //加载遮罩的状态
       //所有的echarts玫瑰图
       range: [0, 3, 5, 7, 9, 11, 13, 15], //要画的风速区间
       vforList: [], //为了一个v-for就能遍历
-      echartsList: null,
+      echartsList: null, //存放所有echarts实例方便redraw
       //风速分布弹窗的数据
       dialogVisible: false,
       dialogTitle: null,
       drawDistributeParams: {}, //用于弹窗画图的全局传参
-      abortController: null,
     }
   },
   watch: {
@@ -108,11 +105,13 @@ export default {
   },
   methods: {
     clearFilter() {
+      //重置按钮
       this.siteValue = []
       this.heightValue = []
       this.dateValue = null
     },
     drawPDF(site, height) {
+      //PDF弹窗
       this.dialogTitle = `${site}站点 ${height}高度风速概率密度函数`
       this.drawDistributeParams = {
         siteLabel: site,
@@ -122,53 +121,100 @@ export default {
       }
       this.dialogVisible = true
     },
+    // fetchFilterDataold() {
+    //   //获取所有的site和height选项
+    //   Promise.all([getSiteData(), getHeightData()])
+    //     .then((res) => {
+    //       const siteRes = res[0].data
+    //       const heightRes = res[1].data
+    //       siteRes.forEach((site) => {
+    //         this.siteOptions.push({
+    //           value: this.siteOptions.length + 1,
+    //           label: site,
+    //         })
+    //       })
+    //       heightRes.forEach((height) => {
+    //         this.heightOptions.push({
+    //           value: this.heightOptions.length + 1,
+    //           label: height,
+    //         })
+    //       })
+    //       this.siteOptions.forEach((siteValue) => {
+    //         this.heightOptions.forEach((heightValue) => {
+    //           this.vforList.push({
+    //             value: this.vforList.length,
+    //             siteLabel: siteValue.label,
+    //             siteValue: siteValue.value,
+    //             heightLabel: heightValue.label,
+    //             heightValue: heightValue.value,
+    //             loading: true,
+    //           })
+    //         })
+    //       })
+    //       // 有问题的代码(改一个值会导致其他值一起改掉，会出错)
+    //       // this.echartsList = new Array(this.siteOptions.length).fill(
+    //       //   new Array(this.heightOptions.length).fill(null)
+    //       // )
+    //       this.echartsList = new Array(this.siteOptions.length)
+    //       for (var i = 0; i < this.siteOptions.length; i++) {
+    //         this.echartsList[i] = new Array(this.heightOptions.length)
+    //       }
+    //       this.$nextTick(() => {
+    //         this.drawRoseData()
+    //       })
+    //     })
+    //     .catch((e) => {
+    //       console.log(e)
+    //     })
+    // },
     fetchFilterData() {
-      Promise.all([getSiteData(), getHeightData()])
-        .then((res) => {
-          const siteRes = res[0].data
-          const heightRes = res[1].data
-          siteRes.forEach((site) => {
-            this.siteOptions.push({
-              value: this.siteOptions.length + 1,
-              label: site,
-            })
-          })
-          heightRes.forEach((height) => {
-            this.heightOptions.push({
-              value: this.heightOptions.length + 1,
-              label: height,
-            })
-          })
-          this.siteOptions.forEach((siteValue) => {
-            this.heightOptions.forEach((heightValue) => {
-              this.vforList.push({
-                value: this.vforList.length,
-                siteLabel: siteValue.label,
-                siteValue: siteValue.value,
-                heightLabel: heightValue.label,
-                heightValue: heightValue.value,
-                loading: true,
-              })
-            })
-          })
-          // 有问题的代码(改一个值会导致其他值一起改掉，会出错)
-          // this.echartsList = new Array(this.siteOptions.length).fill(
-          //   new Array(this.heightOptions.length).fill(null)
-          // )
-          this.echartsList = new Array(this.siteOptions.length)
-          for (var i = 0; i < this.siteOptions.length; i++) {
-            this.echartsList[i] = new Array(this.heightOptions.length)
-          }
-          this.$nextTick(() => {
-            this.drawRoseData()
+      getSiteAndHeight().then((res) => {
+        //获取筛选框的站点和高度数据
+        var siteOptions = res.data.map((item) => item.site)
+        var heightOptions = []
+        res.data.forEach((siteObj) => {
+          siteObj.height.forEach((heightObj) => {
+            if (heightOptions.indexOf(heightObj) === -1) {
+              heightOptions.push(heightObj)
+            }
           })
         })
-        .catch((e) => {
-          console.log(e)
+        siteOptions.forEach((element, index) => {
+          this.siteOptions.push({
+            value: index + 1,
+            label: element,
+          })
         })
+        heightOptions.forEach((element) => {
+          this.heightOptions.push({
+            value: this.heightOptions.length + 1,
+            label: element,
+          })
+        })
+        //根据每个测风塔有的高度数据生成v-for要用到的数组
+        res.data.forEach((siteObj, siteIndex) => {
+          siteObj.height.forEach((heightObj, heightIndex) => {
+            this.vforList.push({
+              value: this.vforList.length,
+              siteLabel: siteObj.site,
+              siteValue: siteIndex + 1,
+              heightLabel: heightObj,
+              heightValue: heightIndex + 1,
+              loading: true,
+            })
+          })
+        })
+        //初始化echarts的列表
+        this.echartsList = new Array(this.siteOptions.length)
+        for (var i = 0; i < this.siteOptions.length; i++) {
+          this.echartsList[i] = new Array(this.heightOptions.length)
+        }
+        this.$nextTick(() => {
+          this.drawRoseData()
+        })
+      })
     },
     drawRoseData() {
-      this.abortController = new AbortController()
       var dateBegin = null
       var dateEnd = null
       if (this.dateValue) {
@@ -196,7 +242,7 @@ export default {
           dateEnd: dateEnd,
         }
 
-        post4WDData(data, this.abortController)
+        post4WDData(data)
           .then((res) => {
             var roseData = res.data
             this.echartsList[item.siteValue - 1][item.heightValue - 1] =
@@ -376,7 +422,7 @@ export default {
       this.vforList.forEach((ele) => {
         (data.site = ele.siteLabel),
           (data.height = ele.heightLabel),
-          post4WDData(data, this.abortController)
+          post4WDData(data)
             .then((res) => {
               var color = []
               var roseData = res.data
@@ -434,9 +480,7 @@ export default {
   mounted() {
     this.fetchFilterData()
   },
-  beforeDestroy() {
-    if (this.abortController) this.abortController.abort()
-  },
+  beforeDestroy() {},
 }
 </script>
 <style lang="less" scoped>
