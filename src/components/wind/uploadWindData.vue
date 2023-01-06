@@ -8,14 +8,19 @@
                :auto-upload="false"
                :on-change="handleChange">
       <el-button slot="trigger"
-                 type="primary">选取文件</el-button>
-      <span v-show="fileName">文件名：{{fileName}}</span>
-      <el-button @click="test">test</el-button>
+                 type="primary"
+                 size="medium"
+                 plain>{{selectBtnContent}}</el-button>
+      <span class="filename"
+            v-show="fileName"><i class="el-icon-document" /> {{fileName}}</span>
+      <el-button style="position:absolute;right:0"
+                 size="medium"
+                 @click="test">test</el-button>
     </el-upload>
     <div v-if="headerData.length>0">
       <!-- 显示csv为表格 -->
       <div>
-        <el-divider content-position="left">前十行数据预览（共{{firstLineAsHeader?jsonData.length-1:jsonData.length}}行）</el-divider>
+        <el-divider content-position="left">前十行预览（共{{firstLineAsHeader?jsonData.length-1:jsonData.length}}行）</el-divider>
         <el-checkbox v-model="firstLineAsHeader"
                      @change="showAsTable(jsonData.slice(0, 10))">第一行数据作为表头</el-checkbox>
         <el-table :data="tableData"
@@ -32,7 +37,7 @@
       </div>
       <el-divider content-position="left">数据设置</el-divider>
       <el-row>
-        <el-col :span="13">
+        <el-col :span="12">
           <div class="left">
             <!-- 显示所有字段并选择要上传的字段 -->
             <el-table :data="headerListData"
@@ -49,6 +54,7 @@
                   <el-cascader v-model="scope.row.typeOptions"
                                :options="typeOptions"
                                :disabled="casaderDisabled(scope.row.index)"
+                               :show-all-levels="false"
                                :props="{ expandTrigger: 'hover' }" />
                 </template>
               </el-table-column>
@@ -57,27 +63,32 @@
                 <template slot-scope="scope">
                   <el-input v-model="scope.row.height"
                             v-show="!(casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions))"
-                            placeholder="请输入内容" />
+                            placeholder="请输入高度" />
                 </template>
 
               </el-table-column>
             </el-table>
           </div>
         </el-col>
-        <el-col :span="11">
+        <el-col :span="12">
           <el-card class="right"
                    shadow="never">
             <!-- 显示数据信息的设置 -->
             <el-form :inline="true">
-              <el-form-item label="站点名（不要包含中文）">
+              <el-form-item label="测风数据编号（仅支持英文与数字）">
                 <el-input v-model="siteInfo"
-                          placeholder="请输入站点"></el-input>
+                          placeholder="请输入编号"></el-input>
               </el-form-item>
             </el-form>
             <!-- 上传按钮 -->
-            <el-button type="success"
+            <el-button type="primary"
+                       :loading="uploadButtonLoading"
+                       plain
+                       size="medium"
                        class="bottom"
-                       @click="submitUpload">上传到服务器</el-button>
+                       :disabled="uploadButtonDisabled"
+                       @click="submitUpload">{{uploadButtonContent}}</el-button>
+
           </el-card>
         </el-col>
       </el-row>
@@ -92,6 +103,7 @@ import { createTable, upload2DB } from '@/api/wind/uploadData'
 export default {
   data() {
     return {
+      selectBtnContent: '选取文件',
       fileName: null, //显示的文件名
       firstLineAsHeader: true, //第一行数据是否为表头
       jsonData: [], //转换得到的json格式数据
@@ -152,6 +164,9 @@ export default {
       ],
       multipleSelection: [],
       siteInfo: '',
+      uploadButtonContent: '上传',
+      uploadButtonDisabled: false,
+      uploadButtonLoading: false,
     }
   },
   computed: {
@@ -312,6 +327,7 @@ export default {
       ]
     },
     handleChange() {
+      this.selectBtnContent = '重新选取'
       if (this.$refs.upload.uploadFiles.length !== 0) {
         if (this.$refs.upload.uploadFiles.length > 1) {
           //如再次选择，选取最新的文件
@@ -320,25 +336,32 @@ export default {
         //把选择的csv文件显示在页面上
         this.fileName = this.$refs.upload.uploadFiles[0].name
         this.siteInfo = this.fileName.split('.')[0]
-        var selectedFile = null
-        selectedFile = this.$refs.upload.uploadFiles[0].raw
-        var reader = new FileReader()
-        reader.readAsDataURL(selectedFile)
-        reader.onload = (evt) => {
-          // 检查编码
-          let encoding = checkEncoding(evt.target.result)
-          // 将csv转换成二维数组
-          Papa.parse(selectedFile, {
-            encoding: encoding,
-            complete: (res) => {
-              let data = res.data
-              if (data[data.length - 1] == '') {
-                //去除最后的空行
-                data.pop()
-              }
-              this.jsonData = data
-              this.showAsTable(this.jsonData.slice(0, 10)) //显示为表格
-            },
+        var selectedFile = this.$refs.upload.uploadFiles[0].raw
+        try {
+          var reader = new FileReader()
+          reader.readAsDataURL(selectedFile)
+          reader.onload = (evt) => {
+            // 检查编码
+            let encoding = checkEncoding(evt.target.result)
+            // 将csv转换成二维数组
+            Papa.parse(selectedFile, {
+              encoding: encoding,
+              complete: (res) => {
+                let data = res.data
+                if (data[data.length - 1] == '') {
+                  //去除最后的空行
+                  data.pop()
+                }
+                this.jsonData = data
+                this.showAsTable(this.jsonData.slice(0, 10)) //显示为表格
+              },
+            })
+          }
+        } catch (error) {
+          this.$alert('文件读取错误，请检查文件格式！', '错误', {
+            confirmButtonText: '确定',
+            type: 'error',
+            showClose: false,
           })
         }
       }
@@ -346,8 +369,6 @@ export default {
       function checkEncoding(base64Str) {
         // 返回编码方式
         var str = atob(base64Str.split(';base64,')[1])
-        // console.log(str)
-        // 要用二进制格式
         const jschardet = require('jschardet')
         var encoding = jschardet.detect(str)
         encoding = encoding.encoding
@@ -398,74 +419,78 @@ export default {
       // },
       // ...]
       // 这样的形式
-      var data = JSON.parse(JSON.stringify(this.jsonData))
-      if (this.firstLineAsHeader) {
-        data.shift()
-      }
-      var fieldData = JSON.parse(JSON.stringify(this.multipleSelection))
-      const fieldList = fieldData.map((item) => item.typeOptions[1])
-      const datetimeExist = fieldList.indexOf('datetime') !== -1
-      const dateExist = fieldList.indexOf('date') !== -1
-      const timeExist = fieldList.indexOf('time') !== -1
-      var enableUpload = true
-      if (datetimeExist) {
-        //过滤multi列表里的d和t
-        fieldData = fieldData.filter(
-          (item) =>
-            item.typeOptions[1] !== 'date' && item.typeOptions[1] !== 'time'
-        )
-      } else {
-        if (dateExist && timeExist) {
-          //把d和t拼成一个dt,再删掉d和t
-          //修改字段表数据
-          fieldData.push({
-            index: data[0].length,
-            typeOptions: ['datetime', 'datetime'],
-          })
-          //找到时间日期所在的index,并合并加到dt字段
-          var indexOfDate = fieldData.filter(
-            (item) => item.typeOptions[1] === 'date'
-          )[0].index
-          var indexOfTime = fieldData.filter(
-            (item) => item.typeOptions[1] === 'time'
-          )[0].index
-          data.forEach((line) => {
-            var datetime = `${line[indexOfDate]} ${line[indexOfTime]}`
-            line.push(datetime)
-          })
-          //删除字段表的d,t信息
+      try {
+        var data = JSON.parse(JSON.stringify(this.jsonData))
+        if (this.firstLineAsHeader) {
+          data.shift()
+        }
+        //检验是否有空的选择框
+        this.multipleSelection.forEach((element) => {
+          if (element.typeOptions === null) {
+            throw '空的选择框'
+          }
+        })
+
+        var fieldData = JSON.parse(JSON.stringify(this.multipleSelection))
+        const fieldList = fieldData.map((item) => item.typeOptions[1])
+        const datetimeExist = fieldList.indexOf('datetime') !== -1
+        const dateExist = fieldList.indexOf('date') !== -1
+        const timeExist = fieldList.indexOf('time') !== -1
+        //以下为日期拼接的前处理（若需要拼接）
+        if (datetimeExist) {
+          //过滤multi列表里的d和t
           fieldData = fieldData.filter(
             (item) =>
               item.typeOptions[1] !== 'date' && item.typeOptions[1] !== 'time'
           )
         } else {
-          //报错:没有日期时间
-          alert('没有日期时间数据')
-          enableUpload = false
-        }
-      }
-      //检验是否有空的高度行
-      this.multipleSelection.forEach((element) => {
-        if (
-          element.typeOptions[0] === 'v' ||
-          element.typeOptions[0] === 'deg'
-        ) {
-          if (element.height === null) {
-            enableUpload = false
-            alert('请输入高度')
+          if (dateExist && timeExist) {
+            //把d和t拼成一个dt,再删掉d和t
+            //修改字段表数据
+            fieldData.push({
+              index: data[0].length,
+              typeOptions: ['datetime', 'datetime'],
+            })
+            //找到时间日期所在的index,并合并加到dt字段
+            var indexOfDate = fieldData.filter(
+              (item) => item.typeOptions[1] === 'date'
+            )[0].index
+            var indexOfTime = fieldData.filter(
+              (item) => item.typeOptions[1] === 'time'
+            )[0].index
+            data.forEach((line) => {
+              var datetime = `${line[indexOfDate]} ${line[indexOfTime]}`
+              line.push(datetime)
+            })
+            //删除字段表的d,t信息
+            fieldData = fieldData.filter(
+              (item) =>
+                item.typeOptions[1] !== 'date' && item.typeOptions[1] !== 'time'
+            )
+          } else {
+            //报错:没有日期时间
+            throw '缺少日期时间字段'
           }
         }
-      })
-      if (enableUpload) {
-        var uploadData = []
-        data.forEach((line) => {
-          //每一行jsondata的操作
 
+        //检验是否有空的高度行
+        this.multipleSelection.forEach((element) => {
+          if (
+            element.typeOptions[0] === 'v' ||
+            element.typeOptions[0] === 'deg'
+          ) {
+            if (element.height === null) {
+              throw '请输入高度'
+            }
+          }
+        })
+        //检验完毕，没有错误就上传
+
+        var uploadData = []
+        //上传的时候把字段格式改成规范的形式（如70m_v_avg）
+        data.forEach((line) => {
           var tempRecord = {}
           fieldData.forEach((field) => {
-            //字段选择表中每个选中字段的操作
-            //查找有没有date/time/datetime字段
-
             //如果是速度/角度字段,前面要加上高度
             if (
               field.typeOptions[0] === 'v' ||
@@ -485,12 +510,10 @@ export default {
           .then(async () => {
             try {
               const MAX_RECORD_NUM = Math.round(30000 / fieldData.length) //分块上传，每块上传30000个数据（不是条，是个）
+              const uploadNum = Math.ceil(uploadData.length / MAX_RECORD_NUM)
               console.log(`单次上传${MAX_RECORD_NUM}条`)
-              for (
-                var i = 0;
-                i < Math.ceil(uploadData.length / MAX_RECORD_NUM);
-                i++
-              ) {
+              this.uploadButtonDisabled = true
+              for (var i = 0; i < uploadNum; i++) {
                 var postData = {
                   site: this.siteInfo,
                   data: uploadData.slice(
@@ -499,23 +522,56 @@ export default {
                   ),
                 }
 
-                var res = await upload2DB(postData)
+                await upload2DB(postData)
+                this.uploadButtonLoading = true
+                this.uploadButtonContent = `${Math.round(
+                  (100 * i) / (uploadNum - 1)
+                )}%`
                 console.log(i)
                 console.log(postData.data.length)
               }
+              this.$alert('上传完成', '提示', {
+                confirmButtonText: '确定',
+                type: 'success',
+                showClose: false,
+              })
             } catch (error) {
+              this.$alert('上传失败，请检查重试', '错误', {
+                confirmButtonText: '确定',
+                type: 'error',
+                showClose: false,
+              })
               console.log(error)
+            } finally {
+              this.uploadButtonContent = '上传'
+              this.uploadButtonDisabled = false
+              this.uploadButtonLoading = false
             }
           })
           .catch((e) => {
+            this.$alert('创建数据表失败，请检查站点名是否已存在', '错误', {
+              confirmButtonText: '确定',
+              type: 'error',
+              showClose: false,
+            })
             console.log(e)
           })
+      } catch (error) {
+        this.$alert(error, '错误', {
+          confirmButtonText: '确定',
+          type: 'error',
+          showClose: false,
+        })
       }
     },
   },
 }
 </script>
 <style lang="less" scoped>
+.filename {
+  margin-left: 10px;
+  font-size: 14px;
+}
 .left {
   padding-right: 10px;
 }
