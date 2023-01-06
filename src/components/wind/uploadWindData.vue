@@ -9,8 +9,8 @@
                :on-change="handleChange">
       <el-button slot="trigger"
                  type="primary">选取文件</el-button>
-      <el-button @click="test">test</el-button>
       <span v-show="fileName">文件名：{{fileName}}</span>
+      <el-button @click="test">test</el-button>
     </el-upload>
     <div v-if="headerData.length>0">
       <!-- 显示csv为表格 -->
@@ -39,7 +39,7 @@
                       height="calc(50vh - 150px)"
                       border
                       fit
-                      @selection-change="handleSelectionChange">
+                      @selection-change="(val)=>{multipleSelection = val}">
               <el-table-column type="selection" />
               <el-table-column prop="dataHeader"
                                label="字段" />
@@ -98,7 +98,7 @@ export default {
       headerData: [], //形如[{prop:"time",label:"time"},{prop:"velocity",label:"velocity"}]
       tableData: [], //形如[{time:"10:00",velocity:9.8},{...},...]
       headerListData: [], //形如[{dataHeader:header1OfCsv},{...},...]
-      sTable: 1,
+      sTable: 1, //为了加入表的key来刷新表的高度
       typeOptions: [
         {
           value: 'datetime',
@@ -170,11 +170,151 @@ export default {
   },
   methods: {
     test() {
-      console.log('')
+      this.multipleSelection = [
+        {
+          index: 0,
+          dataHeader: 'date',
+          typeOptions: ['datetime', 'date'],
+          height: null,
+        },
+        {
+          index: 1,
+          dataHeader: 'time',
+          typeOptions: ['datetime', 'time'],
+          height: null,
+        },
+        {
+          index: 2,
+          dataHeader: '70m_v_avg',
+          typeOptions: ['v', 'avg'],
+          height: '70',
+        },
+        {
+          index: 4,
+          dataHeader: '70m_v_max',
+          typeOptions: ['v', 'max'],
+          height: '70',
+        },
+        {
+          index: 5,
+          dataHeader: '70m_v_min',
+          typeOptions: ['v', 'min'],
+          height: '70',
+        },
+        {
+          index: 6,
+          dataHeader: '60m_v_avg',
+          typeOptions: ['v', 'avg'],
+          height: '60',
+        },
+        {
+          index: 8,
+          dataHeader: '60m_v_max',
+          typeOptions: ['v', 'max'],
+          height: '60',
+        },
+        {
+          index: 9,
+          dataHeader: '60m_v_min',
+          typeOptions: ['v', 'min'],
+          height: '60',
+        },
+        {
+          index: 10,
+          dataHeader: '40m_v_avg',
+          typeOptions: ['v', 'avg'],
+          height: '40',
+        },
+        {
+          index: 12,
+          dataHeader: '40m_v_max',
+          typeOptions: ['v', 'max'],
+          height: '40',
+        },
+        {
+          index: 13,
+          dataHeader: '40m_v_min',
+          typeOptions: ['v', 'min'],
+          height: '40',
+        },
+        {
+          index: 14,
+          dataHeader: '10m_v_avg',
+          typeOptions: ['v', 'avg'],
+          height: '10',
+        },
+        {
+          index: 16,
+          dataHeader: '10m_v_max',
+          typeOptions: ['v', 'max'],
+          height: '10',
+        },
+        {
+          index: 17,
+          dataHeader: '10m_v_min',
+          typeOptions: ['v', 'min'],
+          height: '10',
+        },
+        {
+          index: 18,
+          dataHeader: '70m_deg_avg',
+          typeOptions: ['deg', 'avg'],
+          height: '70',
+        },
+        {
+          index: 20,
+          dataHeader: '70m_deg_max',
+          typeOptions: ['deg', 'max'],
+          height: '70',
+        },
+        {
+          index: 21,
+          dataHeader: '70m_deg_min',
+          typeOptions: ['deg', 'min'],
+          height: '70',
+        },
+        {
+          index: 22,
+          dataHeader: '40m_deg_avg',
+          typeOptions: ['deg', 'avg'],
+          height: '40',
+        },
+        {
+          index: 24,
+          dataHeader: '40m_deg_max',
+          typeOptions: ['deg', 'max'],
+          height: '40',
+        },
+        {
+          index: 25,
+          dataHeader: '40m_deg_min',
+          typeOptions: ['deg', 'min'],
+          height: '40',
+        },
+        {
+          index: 26,
+          dataHeader: '10m_deg_avg',
+          typeOptions: ['deg', 'avg'],
+          height: '10',
+        },
+        {
+          index: 28,
+          dataHeader: '10m_deg_max',
+          typeOptions: ['deg', 'max'],
+          height: '10',
+        },
+        {
+          index: 29,
+          dataHeader: '10m_deg_min',
+          typeOptions: ['deg', 'min'],
+          height: '10',
+        },
+      ]
     },
     handleChange() {
       if (this.$refs.upload.uploadFiles.length !== 0) {
         if (this.$refs.upload.uploadFiles.length > 1) {
+          //如再次选择，选取最新的文件
           this.$refs.upload.uploadFiles.shift()
         }
         //把选择的csv文件显示在页面上
@@ -246,11 +386,6 @@ export default {
           this.tableData.push(tableRecord)
         }
       }
-    },
-
-    handleSelectionChange(val) {
-      //处理字段类型选择事件
-      this.multipleSelection = val
     },
     submitUpload() {
       // 要把上传的数据变成
@@ -345,28 +480,32 @@ export default {
           })
           uploadData.push(tempRecord)
         })
+        //创建数据表
         createTable({ site: this.siteInfo, data: uploadData[0] })
-          .then(() => {
-            const max_length = 1000
-            for (
-              var i = 0;
-              i < Math.floor(uploadData.length / max_length);
-              i++
-            ) {
-              //todo 这里改成await写法,加入进度条提示进度
-              upload2DB({
-                site: this.siteInfo,
-                data: uploadData.slice(i * max_length, (i + 1) * max_length),
-              }).then((res) => {
-                console.log(res)
-              })
+          .then(async () => {
+            try {
+              const MAX_RECORD_NUM = Math.round(30000 / fieldData.length) //分块上传，每块上传30000个数据（不是条，是个）
+              console.log(`单次上传${MAX_RECORD_NUM}条`)
+              for (
+                var i = 0;
+                i < Math.ceil(uploadData.length / MAX_RECORD_NUM);
+                i++
+              ) {
+                var postData = {
+                  site: this.siteInfo,
+                  data: uploadData.slice(
+                    i * MAX_RECORD_NUM,
+                    (i + 1) * MAX_RECORD_NUM
+                  ),
+                }
+
+                var res = await upload2DB(postData)
+                console.log(i)
+                console.log(postData.data.length)
+              }
+            } catch (error) {
+              console.log(error)
             }
-            upload2DB({
-              site: this.siteInfo,
-              data: uploadData.slice(i * max_length),
-            }).then((res) => {
-              console.log(res)
-            })
           })
           .catch((e) => {
             console.log(e)
