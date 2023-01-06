@@ -94,7 +94,7 @@
                v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))">
         <div class="title">
           <p class="titleleft">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
-          <p class="titleright">{{showTimescale}}</p>
+          <p class="titleright">{{timeScale}}</p>
         </div>
         <div class="windChart"
              ref="windChart"
@@ -105,7 +105,7 @@
 </template>
 
 <script>
-import { getSiteData, getHeightData } from '@/api/wind/getFilterData'
+import { getSiteAndHeight } from '@/api/wind/getFilterData'
 import { post4SpeedTimeData } from '@/api/wind/post4SpeedTimeData'
 
 import * as echarts from 'echarts'
@@ -137,6 +137,7 @@ export default {
   },
   watch: {
     timeRangeValue(newVal, oldVal) {
+      //时间范围改变后重绘
       this.oldTimeRangeValue = oldVal
       if (newVal === 0) {
         // 7表示自定义的选项序号
@@ -148,6 +149,7 @@ export default {
   },
   computed: {
     hourRadioDisabled() {
+      //判断什么时候屏蔽1h粒度选项
       if (this.userDefinedTimeRangeValue) {
         const YY0 = this.userDefinedTimeRangeValue[0].getFullYear()
         const YY1 = this.userDefinedTimeRangeValue[1].getFullYear()
@@ -165,6 +167,7 @@ export default {
       }
     },
     dayRadioDisabled() {
+      //判断什么时候屏蔽1d粒度选项
       if (this.userDefinedTimeRangeValue) {
         const YY0 = this.userDefinedTimeRangeValue[0].getFullYear()
         const YY1 = this.userDefinedTimeRangeValue[1].getFullYear()
@@ -177,7 +180,8 @@ export default {
         return true
       }
     },
-    showTimescale() {
+    timeScale() {
+      //在画的图右上角显示时间尺度
       if (this.timeRangeValue === 0) {
         return ''
       } else if (this.timeRangeValue <= 6) {
@@ -209,6 +213,7 @@ export default {
   },
   methods: {
     test() {},
+    //弹窗相关处理
     handleDialogCancel() {
       this.timeRangeValue = this.oldTimeRangeValue
       this.userDefinedTimeRangeValue = null
@@ -231,6 +236,7 @@ export default {
       this.dialogVisible = false
     },
     clearFilter() {
+      //重置按钮
       this.siteValue = []
       this.heightValue = []
       this.timeRangeValue = 1
@@ -244,51 +250,53 @@ export default {
       }
     },
     fetchFilterData() {
-      Promise.all([getSiteData(), getHeightData()])
-        .then((res) => {
-          const siteRes = res[0].data
-          const heightRes = res[1].data
-          siteRes.forEach((site) => {
-            this.siteOptions.push({
-              value: this.siteOptions.length + 1,
-              label: site,
-            })
-          })
-          heightRes.forEach((height) => {
-            this.heightOptions.push({
-              value: this.heightOptions.length + 1,
-              label: height,
-            })
-          })
-          this.siteOptions.forEach((siteValue) => {
-            this.heightOptions.forEach((heightValue) => {
-              this.vforList.push({
-                value: this.vforList.length,
-                siteLabel: siteValue.label,
-                siteValue: siteValue.value,
-                heightLabel: heightValue.label,
-                heightValue: heightValue.value,
-                loading: true,
-              })
-            })
-          })
-          this.echartsList = new Array(this.siteOptions.length)
-          for (var i = 0; i < this.siteOptions.length; i++) {
-            this.echartsList[i] = new Array(this.heightOptions.length)
-            for (var j = 0; j < this.heightOptions.length; j++) {
-              this.echartsList[i][j] = null
+      getSiteAndHeight().then((res) => {
+        //获取筛选框的站点和高度数据
+        var siteOptions = res.data.map((item) => item.site)
+        var heightOptions = []
+        res.data.forEach((siteObj) => {
+          siteObj.height.forEach((heightObj) => {
+            if (heightOptions.indexOf(heightObj) === -1) {
+              heightOptions.push(heightObj)
             }
-          }
-          this.$nextTick(() => {
-            this.drawLineCharts()
           })
         })
-        .catch((e) => {
-          console.log(e)
+        siteOptions.forEach((element, index) => {
+          this.siteOptions.push({
+            value: index + 1,
+            label: element,
+          })
         })
+        heightOptions.forEach((element) => {
+          this.heightOptions.push({
+            value: this.heightOptions.length + 1,
+            label: element,
+          })
+        })
+        //根据每个测风塔有的高度数据生成v-for要用到的数组
+        res.data.forEach((siteObj, siteIndex) => {
+          siteObj.height.forEach((heightObj, heightIndex) => {
+            this.vforList.push({
+              value: this.vforList.length,
+              siteLabel: siteObj.site,
+              siteValue: siteIndex + 1,
+              heightLabel: heightObj,
+              heightValue: heightIndex + 1,
+              loading: true,
+            })
+          })
+        })
+        //初始化echarts的列表
+        this.echartsList = new Array(this.siteOptions.length)
+        for (var i = 0; i < this.siteOptions.length; i++) {
+          this.echartsList[i] = new Array(this.heightOptions.length)
+        }
+        this.$nextTick(() => {
+          this.drawLineCharts()
+        })
+      })
     },
     drawLineCharts() {
-      this.abortController = new AbortController()
       this.vforList.forEach((item) => {
         item.loading = true
       })
@@ -326,7 +334,7 @@ export default {
       this.vforList.forEach((item) => {
         data.site = item.siteLabel
         data.height = item.heightLabel
-        post4SpeedTimeData(data, this.abortController)
+        post4SpeedTimeData(data)
           .then((res) => {
             if (!this.echartsList[item.siteValue - 1][item.heightValue - 1]) {
               this.echartsList[item.siteValue - 1][item.heightValue - 1] =
@@ -341,7 +349,7 @@ export default {
             var maxData = []
             var minData = []
             res.data.forEach((item) => {
-              var time = new Date(item.datetime)
+              var time = new Date(item.chartTime)
               var chartTime =
                 time.getFullYear() +
                 '/' +
@@ -446,9 +454,6 @@ export default {
         })
       })
     }
-  },
-  beforeDestroy() {
-    if (this.abortController) this.abortController.abort()
   },
 }
 </script>
