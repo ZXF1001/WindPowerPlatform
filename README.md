@@ -9,10 +9,11 @@
   # git config --global http.proxy http://proxyUsername:proxyPassword@proxy.server.com:port
   # git config --global https.proxy http://proxyUsername:proxyPassword@proxy.server.com:port
   # git config --global 协议.proxy 协议://ip地址:端口号(就是clash.net的混合端口号)
-  git config --global http.proxy http://127.0.0.1:xxxx
-  git config --global https.proxy http://127.0.0.1:xxxx
-  git config --global http.proxy 'socks5://127.0.0.1:xxxx'
-  git config --global https.proxy 'socks5://127.0.0.1:xxxx'
+  git config --global http.proxy http://127.0.0.1:11223
+  git config --global https.proxy http://127.0.0.1:11223
+  #下两行可选，我也不知道是什么
+  git config --global http.proxy 'socks5://127.0.0.1:11223'
+  git config --global https.proxy 'socks5://127.0.0.1:11223'
 
   # 取消代理
   git config --global --unset http.proxy
