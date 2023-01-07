@@ -1,6 +1,7 @@
 <template>
   <div>
     <h2>websocket test</h2>
+    <el-input v-model="text"></el-input>
     <el-button @click="connect">连接</el-button>
     <el-button @click="send">发送</el-button>
     <el-button @click="close">断开</el-button>
@@ -12,6 +13,7 @@ export default {
   data() {
     return {
       ws: null,
+      text: '',
     }
   },
   methods: {
@@ -30,7 +32,7 @@ export default {
       }
     },
     send() {
-      this.ws.send('客户端消息')
+      this.ws.send(this.text)
     },
     close() {
       if (this.ws) {

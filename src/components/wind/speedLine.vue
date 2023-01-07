@@ -46,10 +46,6 @@
                    size="mini"
                    plain>重置</el-button>
       </el-popconfirm>
-
-      <el-button size="mini"
-                 plain
-                 @click="test">test</el-button>
     </div>
 
     <!-- 选择自定义日期的弹窗 -->
@@ -205,7 +201,6 @@ export default {
     },
   },
   methods: {
-    test() {},
     //弹窗相关处理
     handleDialogCancel() {
       this.timeRangeValue = this.oldTimeRangeValue
