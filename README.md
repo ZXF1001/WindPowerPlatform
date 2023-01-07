@@ -9,10 +9,7 @@
   1. 挂梯子
   2. 设置命令行代理：
   ```
-  # git config --global http.proxy http://proxyUsername:proxyPassword@proxy.server.com:port
-  # git config --global https.proxy http://proxyUsername:proxyPassword@proxy.server.com:port
-  # git config --global 协议.proxy 协议://ip地址:端口号(就是clash.net的混合端口号)
-
+  #端口号11223是梯子的端口号
   git config --global http.proxy http://127.0.0.1:11223
   git config --global https.proxy http://127.0.0.1:11223
 
@@ -41,10 +38,16 @@
   npm run build
   ```
 ## 现存issues
-  1. 和风天气api应放在后端请求
-  2. 绘制云图的colorbar
-  3. 根据数据生成geotiff
-  4. 地图显示范围自动设置为风电场位置范围
-  5. 筛选重绘时玫瑰图的legend全部显示
-  6. websocket取代轮询
-  7. 日期格式化封装成函数
+  - [ ] 和风天气api应放在后端请求
+  - [ ] 绘制云图的colorbar
+  - [ ] 根据数据生成geotiff
+  - [ ] 地图显示范围自动设置为风电场位置范围
+  - [ ] 筛选重绘时玫瑰图的legend全部显示
+  - [ ] websocket取代轮询
+  - [x] 日期格式化封装成函数
+
+## 下阶段开发进程
+  - [ ] 地形可视化模块
+    - three.js学习
+  - [ ] websocket配置
+  - [ ] ...
