@@ -275,13 +275,13 @@ export default {
         })
         //根据每个测风塔有的高度数据生成v-for要用到的数组
         res.data.forEach((siteObj, siteIndex) => {
-          siteObj.height.forEach((heightObj, heightIndex) => {
+          siteObj.height.forEach((heightObj) => {
             this.vforList.push({
               value: this.vforList.length,
               siteLabel: siteObj.site,
               siteValue: siteIndex + 1,
               heightLabel: heightObj,
-              heightValue: heightIndex + 1,
+              heightValue: heightOptions.indexOf(heightObj) + 1,
               loading: true,
             })
           })

@@ -121,52 +121,6 @@ export default {
       }
       this.dialogVisible = true
     },
-    // fetchFilterDataold() {
-    //   //获取所有的site和height选项
-    //   Promise.all([getSiteData(), getHeightData()])
-    //     .then((res) => {
-    //       const siteRes = res[0].data
-    //       const heightRes = res[1].data
-    //       siteRes.forEach((site) => {
-    //         this.siteOptions.push({
-    //           value: this.siteOptions.length + 1,
-    //           label: site,
-    //         })
-    //       })
-    //       heightRes.forEach((height) => {
-    //         this.heightOptions.push({
-    //           value: this.heightOptions.length + 1,
-    //           label: height,
-    //         })
-    //       })
-    //       this.siteOptions.forEach((siteValue) => {
-    //         this.heightOptions.forEach((heightValue) => {
-    //           this.vforList.push({
-    //             value: this.vforList.length,
-    //             siteLabel: siteValue.label,
-    //             siteValue: siteValue.value,
-    //             heightLabel: heightValue.label,
-    //             heightValue: heightValue.value,
-    //             loading: true,
-    //           })
-    //         })
-    //       })
-    //       // 有问题的代码(改一个值会导致其他值一起改掉，会出错)
-    //       // this.echartsList = new Array(this.siteOptions.length).fill(
-    //       //   new Array(this.heightOptions.length).fill(null)
-    //       // )
-    //       this.echartsList = new Array(this.siteOptions.length)
-    //       for (var i = 0; i < this.siteOptions.length; i++) {
-    //         this.echartsList[i] = new Array(this.heightOptions.length)
-    //       }
-    //       this.$nextTick(() => {
-    //         this.drawRoseData()
-    //       })
-    //     })
-    //     .catch((e) => {
-    //       console.log(e)
-    //     })
-    // },
     fetchFilterData() {
       getSiteAndHeight().then((res) => {
         //获取筛选框的站点和高度数据
@@ -193,13 +147,14 @@ export default {
         })
         //根据每个测风塔有的高度数据生成v-for要用到的数组
         res.data.forEach((siteObj, siteIndex) => {
-          siteObj.height.forEach((heightObj, heightIndex) => {
+          siteObj.height.forEach((heightObj) => {
             this.vforList.push({
               value: this.vforList.length,
               siteLabel: siteObj.site,
               siteValue: siteIndex + 1,
               heightLabel: heightObj,
-              heightValue: heightIndex + 1,
+              // heightValue: heightIndex + 1,
+              heightValue: heightOptions.indexOf(heightObj) + 1,
               loading: true,
             })
           })
