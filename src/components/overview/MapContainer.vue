@@ -131,10 +131,7 @@ export default {
         })
         .addTo(this.map)
       // 定义标量云图图层
-      const tiffUrl =
-        // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
-        // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
-        'http://1.117.224.40/geotiff/testout.tif'
+      const tiffUrl = 'http://1.117.224.40/geotiff/testout.tif'
 
       this.drawContour(layerControl, tiffUrl)
       this.drawStream(layerControl, data)
