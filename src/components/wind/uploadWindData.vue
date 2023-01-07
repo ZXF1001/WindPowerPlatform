@@ -98,8 +98,8 @@
 </template>
 
 <script>
-import Papa from 'papaparse'
 import { createTable, upload2DB } from '@/api/wind/uploadData'
+import readCSV from '@/utils/readCSV'
 export default {
   data() {
     return {
@@ -328,56 +328,31 @@ export default {
     },
     handleChange() {
       this.selectBtnContent = '重新选取'
-      if (this.$refs.upload.uploadFiles.length !== 0) {
-        if (this.$refs.upload.uploadFiles.length > 1) {
-          //如再次选择，选取最新的文件
-          this.$refs.upload.uploadFiles.shift()
-        }
-        //把选择的csv文件显示在页面上
-        this.fileName = this.$refs.upload.uploadFiles[0].name
-        this.siteInfo = this.fileName.split('.')[0]
-        var selectedFile = this.$refs.upload.uploadFiles[0].raw
-        try {
-          var reader = new FileReader()
-          reader.readAsDataURL(selectedFile)
-          reader.onload = (evt) => {
-            // 检查编码
-            let encoding = checkEncoding(evt.target.result)
-            // 将csv转换成二维数组
-            Papa.parse(selectedFile, {
-              encoding: encoding,
-              complete: (res) => {
-                let data = res.data
-                if (data[data.length - 1] == '') {
-                  //去除最后的空行
-                  data.pop()
-                }
-                this.jsonData = data
-                this.showAsTable(this.jsonData.slice(0, 10)) //显示为表格
-              },
-            })
-          }
-        } catch (error) {
-          this.$alert('文件读取错误，请检查文件格式！', '错误', {
-            confirmButtonText: '确定',
-            type: 'error',
-            showClose: false,
-          })
-        }
-      }
 
-      function checkEncoding(base64Str) {
-        // 返回编码方式
-        var str = atob(base64Str.split(';base64,')[1])
-        const jschardet = require('jschardet')
-        var encoding = jschardet.detect(str)
-        encoding = encoding.encoding
-        // console.log( encoding );
-        if (encoding === 'windows-1252') {
-          // 有时会识别错误（如UTF8的中文二字）
-          encoding = 'ANSI'
-        }
-        return encoding
+      if (this.$refs.upload.uploadFiles.length > 1) {
+        //如再次选择，选取最新的文件
+        this.$refs.upload.uploadFiles.shift()
+      }
+      //把选择的csv文件显示在页面上
+      this.fileName = this.$refs.upload.uploadFiles[0].name
+      this.siteInfo = this.fileName.split('.')[0]
+      var selectedFile = this.$refs.upload.uploadFiles[0].raw
+      try {
+        readCSV(selectedFile, (res) => {
+          let data = res.data
+          if (data[data.length - 1] == '') {
+            //去除最后的空行
+            data.pop()
+          }
+          this.jsonData = data
+          this.showAsTable(this.jsonData.slice(0, 10)) //显示为表格
+        })
+      } catch (error) {
+        this.$alert('文件读取错误，请检查文件格式！', '错误', {
+          confirmButtonText: '确定',
+          type: 'error',
+          showClose: false,
+        })
       }
     },
 

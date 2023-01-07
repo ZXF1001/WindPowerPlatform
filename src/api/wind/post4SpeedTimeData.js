@@ -1,4 +1,4 @@
-import http from "@/utils/requestMyApi.js";
+import http from "@/utils/http/requestMyApi.js";
 
 export const post4SpeedTimeData = (data) => {
   // data格式为

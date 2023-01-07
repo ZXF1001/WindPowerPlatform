@@ -1,4 +1,4 @@
-import http from "@/utils/requestMyApi.js";
+import http from "@/utils/http/requestMyApi.js";
 
 export const createTable = (data) => {
   //上传风资源数据时建表的请求
