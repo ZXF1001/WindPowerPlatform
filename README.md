@@ -1,4 +1,4 @@
-# wind-power-platform
+# Wind Power Platform
 
   智慧风电场优化云计算平台的前端源码，采用Vue2构建
 
@@ -40,10 +40,11 @@
   ```
   npm run build
   ```
-## 现存issue
+## 现存issues
   1. 和风天气api应放在后端请求
   2. 绘制云图的colorbar
   3. 根据数据生成geotiff
   4. 地图显示范围自动设置为风电场位置范围
   5. 筛选重绘时玫瑰图的legend全部显示
   6. websocket取代轮询
+  7. 日期格式化封装成函数
