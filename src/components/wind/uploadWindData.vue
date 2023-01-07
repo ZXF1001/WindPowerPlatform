@@ -74,10 +74,13 @@
           <el-card class="right"
                    shadow="never">
             <!-- 显示数据信息的设置 -->
-            <el-form :inline="true">
+            <el-form>
               <el-form-item label="测风数据编号（仅支持英文与数字）">
-                <el-input v-model="siteInfo"
-                          placeholder="请输入编号"></el-input>
+                <div class="inputBox">
+                  <el-input v-model="siteInfo"
+                            placeholder="请输入编号"></el-input>
+                </div>
+
               </el-form-item>
             </el-form>
             <!-- 上传按钮 -->
@@ -551,10 +554,13 @@ export default {
   padding-right: 10px;
 }
 .right {
-  height: calc(50vh - 150px);
+  height: calc(50vh - 150px); //和左侧表格一样
+  .inputBox {
+    width: 40%;
+  }
   .bottom {
     position: absolute;
-    bottom: 20px;
+    bottom: 15px;
   }
 }
 </style>

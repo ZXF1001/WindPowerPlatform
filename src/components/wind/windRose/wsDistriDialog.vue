@@ -1,7 +1,6 @@
 <template>
   <!-- 点击玫瑰图弹窗 -->
   <div>
-    <!-- <h3>{{selectedSpan}}</h3> -->
     <div class="windDistribute"
          ref="distributeChart"></div>
     <!-- <span slot="footer">

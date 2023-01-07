@@ -42,7 +42,6 @@
       </el-popconfirm>
     </div>
     <!-- 遍历的风玫瑰图 -->
-
     <div class="roseGroup">
       <div v-for="options in vforList"
            :key="options.value">
@@ -112,7 +111,7 @@ export default {
     },
     drawPDF(site, height) {
       //PDF弹窗
-      this.dialogTitle = `${site}站点 ${height}高度风速概率密度函数`
+      this.dialogTitle = `${site}测风塔 ${height}高度风速概率密度函数`
       this.drawDistributeParams = {
         siteLabel: site,
         heightLabel: height,
