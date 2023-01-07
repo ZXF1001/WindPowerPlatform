@@ -53,8 +53,8 @@ export default {
   },
   data() {
     return {
-      // activeName: 'windRose',
-      activeName: 'websocketTest',
+      activeName: 'windRose',
+      // activeName: 'websocketTest',
       existList: {
         windRose: true,
         speedLine: true,
