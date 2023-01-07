@@ -1,12 +1,6 @@
 <template>
   <div class="header-container">
     <div class="l-content">
-      <!-- 展开菜单栏的按钮，用不到 -->
-      <!-- <el-button icon="el-icon-menu"
-                 size="mini"
-                 @click="handleMenu"></el-button> -->
-      <!-- 面包屑 -->
-
       <h2 style="color:#fff">虚拟激光雷达区域化风电场优化云计算平台</h2>
     </div>
     <div class="r-content">
@@ -28,6 +22,7 @@
 </template>
 
 <script>
+import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
     return {
@@ -36,31 +31,14 @@ export default {
     }
   },
   methods: {
-    // handleMenu() {
-    //   this.$store.commit('collapseMenu')
-    // },
-    getDate() {
-      var temp = new Date()
-      var Year = temp.getFullYear()
-      var Month = temp.getMonth() + 1
-      var Day = temp.getDate()
-      var Hour = temp.getHours()
-      var Minute = temp.getMinutes()
-      var Second = temp.getSeconds()
-      this.date = `${Year}年${Month}月${Day}日 ${
-        Hour < 10 ? '0' + Hour : Hour
-      }:${Minute < 10 ? '0' + Minute : Minute}:${
-        Second < 10 ? '0' + Second : Second
-      }`
-    },
     updateFormatDate() {
       this.timer = setInterval(() => {
-        this.getDate()
+        this.date = dateFormatter(new Date(), 'Chinese')
       }, 1000)
     },
   },
   mounted() {
-    this.getDate()
+    this.date = dateFormatter(new Date(), 'Chinese')
     this.updateFormatDate()
   },
   beforeDestroy() {

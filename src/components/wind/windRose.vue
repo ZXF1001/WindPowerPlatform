@@ -77,6 +77,7 @@ import { post4WDData } from '@/api/wind/post4RoseData.js'
 import wsDistriDialog from '@/components/wind/windRose/wsDistriDialog.vue'
 import * as echarts from 'echarts'
 import colorBar from '@/json/windRose/colorBar.json'
+import dateFormatter from '@/utils/dateFormatter'
 export default {
   components: { wsDistriDialog },
   data() {
@@ -172,20 +173,8 @@ export default {
       var dateBegin = null
       var dateEnd = null
       if (this.dateValue) {
-        var YY0 = this.dateValue[0].getFullYear()
-        var MM0 = this.dateValue[0].getMonth() + 1
-        var DD0 = this.dateValue[0].getDate()
-        var hh0 = this.dateValue[0].getHours()
-        var mm0 = this.dateValue[0].getMinutes()
-        var ss0 = this.dateValue[0].getSeconds()
-        var YY1 = this.dateValue[1].getFullYear()
-        var MM1 = this.dateValue[1].getMonth() + 1
-        var DD1 = this.dateValue[1].getDate()
-        var hh1 = this.dateValue[1].getHours()
-        var mm1 = this.dateValue[1].getMinutes()
-        var ss1 = this.dateValue[1].getSeconds()
-        dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
-        dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+        dateBegin = dateFormatter(this.dateValue[0], 'typical')
+        dateEnd = dateFormatter(this.dateValue[1], 'typical')
       }
       this.vforList.forEach((item) => {
         const data = {
@@ -358,20 +347,8 @@ export default {
         dateEnd: null,
       }
       if (this.dateValue !== null) {
-        var YY0 = this.dateValue[0].getFullYear()
-        var MM0 = this.dateValue[0].getMonth() + 1
-        var DD0 = this.dateValue[0].getDate()
-        var hh0 = this.dateValue[0].getHours()
-        var mm0 = this.dateValue[0].getMinutes()
-        var ss0 = this.dateValue[0].getSeconds()
-        var YY1 = this.dateValue[1].getFullYear()
-        var MM1 = this.dateValue[1].getMonth() + 1
-        var DD1 = this.dateValue[1].getDate()
-        var hh1 = this.dateValue[1].getHours()
-        var mm1 = this.dateValue[1].getMinutes()
-        var ss1 = this.dateValue[1].getSeconds()
-        data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
-        data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+        data.dateBegin = dateFormatter(this.dateValue[0], 'typical')
+        data.dateEnd = dateFormatter(this.dateValue[1], 'typical')
       }
       this.vforList.forEach((ele) => {
         (data.site = ele.siteLabel),

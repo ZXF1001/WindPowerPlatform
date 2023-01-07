@@ -97,6 +97,7 @@
 import { getQ24hWeather, getQNowWeather } from '../../api/wind/getWeather'
 import 'qweather-icons/font/qweather-icons.css'
 import * as echarts from 'echarts'
+import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
     return {
@@ -145,11 +146,8 @@ export default {
           if (res.data.code == '200') {
             this.nowWeather = res.data.now
             var now = new Date(res.data.now.obsTime)
-            // var Month = now.getMonth() + 1
-            // var Date = now.getDate()
             var Hour = now.getHours()
             var Minute = now.getMinutes()
-            // var Second = now.getSeconds()
             this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
               Minute < 10 ? '0' + Minute : Minute
             }`
@@ -167,19 +165,9 @@ export default {
       var tempList = []
       //时间列表获取
       dataArr.forEach((element) => {
-        var time = new Date(element.fxTime)
-        var chartTime =
-          time.getFullYear() +
-          '/' +
-          (time.getMonth() + 1) +
-          '/' +
-          time.getDate() +
-          ' ' +
-          time.getHours() +
-          ':' +
-          time.getMinutes() +
-          ':' +
-          time.getSeconds()
+        let time = new Date(element.fxTime)
+        let chartTime = dateFormatter(time, 'typical')
+
         tempList.push({
           name: time.toString(),
           value: [chartTime, element.temp],
@@ -233,20 +221,8 @@ export default {
       var humidList = []
       //时间列表获取
       dataArr.forEach((element) => {
-        var time = new Date(element.fxTime)
-        var chartTime =
-          time.getFullYear() +
-          '/' +
-          (time.getMonth() + 1) +
-          '/' +
-          time.getDate() +
-          ' ' +
-          time.getHours() +
-          ':' +
-          time.getMinutes() +
-          ':' +
-          time.getSeconds()
-
+        let time = new Date(element.fxTime)
+        let chartTime = dateFormatter(time, 'typical')
         humidList.push({
           name: time.toString(),
           value: [chartTime, element.humidity],
@@ -314,20 +290,8 @@ export default {
       const Wecharts = echarts.init(this.$refs.Wecharts)
       var windList = []
       dataArr.forEach((element) => {
-        var time = new Date(element.fxTime)
-        var chartTime =
-          time.getFullYear() +
-          '/' +
-          (time.getMonth() + 1) +
-          '/' +
-          time.getDate() +
-          ' ' +
-          time.getHours() +
-          ':' +
-          time.getMinutes() +
-          ':' +
-          time.getSeconds()
-
+        let time = new Date(element.fxTime)
+        let chartTime = dateFormatter(time, 'typical')
         windList.push({
           name: time.toString(),
           value: [
@@ -385,9 +349,6 @@ export default {
       }
       Wecharts.setOption(option)
       this.Wechart = Wecharts
-      // window.onresize = () => {
-      //   Hecharts.resize()
-      // }
     },
   },
   mounted() {
@@ -436,12 +397,12 @@ export default {
       margin-top: 10px;
       i {
         font-size: 80px;
-        margin-right: 5px;
+        margin-right: 10px;
       }
       .tempNumAndUnit {
         display: flex;
         align-items: center;
-        margin-right: 40px;
+        margin-right: 35px;
         .tempNum {
           font-size: 60px;
         }

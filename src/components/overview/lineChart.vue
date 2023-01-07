@@ -11,6 +11,7 @@ import {
   getOverviewRecentLineData,
   getOverviewTimelyLineData,
 } from '../../api/overview/getLineData'
+import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
     return {
@@ -42,20 +43,7 @@ export default {
           this.latestDate = date
           lineData.push({
             name: date.toString(),
-            value: [
-              date.getFullYear() +
-                '/' +
-                (date.getMonth() + 1) +
-                '/' +
-                date.getDate() +
-                ' ' +
-                date.getHours() +
-                ':' +
-                date.getMinutes() +
-                ':' +
-                date.getSeconds(),
-              dateItem.value[cluster],
-            ],
+            value: [dateFormatter(date, 'typical'), dateItem.value[cluster]],
           })
         })
         seriesData.push({
@@ -117,9 +105,7 @@ export default {
               clusterData.data.push({
                 name: this.latestDate.toString(),
                 value: [
-                  `${this.latestDate.getFullYear()}/${
-                    this.latestDate.getMonth() + 1
-                  }/${this.latestDate.getDate()} ${this.latestDate.getHours()}:${this.latestDate.getMinutes()}:${this.latestDate.getSeconds()}`,
+                  dateFormatter(this.latestDate, 'typical'),
                   res.data.value[clusterData.name],
                 ],
               })

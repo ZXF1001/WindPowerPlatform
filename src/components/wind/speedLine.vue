@@ -109,6 +109,7 @@ import { getSiteAndHeight } from '@/api/wind/getFilterData'
 import { post4SpeedTimeData } from '@/api/wind/post4SpeedTimeData'
 
 import * as echarts from 'echarts'
+import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
     return {
@@ -191,23 +192,15 @@ export default {
           )
         ].label
       } else {
-        const YY0 = this.userDefinedTimeRangeValue[0].getFullYear()
-        const YY1 = this.userDefinedTimeRangeValue[1].getFullYear()
-        const MM0 = this.userDefinedTimeRangeValue[0].getMonth() + 1
-        const MM1 = this.userDefinedTimeRangeValue[1].getMonth() + 1
-        const DD0 = this.userDefinedTimeRangeValue[0].getDate()
-        const DD1 = this.userDefinedTimeRangeValue[1].getDate()
-        const hh0 = this.userDefinedTimeRangeValue[0].getHours()
-        const hh1 = this.userDefinedTimeRangeValue[1].getHours()
-        const mm0 = this.userDefinedTimeRangeValue[0].getMinutes()
-        const mm1 = this.userDefinedTimeRangeValue[1].getMinutes()
-        const ss0 = this.userDefinedTimeRangeValue[0].getSeconds()
-        const ss1 = this.userDefinedTimeRangeValue[1].getSeconds()
-        return `${YY0}年${MM0}月${DD0}日${hh0 < 10 ? '0' + hh0 : hh0}:${
-          mm0 < 10 ? '0' + mm0 : mm0
-        }:${ss0 < 10 ? '0' + ss0 : ss0}至${YY1}年${MM1}月${DD1}日${
-          hh1 < 10 ? '0' + hh1 : hh1
-        }:${mm1 < 10 ? '0' + mm1 : mm1}:${ss1 < 10 ? '0' + ss1 : ss1}`
+        const datetimeStart = dateFormatter(
+          this.userDefinedTimeRangeValue[0],
+          'Chinese'
+        )
+        const datetimeEnd = dateFormatter(
+          this.userDefinedTimeRangeValue[1],
+          'Chinese'
+        )
+        return `${datetimeStart} 至 ${datetimeEnd}`
       }
     },
   },
@@ -313,21 +306,9 @@ export default {
         granularity: null,
       }
       if (data.type === 'user-defined' && this.userDefinedTimeRangeValue) {
-        const datetime = this.userDefinedTimeRangeValue
-        var YY0 = datetime[0].getFullYear()
-        var MM0 = datetime[0].getMonth() + 1
-        var DD0 = datetime[0].getDate()
-        var hh0 = datetime[0].getHours()
-        var mm0 = datetime[0].getMinutes()
-        var ss0 = datetime[0].getSeconds()
-        var YY1 = datetime[1].getFullYear()
-        var MM1 = datetime[1].getMonth() + 1
-        var DD1 = datetime[1].getDate()
-        var hh1 = datetime[1].getHours()
-        var mm1 = datetime[1].getMinutes()
-        var ss1 = datetime[1].getSeconds()
-        data.dateBegin = `${YY0}-${MM0}-${DD0} ${hh0}:${mm0}:${ss0}`
-        data.dateEnd = `${YY1}-${MM1}-${DD1} ${hh1}:${mm1}:${ss1}`
+        const datetimes = this.userDefinedTimeRangeValue
+        data.dateBegin = dateFormatter(datetimes[0], 'typical')
+        data.dateEnd = dateFormatter(datetimes[1], 'typical')
         data.granularity = this.granularityRadio
       }
       //遍历获取数据并画图
@@ -350,18 +331,7 @@ export default {
             var minData = []
             res.data.forEach((item) => {
               var time = new Date(item.chartTime)
-              var chartTime =
-                time.getFullYear() +
-                '/' +
-                (time.getMonth() + 1) +
-                '/' +
-                time.getDate() +
-                ' ' +
-                time.getHours() +
-                ':' +
-                time.getMinutes() +
-                ':' +
-                time.getSeconds()
+              var chartTime = dateFormatter(time, 'typical')
               avgData.push({
                 name: time.toString(),
                 value: [chartTime, item.speed],
