@@ -28,6 +28,7 @@
     <el-card class="echarts-table">
       <!-- 左下的表格 -->
       <el-table :data="tableData"
+                :key="tableKey"
                 style="width: 100%">
         <el-table-column prop="cluster"
                          label="集群">
@@ -48,7 +49,7 @@ import { getOverviewNumData } from '../../api/overview/getNumData'
 export default {
   data() {
     return {
-      loading: true,
+      loading: false,
       numData: {
         runNum: '加载中',
         totalNum: '加载中',
@@ -56,42 +57,60 @@ export default {
         optPower: '加载中',
       },
       tableData: [],
-
-      timer1: null,
+      tableKey: 1,
     }
   },
   methods: {
+    wsConnect() {
+      this.ws = new WebSocket('ws://1.117.224.40/ws/turbines/get-power')
+      this.ws.onmessage = (e) => {
+        const res = JSON.parse(e.data)
+        console.log(res)
+        // res.cluster_id在this.tableData中，就替换this.tableData的那项
+        // 如果不在，就加进去
+        let clusterInTableData = this.tableData.map((item) => item.cluster)
+        let index = clusterInTableData.indexOf(res.cluster_id)
+        if (index === -1) {
+          this.tableData.push({
+            cluster: res.cluster_id,
+            power: res.data[0].power,
+            perpower: res.data[0].power / 16,
+          })
+        } else {
+          this.tableData[index] = {
+            cluster: res.cluster_id,
+            power: res.data[0].power,
+            perpower: res.data[0].power / 16,
+          }
+          this.tableKey++
+        }
+      }
+    },
     fetchNumData() {
-      this.timer1 = setInterval(() => {
-        getOverviewNumData()
-          .then((res) => {
-            this.numData = res.data.numData
-            this.tableData = res.data.tableData
-            this.loading = false
-          })
-          .catch((e) => {
-            console.log(e)
-          })
-        // 在/api中统一管理后弃用
-        // axios
-        //   .get('https://windplatform.usemock.com/overview_data')
-        //   .then((res) => {
-        //     this.numData = res.data.numData
-        //     this.tableData = res.data.tableData
-        //   })
-        //   .catch((error) => {
-        //     console.log(error)
-        //   })
-      }, 1000)
+      // this.timer1 = setInterval(() => {
+      //   getOverviewNumData()
+      //     .then((res) => {
+      //       this.numData = res.data.numData
+      //       this.tableData = res.data.tableData
+      //       this.loading = false
+      //     })
+      //     .catch((e) => {
+      //       console.log(e)
+      //     })
+      // }, 1000)
     },
   },
-  created() {
-    this.fetchNumData()
+  mounted() {
+    this.wsConnect()
+    // this.fetchNumData()
   },
   beforeDestroy() {
     if (this.timer1) {
       clearInterval(this.timer1)
       this.timer1 = null
+    }
+    if (this.ws) {
+      this.ws.close()
     }
   },
 }

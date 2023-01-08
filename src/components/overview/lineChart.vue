@@ -52,6 +52,7 @@ export default {
           smooth: true,
         })
       })
+
       var option = {
         title: {
           text: '时变数据折线图',
@@ -71,9 +72,6 @@ export default {
           splitLine: {
             // show: false,
           },
-        },
-        legend: {
-          // data: clusterList,
         },
         grid: {
           left: '3%',
