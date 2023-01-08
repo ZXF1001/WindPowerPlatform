@@ -16,9 +16,6 @@ export default {
   data() {
     return {
       loading: true,
-      lineData: {},
-      latestDate: null,
-      timer: null,
     }
   },
   methods: {

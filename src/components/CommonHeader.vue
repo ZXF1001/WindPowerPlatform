@@ -27,7 +27,6 @@ export default {
   data() {
     return {
       date: null,
-      timer: null,
     }
   },
   methods: {

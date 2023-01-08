@@ -12,7 +12,6 @@
 export default {
   data() {
     return {
-      ws: null,
       text: '',
     }
   },
@@ -20,7 +19,7 @@ export default {
     connect() {
       //连接ws服务器
       // 打开一个 web socket  这里端口号和上面监听的需一致
-      this.ws = new WebSocket('ws://1.117.224.40:8082/')
+      this.ws = new WebSocket('ws://1.117.224.40/ws/')
 
       // Web Socket 已连接上，使用 send() 方法发送数据
       this.ws.onopen = () => {

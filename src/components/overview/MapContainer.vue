@@ -57,7 +57,6 @@ export default {
       checkedClusters: [], //这是选中的集群Array
       isIndeterminate: false,
       map: null,
-      layerGroup: [],
       geolayer: null,
     }
   },
@@ -308,7 +307,7 @@ export default {
               collisionFlg: false, // 碰撞检测
             }).addTo(this.map)
             templayerGroup.addLayers(markerList)
-
+            this.layerGroup = []
             this.layerGroup.push({
               name: cluster.cluster_name,
               data: templayerGroup,

@@ -105,10 +105,6 @@ export default {
       hourlyUpdateTime: null,
       nowWeather: {},
       hourlyWeather: [],
-      Techart: null,
-      Hechart: null,
-      Wechart: null,
-      timer: null,
     }
   },
   methods: {

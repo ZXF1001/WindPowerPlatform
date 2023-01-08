@@ -129,7 +129,6 @@ export default {
       dialogVisible: false,
       echartsList: null,
       vforList: [],
-      fetchController: null,
     }
   },
   watch: {
