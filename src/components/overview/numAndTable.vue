@@ -26,18 +26,21 @@
       </div>
     </div>
     <el-card class="echarts-table">
+      <span class="updateTime">{{updateTime}}</span>
       <!-- 左下的表格 -->
       <el-table :data="tableData"
-                :key="tableKey"
                 style="width: 100%">
         <el-table-column prop="cluster"
-                         label="集群">
+                         label="集群"
+                         sortable>
         </el-table-column>
         <el-table-column prop="power"
-                         label="功率/MW">
+                         label="功率/MW"
+                         sortable>
         </el-table-column>
         <el-table-column prop="perpower"
-                         label="台均功率/MW">
+                         label="台均/MW"
+                         sortable>
         </el-table-column>
       </el-table>
     </el-card>
@@ -45,19 +48,19 @@
 </template>
 
 <script>
-import { getOverviewNumData } from '../../api/overview/getNumData'
+import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
     return {
-      loading: false,
+      loading: true,
       numData: {
         runNum: '加载中',
         totalNum: '加载中',
         noOptPower: '加载中',
         optPower: '加载中',
       },
+      updateTime: '更新中',
       tableData: [],
-      tableKey: 1,
     }
   },
   methods: {
@@ -65,44 +68,22 @@ export default {
       this.ws = new WebSocket('ws://1.117.224.40/ws/turbines/get-power')
       this.ws.onmessage = (e) => {
         const res = JSON.parse(e.data)
-        console.log(res)
-        // res.cluster_id在this.tableData中，就替换this.tableData的那项
-        // 如果不在，就加进去
-        let clusterInTableData = this.tableData.map((item) => item.cluster)
-        let index = clusterInTableData.indexOf(res.cluster_id)
-        if (index === -1) {
-          this.tableData.push({
-            cluster: res.cluster_id,
-            power: res.data[0].power,
-            perpower: res.data[0].power / 16,
-          })
-        } else {
-          this.tableData[index] = {
-            cluster: res.cluster_id,
-            power: res.data[0].power,
-            perpower: res.data[0].power / 16,
+        this.tableData = res.map((cluster) => {
+          return {
+            cluster: cluster.cluster_id,
+            power: cluster.power,
+            perpower: cluster.power / 16,
           }
-          this.tableKey++
+        })
+        this.updateTime = `更新时间：${dateFormatter(new Date(), 'Chinese')}`
+        if (this.loading) {
+          this.loading = false
         }
       }
-    },
-    fetchNumData() {
-      // this.timer1 = setInterval(() => {
-      //   getOverviewNumData()
-      //     .then((res) => {
-      //       this.numData = res.data.numData
-      //       this.tableData = res.data.tableData
-      //       this.loading = false
-      //     })
-      //     .catch((e) => {
-      //       console.log(e)
-      //     })
-      // }, 1000)
     },
   },
   mounted() {
     this.wsConnect()
-    // this.fetchNumData()
   },
   beforeDestroy() {
     if (this.timer1) {
@@ -144,5 +125,8 @@ export default {
 }
 .echarts-table {
   height: calc(100vh - 396px);
+  .updateTime {
+    font-size: 12px;
+  }
 }
 </style>
