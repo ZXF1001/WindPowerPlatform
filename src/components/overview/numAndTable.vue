@@ -54,10 +54,10 @@ export default {
     return {
       loading: true,
       numData: {
-        runNum: '加载中',
-        totalNum: '加载中',
-        noOptPower: '加载中',
-        optPower: '加载中',
+        runNum: '34',
+        totalNum: '42',
+        noOptPower: '10.2',
+        optPower: '11.1',
       },
       updateTime: '更新中',
       tableData: [],
@@ -75,7 +75,7 @@ export default {
             perpower: cluster.power / 16,
           }
         })
-        this.updateTime = `更新时间：${dateFormatter(new Date(), 'Chinese')}`
+        this.updateTime = `更新时间：${dateFormatter(new Date(), 'typical')}`
         if (this.loading) {
           this.loading = false
         }
@@ -86,10 +86,6 @@ export default {
     this.wsConnect()
   },
   beforeDestroy() {
-    if (this.timer1) {
-      clearInterval(this.timer1)
-      this.timer1 = null
-    }
     if (this.ws) {
       this.ws.close()
     }

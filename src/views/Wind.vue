@@ -12,7 +12,7 @@
                  :lazy="true">
       <speed-line v-if="existList.speedLine" />
     </el-tab-pane>
-    <el-tab-pane label="和风天气"
+    <el-tab-pane label="气象预报"
                  name="weather"
                  :lazy="true">
       <qweather v-if="existList.weather" />
@@ -27,11 +27,11 @@
                  :lazy="true">
       <upload-wind-data v-if="existList.uploadWindData" />
     </el-tab-pane>
-    <el-tab-pane label="WebSocket测试"
+    <!-- <el-tab-pane label="WebSocket测试"
                  name="websocketTest"
                  :lazy="true">
       <websocket-test v-if="existList.uploadWindData" />
-    </el-tab-pane>
+    </el-tab-pane> -->
   </el-tabs>
 </template>
 
