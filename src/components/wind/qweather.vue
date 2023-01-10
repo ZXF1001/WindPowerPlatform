@@ -53,7 +53,6 @@
                  :key="item.fxTime"
                  class="hourlyData">
               <span class="time">{{returnHour(item.fxTime)}} 时</span>
-
               <div class="valueAndIcon">
                 <i :class="'qi-'+item.icon" />
                 <div class="value">{{item.temp}}°C</div>
@@ -109,7 +108,6 @@ export default {
   },
   methods: {
     returnHour(date) {
-      // 输入json日期时间，返回今天/明天+时间
       var dateObj = new Date(date)
       var returnTime = dateObj.getHours()
       return returnTime
@@ -241,13 +239,6 @@ export default {
           top: '10%',
           bottom: '2%',
         },
-        // toolbox: {
-        //   show: true,
-        //   feature: {
-        //     // dataView: { readOnly: false },
-        //     saveAsImage: {},
-        //   },
-        // },
         xAxis: {
           type: 'time',
 

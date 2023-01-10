@@ -1,5 +1,6 @@
 <template>
   <el-card v-loading="loading">
+    <h3 class="title">时变数据折线图</h3>
     <div class="linechart"
          ref="echarts1"></div>
   </el-card>
@@ -7,15 +8,11 @@
 
 <script>
 import * as echarts from 'echarts'
-import {
-  getOverviewRecentLineData,
-  getOverviewTimelyLineData,
-} from '../../api/overview/getLineData'
 import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
     return {
-      loading: false,
+      loading: true,
     }
   },
   methods: {
@@ -23,9 +20,6 @@ export default {
       //先创建空数据的echarts，在ws持续更新数据
       const echarts1 = echarts.init(this.$refs.echarts1)
       var option = {
-        title: {
-          text: '时变数据折线图',
-        },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -38,15 +32,13 @@ export default {
         yAxis: {
           type: 'value',
           boundaryGap: [0, '100%'],
-          splitLine: {
-            // show: false,
-          },
         },
         legend: {},
         grid: {
           left: '3%',
-          right: '4%',
+          right: '3%',
           bottom: '2%',
+          top: '30px',
           containLabel: true,
         },
         series: [],
@@ -56,138 +48,56 @@ export default {
         echarts1.resize()
       }
       //创建完echarts后建立ws连接
-      //! 目前是整个seriesData的替换，更新数据时没有平移的动画，需要优化
       this.ws = new WebSocket('ws://1.117.224.40/ws/turbines/get-powers')
+      //暂时就这样简单地调用WebSocket服务，以后考虑放进api文件夹中统一管理
       this.ws.onmessage = (e) => {
         const res = JSON.parse(e.data)
-        let seriesData = new Array(res.length)
-        for (let i = 0; i < res.length; i++) {
-          var lineData = new Array(res[0].data.length)
-          for (let j = 0; j < res[i].data.length; j++) {
-            console.log(res[i].data[j].date)
-            lineData[j] = {
-              name: new Date(res[i].data[j].date),
-              value: [
-                dateFormatter(new Date(res[i].data[j].date), 'typical'),
-                res[i].data[j].power,
-              ],
+
+        let chartOption = echarts1.getOption()
+        if (chartOption.series.length === 0) {
+          // 如果是第一次收到数据，全部更新到echarts上
+          let seriesData = new Array(res.length)
+          for (let i = 0; i < res.length; i++) {
+            var lineData = new Array(res[0].data.length)
+            for (let j = 0; j < res[i].data.length; j++) {
+              lineData[j] = {
+                name: new Date(res[i].data[j].date),
+                value: [
+                  dateFormatter(new Date(res[i].data[j].date), 'typical'),
+                  res[i].data[j].power,
+                ],
+              }
+            }
+
+            seriesData[i] = {
+              animationDuration: 0,
+              name: res[i].cluster_id,
+              type: 'line',
+              showSymbol: false,
+              data: lineData,
+              smooth: true,
             }
           }
+          chartOption.series = seriesData
 
-          seriesData[i] = {
-            animationDuration: 0,
-            name: res[i].cluster_id,
-            type: 'line',
-            showSymbol: false,
-            data: lineData,
-            smooth: true,
+          this.loading = false
+        } else {
+          // 如果不是第一次收到数据，把最新一组数据更新到echarts上
+          for (let i = 0; i < chartOption.series.length; i++) {
+            chartOption.series[i].data.shift()
+            var latestData = res[i].data[res[i].data.length - 1]
+            chartOption.series[i].data.push({
+              name: new Date(latestData.date),
+              value: [
+                dateFormatter(new Date(latestData.date), 'typical'),
+                latestData.power,
+              ],
+            })
           }
         }
-        option.series = seriesData
-        echarts1.setOption(option)
+        echarts1.setOption(chartOption)
       }
     },
-    // fetchLinedata_old() {
-    //   getOverviewRecentLineData()
-    //     .then((res) => {
-    //       this.drawLineData(res.data)
-    //     })
-    //     .catch((e) => {
-    //       console.log(e)
-    //     })
-    // },
-    // drawLineData(data) {
-    //   const echarts1 = echarts.init(this.$refs.echarts1)
-    //   var seriesData = []
-    //   var clusterList = Object.keys(data[0].value)
-    //   // clusterList : ["cluster1","cluster2",...]
-    //   clusterList.forEach((cluster) => {
-    //     var lineData = []
-    //     data.forEach((dateItem) => {
-    //       var date = new Date(dateItem.date)
-    //       this.latestDate = date
-    //       lineData.push({
-    //         name: date.toString(),
-    //         value: [dateFormatter(date, 'typical'), dateItem.value[cluster]],
-    //       })
-    //     })
-    //     seriesData.push({
-    //       animationDuration: 0,
-    //       name: cluster,
-    //       type: 'line',
-    //       showSymbol: false,
-    //       data: lineData,
-    //       smooth: true,
-    //     })
-    //   })
-    //   var option = {
-    //     title: {
-    //       text: '时变数据折线图',
-    //     },
-    //     tooltip: {
-    //       trigger: 'axis',
-    //       axisPointer: {
-    //         animation: false,
-    //       },
-    //     },
-    //     xAxis: {
-    //       type: 'time',
-    //     },
-    //     yAxis: {
-    //       type: 'value',
-    //       boundaryGap: [0, '100%'],
-    //       splitLine: {
-    //         // show: false,
-    //       },
-    //     },
-    //     legend: {},
-    //     grid: {
-    //       left: '3%',
-    //       right: '4%',
-    //       bottom: '2%',
-    //       containLabel: true,
-    //     },
-    //     series: seriesData,
-    //   }
-    //   echarts1.setOption(option)
-    //   window.onresize = () => {
-    //     echarts1.resize()
-    //   }
-    //   this.loading = false
-    //   this.updateLineData(seriesData, echarts1, option)
-    // },
-    // updateLineData(seriesData, echartsObj, echartsOption) {
-    //   this.timer = setInterval(() => {
-    //     getOverviewTimelyLineData()
-    //       .then((res) => {
-    //         this.latestDate = new Date(+this.latestDate + 1000)
-    //         seriesData.forEach((clusterData) => {
-    //           // if (clusterData.data.length > 60) {
-    //           clusterData.data.shift()
-    //           // }
-    //           clusterData.data.push({
-    //             name: this.latestDate.toString(),
-    //             value: [
-    //               dateFormatter(this.latestDate, 'typical'),
-    //               res.data.value[clusterData.name],
-    //             ],
-    //           })
-    //         })
-
-    //         echartsObj.setOption(echartsOption)
-    //         // {"value":{
-    //         //   "cluster1|20-40":20,
-    //         //   "cluster2|20-40":20,
-    //         //   "cluster3|20-40":20,
-    //         //   "cluster4|20-40":20,
-    //         //   "cluster5|20-40":20,
-    //         // }}
-    //       })
-    //       .catch((e) => {
-    //         console.log(e)
-    //       })
-    //   }, 1000)
-    // },
   },
   mounted() {
     this.fetchLinedata()
@@ -205,7 +115,12 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.title {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 15px;
+}
 .linechart {
-  height: calc(0.4 * (100vh - 238px));
+  height: calc(0.4 * (100vh - 290px));
 }
 </style>

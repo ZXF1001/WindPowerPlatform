@@ -65,7 +65,9 @@ export default {
   },
   methods: {
     wsConnect() {
-      this.ws = new WebSocket('ws://1.117.224.40/ws/turbines/get-power')
+      this.ws = new WebSocket(
+        'ws://1.117.224.40/ws/turbines/get-overview-numdata'
+      )
       this.ws.onmessage = (e) => {
         const res = JSON.parse(e.data)
         this.tableData = res.map((cluster) => {
