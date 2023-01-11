@@ -1,9 +1,10 @@
 let wsBaseURL = "ws://1.117.224.40/ws";
 let pingTimer = null;
+let ws = null;
 //发起ws的主函数
 export function connectWS(subURL, callback) {
   const url = [wsBaseURL, subURL].join("");
-  let ws = initWS(url, callback);
+  ws = initWS(url, callback);
   wsPing(ws, 25);
   return ws;
 }
@@ -14,7 +15,6 @@ function initWS(url, _callback) {
     alert("您的浏览器不支持WebSocket，无法获取数据");
     return false;
   }
-  console.log(url);
   let websocket = new WebSocket(url);
   websocket.onmessage = function (e) {
     wsOnMessage(e, _callback);
@@ -22,11 +22,12 @@ function initWS(url, _callback) {
   websocket.onopen = function () {
     console.log("ws连接成功");
   };
-  websocket.onerror = function () {
+  websocket.onerror = function (e) {
+    console.log(e);
     alert("ws连接出错");
   };
-  websocket.onclose = function () {
-    console.log("ws连接断开");
+  websocket.onclose = function (e) {
+    wsOnClose(e, url, _callback);
   };
   return websocket;
 }
@@ -40,14 +41,29 @@ function wsOnMessage(e, _callback) {
   }
   _callback(data);
 }
-
+function wsOnClose(e, url, _callback) {
+  console.log("ws连接断开");
+  console.log(e);
+  if (pingTimer) {
+    clearInterval(pingTimer);
+    pingTimer = null;
+  }
+  if (e.code !== 1005) {
+    if (ws) {
+      ws.close();
+      ws = null;
+    }
+    initWS(url, _callback);
+    console.log("ws重连");
+  }
+}
 // 定时发送心跳维持连接
 function wsPing(_ws, interval) {
   pingTimer = setInterval(() => {
     if (_ws.readyState === _ws.OPEN) {
       // 连接已建立
       _ws.send("ping");
-      // console.log("ping过去了");
+      console.log("ping");
     } else if (_ws.readyState === _ws.CLOSED) {
       clearInterval(pingTimer);
     }
