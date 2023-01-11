@@ -265,28 +265,7 @@ export default {
       getMyTurbineData()
         .then((res) => {
           var data = groupByCluster(res)
-          // var colorList = [
-          //   '#5470c6',
-          //   '#91cc75',
-          //   '#fac858',
-          //   '#ee6666',
-          //   '#73c0de',
-          //   '#3ba272',
-          //   '#fc8452',
-          //   '#9a60b4',
-          //   '#ea7ccc',
-          //   '#A6ACAF',
-          //   '#27AE60',
-          //   '#00FFFF',
-          //   '#000080',
-          //   '#FF0000',
-          //   '#FFFF00',
-          //   '#00FF00',
-          //   '#28ED9C',
-          //   '#95324E',
-          //   '#F7AAAA',
-          // ]
-
+          this.layerGroup = []
           var Icons = importAllSVG()
           data.forEach((cluster, index) => {
             var markerList = []
@@ -313,7 +292,7 @@ export default {
               collisionFlg: false, // 碰撞检测
             }).addTo(this.map)
             templayerGroup.addLayers(markerList)
-            this.layerGroup = []
+
             this.layerGroup.push({
               name: cluster.cluster_name,
               data: templayerGroup,
