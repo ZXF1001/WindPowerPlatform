@@ -28,5 +28,10 @@ export default {
       }
     },
   },
+  beforeDestroy() {
+    if (this.ws) {
+      this.ws.close()
+    }
+  },
 }
 </script>
