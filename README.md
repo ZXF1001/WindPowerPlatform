@@ -21,7 +21,7 @@
   npm run build
   ```
 ## 现存issues
-  - [ ] 和风天气api应放在后端请求
+  - [x] 和风天气api应放在后端请求
   - [ ] 绘制云图的colorbar
   - [ ] 根据数据生成geotiff
   - [ ] 地图显示范围自动设置为风电场位置范围

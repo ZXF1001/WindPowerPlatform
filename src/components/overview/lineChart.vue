@@ -9,6 +9,7 @@
 <script>
 import * as echarts from 'echarts'
 import dateFormatter from '@/utils/dateFormatter'
+import { connectWS } from '@/utils/WebSocket/ws'
 export default {
   data() {
     return {
@@ -47,12 +48,9 @@ export default {
       window.onresize = () => {
         echarts1.resize()
       }
-      //创建完echarts后建立ws连接
-      this.ws = new WebSocket('ws://1.117.224.40/ws/turbines/get-powers')
-      //暂时就这样简单地调用WebSocket服务，以后考虑放进api文件夹中统一管理
-      this.ws.onmessage = (e) => {
-        const res = JSON.parse(e.data)
 
+      //创建完echarts后建立ws连接
+      this.ws = connectWS('/turbines/get-powers', (res) => {
         let chartOption = echarts1.getOption()
         if (chartOption.series.length === 0) {
           // 如果是第一次收到数据，全部更新到echarts上
@@ -96,17 +94,13 @@ export default {
           }
         }
         echarts1.setOption(chartOption)
-      }
+      })
     },
   },
   mounted() {
     this.fetchLinedata()
   },
   beforeDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer)
-      this.timer = null
-    }
     if (this.ws) {
       this.ws.close()
     }

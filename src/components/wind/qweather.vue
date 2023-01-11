@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import { getQ24hWeather, getQNowWeather } from '../../api/wind/getWeather'
+import { connectWS } from '@/utils/WebSocket/ws'
 import 'qweather-icons/font/qweather-icons.css'
 import * as echarts from 'echarts'
 import dateFormatter from '@/utils/dateFormatter'
@@ -112,53 +112,100 @@ export default {
       var returnTime = dateObj.getHours()
       return returnTime
     },
-    draw24hWeather(lat, lng) {
-      getQ24hWeather(lat, lng)
-        .then((res) => {
-          if (res.data.code == '200') {
-            this.hourlyWeather = res.data.hourly
-            this.drawTemp(res.data.hourly)
-            this.drawHumid(res.data.hourly)
-            this.drawWind(res.data.hourly)
-            var now = new Date(res.data.updateTime)
-            var Hour = now.getHours()
-            var Minute = now.getMinutes()
-            this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
-              Minute < 10 ? '0' + Minute : Minute
-            }`
-          } else {
-            //执行没得到数据的代码
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+    draw24hWeather() {
+      this.ws2 = connectWS('/weather/get-24h-weather', (res) => {
+        this.hourlyWeather = res
+        this.drawTemp()
+        this.drawHumid()
+        this.drawWind()
+        var now = new Date(this.hourlyWeather[0].updateTime)
+        var Hour = now.getHours()
+        var Minute = now.getMinutes()
+        this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
+          Minute < 10 ? '0' + Minute : Minute
+        }`
+      })
+      // this.ws2 = new WebSocket('ws://1.117.224.40/ws/weather/get-24h-weather')
+      // this.ws2.onmessage = (e) => {
+      //   this.hourlyWeather = JSON.parse(e.data)
+      //   this.drawTemp()
+      //   this.drawHumid()
+      //   this.drawWind()
+      //   var now = new Date(this.hourlyWeather[0].updateTime)
+      //   var Hour = now.getHours()
+      //   var Minute = now.getMinutes()
+      //   this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
+      //     Minute < 10 ? '0' + Minute : Minute
+      //   }`
+      // }
     },
-    fetchNowWeather(lat, lng) {
-      getQNowWeather(lat, lng)
-        .then((res) => {
-          if (res.data.code == '200') {
-            this.nowWeather = res.data.now
-            var now = new Date(res.data.now.obsTime)
-            var Hour = now.getHours()
-            var Minute = now.getMinutes()
-            this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
-              Minute < 10 ? '0' + Minute : Minute
-            }`
-          } else {
-            //执行没得到数据的代码
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+    fetchNowWeather() {
+      this.ws1 = connectWS('/weather/get-now-weather', (res) => {
+        this.nowWeather = res
+        var now = new Date(this.nowWeather.obsTime)
+        var Hour = now.getHours()
+        var Minute = now.getMinutes()
+        this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
+          Minute < 10 ? '0' + Minute : Minute
+        }`
+      })
+      // this.ws1 = new WebSocket('ws://1.117.224.40/ws/weather/get-now-weather')
+      // this.ws1.onmessage = (e) => {
+      //   this.nowWeather = JSON.parse(e.data)
+      //   var now = new Date(this.nowWeather.obsTime)
+      //   var Hour = now.getHours()
+      //   var Minute = now.getMinutes()
+      //   this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
+      //     Minute < 10 ? '0' + Minute : Minute
+      //   }`
+      // }
     },
-    drawTemp(dataArr) {
+    drawTemp() {
       //Echarts绘制温度折线图
-      const Techarts = echarts.init(this.$refs.Techarts)
+      if (!this.Techart) {
+        this.Techart = echarts.init(this.$refs.Techarts)
+        var option = {
+          color: '#ee6666',
+          tooltip: {
+            trigger: 'axis',
+            valueFormatter: (value) => value + '°C',
+          },
+
+          grid: {
+            containLabel: true,
+            left: '2%',
+            right: '3%',
+            top: '10%',
+            bottom: '2%',
+          },
+
+          xAxis: {
+            type: 'time',
+            splitNumber: 11,
+          },
+          yAxis: {
+            type: 'value',
+            axisLabel: {
+              formatter: '{value} °C',
+            },
+          },
+
+          series: {
+            name: '温度',
+            data: [],
+            type: 'line',
+            smooth: true,
+            // animationDuration: 0,
+            emphasis: {
+              focus: 'series',
+            },
+          },
+        }
+        this.Techart.setOption(option)
+      }
       var tempList = []
       //时间列表获取
-      dataArr.forEach((element) => {
+      this.hourlyWeather.forEach((element) => {
         let time = new Date(element.fxTime)
         let chartTime = dateFormatter(time, 'typical')
 
@@ -167,116 +214,138 @@ export default {
           value: [chartTime, element.temp],
         })
       })
-      var option = {
-        color: '#ee6666',
-
-        tooltip: {
-          trigger: 'axis',
-          valueFormatter: (value) => value + '°C',
-          // formatter:{}
-        },
-
-        grid: {
-          containLabel: true,
-          left: '2%',
-          right: '3%',
-          top: '10%',
-          bottom: '2%',
-        },
-
-        xAxis: {
-          type: 'time',
-          splitNumber: 11,
-        },
-        yAxis: {
-          type: 'value',
-          axisLabel: {
-            formatter: '{value} °C',
-          },
-        },
-
+      this.Techart.setOption({
         series: {
-          name: '温度',
           data: tempList,
-          type: 'line',
-          smooth: true,
-          // animationDuration: 0,
-          emphasis: {
-            focus: 'series',
-          },
         },
-      }
-      Techarts.setOption(option)
-      this.Techart = Techarts
+      })
     },
-    drawHumid(dataArr) {
+    drawHumid() {
       //Echarts绘制湿度折线图
-      const Hecharts = echarts.init(this.$refs.Hecharts)
+      if (!this.Hechart) {
+        this.Hechart = echarts.init(this.$refs.Hecharts)
+        var option = {
+          color: '#5470c6',
+
+          tooltip: {
+            trigger: 'axis',
+            // formatter:{}
+            valueFormatter: (value) => value + '%',
+          },
+
+          grid: {
+            containLabel: true,
+            left: '2%',
+            right: '3%',
+            top: '10%',
+            bottom: '2%',
+          },
+          xAxis: {
+            type: 'time',
+
+            splitNumber: 11,
+            // axisTick: {
+            //   alignWithLabel: true,
+            // },
+          },
+          yAxis: [
+            {
+              type: 'value',
+              axisLabel: {
+                formatter: '{value} %',
+              },
+            },
+          ],
+          series: [
+            {
+              name: '湿度',
+              data: [],
+              type: 'line',
+              smooth: true,
+              emphasis: {
+                focus: 'series',
+              },
+            },
+          ],
+        }
+        this.Hechart.setOption(option)
+      }
+
       var humidList = []
       //时间列表获取
-      dataArr.forEach((element) => {
+      this.hourlyWeather.forEach((element) => {
         let time = new Date(element.fxTime)
         let chartTime = dateFormatter(time, 'typical')
         humidList.push({
           name: time.toString(),
           value: [chartTime, element.humidity],
         })
-        // timeList.push(time.getHours())
       })
-      var option = {
-        color: '#5470c6',
 
-        tooltip: {
-          trigger: 'axis',
-          // formatter:{}
-          valueFormatter: (value) => value + '%',
+      this.Hechart.setOption({
+        series: {
+          data: humidList,
         },
-
-        grid: {
-          containLabel: true,
-          left: '2%',
-          right: '3%',
-          top: '10%',
-          bottom: '2%',
-        },
-        xAxis: {
-          type: 'time',
-
-          splitNumber: 11,
-          // axisTick: {
-          //   alignWithLabel: true,
-          // },
-        },
-        yAxis: [
-          {
-            type: 'value',
-            axisLabel: {
-              formatter: '{value} %',
-            },
-          },
-        ],
-        series: [
-          {
-            name: '湿度',
-            data: humidList,
-            type: 'line',
-            smooth: true,
-            emphasis: {
-              focus: 'series',
-            },
-          },
-        ],
-      }
-      Hecharts.setOption(option)
-      this.Hechart = Hecharts
+      })
       // window.onresize = () => {
       //   Hecharts.resize()
       // }
     },
-    drawWind(dataArr) {
-      const Wecharts = echarts.init(this.$refs.Wecharts)
+    drawWind() {
+      if (!this.Wechart) {
+        this.Wechart = echarts.init(this.$refs.Wecharts)
+        var option = {
+          color: '#73c0de',
+
+          tooltip: {
+            trigger: 'axis',
+            valueFormatter: (value) => value + ' m/s',
+            // formatter:{}
+          },
+
+          grid: {
+            containLabel: true,
+            left: '2%',
+            right: '3%',
+            top: '10%',
+            bottom: '2%',
+          },
+
+          xAxis: {
+            type: 'time',
+
+            splitNumber: 11,
+            // axisTick: {
+            //   alignWithLabel: true,
+            // },
+          },
+          yAxis: [
+            {
+              type: 'value',
+              axisLabel: {
+                formatter: '{value} m/s',
+              },
+            },
+          ],
+          series: [
+            {
+              name: '风速',
+              data: [],
+              type: 'line',
+              smooth: true,
+              // animationDuration: 0,
+              symbol: 'arrow',
+              symbolSize: [8, 15],
+              symbolRotate: (value) => 180 - value[2],
+            },
+          ],
+        }
+        console.log(option)
+        this.Wechart.setOption(option)
+      }
+
       var windList = []
-      dataArr.forEach((element) => {
+      this.hourlyWeather.forEach((element) => {
         let time = new Date(element.fxTime)
         let chartTime = dateFormatter(time, 'typical')
         windList.push({
@@ -288,74 +357,35 @@ export default {
           ],
         })
       })
-      var option = {
-        color: '#73c0de',
 
-        tooltip: {
-          trigger: 'axis',
-          valueFormatter: (value) => value + ' m/s',
-          // formatter:{}
+      this.Wechart.setOption({
+        series: {
+          data: windList,
         },
-
-        grid: {
-          containLabel: true,
-          left: '2%',
-          right: '3%',
-          top: '10%',
-          bottom: '2%',
-        },
-
-        xAxis: {
-          type: 'time',
-
-          splitNumber: 11,
-          // axisTick: {
-          //   alignWithLabel: true,
-          // },
-        },
-        yAxis: [
-          {
-            type: 'value',
-            axisLabel: {
-              formatter: '{value} m/s',
-            },
-          },
-        ],
-        series: [
-          {
-            name: '风速',
-            data: windList,
-            type: 'line',
-            smooth: true,
-            // animationDuration: 0,
-            symbol: 'arrow',
-            symbolSize: [8, 15],
-            symbolRotate: (value) => 180 - value[2],
-          },
-        ],
-      }
-      Wecharts.setOption(option)
-      this.Wechart = Wecharts
+      })
     },
   },
   mounted() {
-    const latlng = [31.906801, 121.182329]
-    this.draw24hWeather(latlng[0], latlng[1])
-    this.fetchNowWeather(latlng[0], latlng[1])
+    this.draw24hWeather()
+    this.fetchNowWeather()
     window.onresize = () => {
       this.Techart.resize()
       this.Hechart.resize()
       this.Wechart.resize()
     }
-    this.timer = setInterval(() => {
-      this.draw24hWeather(latlng[0], latlng[1])
-      this.fetchNowWeather(latlng[0], latlng[1])
-    }, 1000 * 60 * 5)
   },
   beforeDestroy() {
+    if (this.ws1) {
+      this.ws1.close()
+      this.ws1 = undefined
+    }
+    if (this.ws2) {
+      this.ws2.close()
+      this.ws2 = undefined
+    }
     if (this.timer) {
       clearInterval(this.timer)
-      this.timer = null
+      this.timer = undefined
     }
   },
 }

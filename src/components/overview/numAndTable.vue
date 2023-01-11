@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import { connectWS } from '@/utils/WebSocket/ws'
 import dateFormatter from '@/utils/dateFormatter'
 export default {
   data() {
@@ -64,12 +65,8 @@ export default {
     }
   },
   methods: {
-    wsConnect() {
-      this.ws = new WebSocket(
-        'ws://1.117.224.40/ws/turbines/get-overview-numdata'
-      )
-      this.ws.onmessage = (e) => {
-        const res = JSON.parse(e.data)
+    init() {
+      this.ws = connectWS('/turbines/get-overview-numdata', (res) => {
         this.tableData = res.map((cluster) => {
           return {
             cluster: cluster.cluster_id,
@@ -81,11 +78,11 @@ export default {
         if (this.loading) {
           this.loading = false
         }
-      }
+      })
     },
   },
   mounted() {
-    this.wsConnect()
+    this.init()
   },
   beforeDestroy() {
     if (this.ws) {
