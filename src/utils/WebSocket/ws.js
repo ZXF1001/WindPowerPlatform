@@ -53,8 +53,8 @@ function wsOnClose(e, _ws, _pingTimer, url, _callback) {
   if (e.code !== 1005) {
     //1005是浏览器调用ws.close()导致的关闭，如果不是就需要重连
     if (_ws) {
-      console.log("事实证明需要wsclosenahang");
       _ws.close();
+      //! 这里有问题，传递的_ws是值传递不是引用传递，函数外部的ws没有销毁，但是不知道为什么不影响功能实现
       _ws = null;
     }
     initWS(url, _callback);

@@ -500,18 +500,23 @@ export default {
                   ),
                 }
 
-                await upload2DB(postData)
+                var res = await upload2DB(postData)
+                console.log(res)
+                var totalNum = res.data.totalNum
+
                 this.uploadButtonLoading = true
                 this.uploadButtonContent = `${Math.round(
                   (100 * i) / (uploadNum - 1)
                 )}%`
                 console.log(i)
-                console.log(postData.data.length)
               }
-              this.$alert('上传完成', '提示', {
+              this.$alert(`上传成功，共上传${totalNum}条记录`, '提示', {
                 confirmButtonText: '确定',
                 type: 'success',
                 showClose: false,
+                callback: () => {
+                  console.log('这里应该刷新本页')
+                },
               })
             } catch (error) {
               this.$alert('上传失败，请检查重试', '错误', {
