@@ -27,7 +27,7 @@
                   height="calc(50vh - 170px)"
                   border
                   fit
-                  :key="sTable"
+                  :key="tableKey1"
                   style="width: 100%">
           <el-table-column v-for="item in headerData"
                            :key="item.prop"
@@ -113,7 +113,7 @@ export default {
       headerData: [], //形如[{prop:"time",label:"time"},{prop:"velocity",label:"velocity"}]
       tableData: [], //形如[{time:"10:00",velocity:9.8},{...},...]
       headerListData: [], //形如[{dataHeader:header1OfCsv},{...},...]
-      sTable: 1, //为了加入表的key来刷新表的高度
+      tableKey1: 1, //为了加入表的key来刷新表的高度
       typeOptions: [
         {
           value: 'datetime',
@@ -360,7 +360,7 @@ export default {
     },
 
     showAsTable(jsonData) {
-      ++this.sTable //这是为了刷新一下表格，避免高度改变后出现空白区域
+      ++this.tableKey1 //这是为了刷新一下表格，避免高度改变后出现空白区域
       this.headerData = []
       this.tableData = []
       this.headerListData = []
