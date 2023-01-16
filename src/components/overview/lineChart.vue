@@ -115,6 +115,6 @@ export default {
   font-size: 15px;
 }
 .linechart {
-  height: calc(0.4 * (100vh - 290px));
+  height: calc(0.4 * (100vh - 300px));
 }
 </style>

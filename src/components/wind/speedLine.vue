@@ -358,7 +358,7 @@ export default {
               ],
               series: [],
             }
-            // 判断最大/最小速度数据是否存在
+            // 判断最大/最小速度数据是否存在，若存在再画折线图
             var avgData = []
             if ('maxSpeed' in res.data[0]) var maxData = []
             if ('minSpeed' in res.data[0]) var minData = []
