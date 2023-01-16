@@ -7,20 +7,21 @@
                  multiple
                  placeholder="选择测风塔"
                  size="small">
-        <el-option v-for="site in siteOptions"
-                   :key="site.value"
-                   :label="site.label"
-                   :value="site.value">
+        <el-option v-for="(site,index) in siteOptions"
+                   :key="index"
+                   :label="site"
+                   :value="index">
         </el-option>
       </el-select>
       <el-select v-model="heightValue"
                  multiple
                  placeholder="选择高度"
                  size="small">
-        <el-option v-for="height in heightOptions"
-                   :key="height.value"
-                   :label="height.label"
-                   :value="height.value">
+        <el-option v-for="(height,index) in heightOptions"
+                   :disabled="!isHeightInSelectedSite(height)"
+                   :key="index"
+                   :label="height"
+                   :value="index">
         </el-option>
       </el-select>
       <el-select v-model="timeRangeValue"
@@ -82,18 +83,17 @@
       </span>
     </el-dialog>
     <!-- 遍历的风速-时间图 -->
-    <div v-for="options in vforList"
-         :key="options.value">
+    <div v-for="(options,index) in vforList"
+         :key="index">
       <el-card class="card"
                shadow='never'
                v-loading="options.loading"
-               v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))">
+               v-show="((siteValue.indexOf(options.siteValue)!==-1)||(siteValue.length===0))&&((heightValue.indexOf(options.heightValue)!==-1)||(heightValue.length===0))">
         <div class="title">
           <p class="titleleft">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
           <p class="titleright">{{timeScale}}</p>
         </div>
         <div class="windChart"
-             ref="windChart"
              :id="'speedLine'+options.siteLabel+options.heightLabel" />
       </el-card>
     </div>
@@ -144,6 +144,22 @@ export default {
     },
   },
   computed: {
+    isHeightInSelectedSite() {
+      //用于判断传入的高度选项是否在选中的site里
+      return function (heightLable) {
+        if (this.siteValue.length === 0) return true
+        let status = false
+        for (let i = 0; i < this.siteValue.length; i++) {
+          if (
+            this.siteAndHeight[this.siteValue[i]].height.indexOf(
+              heightLable
+            ) !== -1
+          )
+            status = true
+        }
+        return status
+      }
+    },
     hourRadioDisabled() {
       //判断什么时候屏蔽1h粒度选项
       if (this.userDefinedTimeRangeValue) {
@@ -239,36 +255,26 @@ export default {
     fetchFilterData() {
       getSiteAndHeight().then((res) => {
         //获取筛选框的站点和高度数据
-        var siteOptions = res.data.map((item) => item.site)
-        var heightOptions = []
+        this.siteAndHeight = res.data
+        this.siteOptions = res.data.map((item) => item.site)
+        this.heightOptions = []
         res.data.forEach((siteObj) => {
           siteObj.height.forEach((heightObj) => {
-            if (heightOptions.indexOf(heightObj) === -1) {
-              heightOptions.push(heightObj)
+            if (this.heightOptions.indexOf(heightObj) === -1) {
+              this.heightOptions.push(heightObj)
             }
           })
         })
-        siteOptions.forEach((element, index) => {
-          this.siteOptions.push({
-            value: index + 1,
-            label: element,
-          })
-        })
-        heightOptions.forEach((element) => {
-          this.heightOptions.push({
-            value: this.heightOptions.length + 1,
-            label: element,
-          })
-        })
+
         //根据每个测风塔有的高度数据生成v-for要用到的数组
         res.data.forEach((siteObj, siteIndex) => {
           siteObj.height.forEach((heightObj) => {
             this.vforList.push({
               value: this.vforList.length,
               siteLabel: siteObj.site,
-              siteValue: siteIndex + 1,
+              siteValue: siteIndex,
               heightLabel: heightObj,
-              heightValue: heightOptions.indexOf(heightObj) + 1,
+              heightValue: this.heightOptions.indexOf(heightObj),
               loading: true,
             })
           })
@@ -311,34 +317,13 @@ export default {
         data.height = item.heightLabel
         post4SpeedTimeData(data)
           .then((res) => {
-            if (!this.echartsList[item.siteValue - 1][item.heightValue - 1]) {
-              this.echartsList[item.siteValue - 1][item.heightValue - 1] =
-                echarts.init(
-                  document.getElementById(
-                    'speedLine' + item.siteLabel + item.heightLabel
-                  )
+            if (!this.echartsList[item.siteValue][item.heightValue]) {
+              this.echartsList[item.siteValue][item.heightValue] = echarts.init(
+                document.getElementById(
+                  'speedLine' + item.siteLabel + item.heightLabel
                 )
+              )
             }
-
-            var avgData = []
-            var maxData = []
-            var minData = []
-            res.data.forEach((item) => {
-              var time = new Date(item.chartTime)
-              var chartTime = dateFormatter(time, 'typical')
-              avgData.push({
-                name: time.toString(),
-                value: [chartTime, item.speed],
-              })
-              maxData.push({
-                name: time.toString(),
-                value: [chartTime, item.maxSpeed],
-              })
-              minData.push({
-                name: time.toString(),
-                value: [chartTime, item.minSpeed],
-              })
-            })
             var option = {
               color: ['#5470c6', '#73c0de', '#9fdede'],
               tooltip: {
@@ -371,36 +356,62 @@ export default {
                   },
                 },
               ],
-              series: [
-                {
-                  name: '最大风速',
-                  data: maxData,
-                  type: 'line',
-                  symbol: 'none',
-                  // symbolSize: [8, 15],
-                  // symbolRotate: (value) => 180 - value[2],
-                },
-                {
-                  name: '平均风速',
-                  data: avgData,
-                  type: 'line',
-                  symbol: 'none',
-                  // symbolSize: [8, 15],
-                  // symbolRotate: (value) => 180 - value[2],
-                },
-                {
-                  name: '最小风速',
-                  data: minData,
-                  type: 'line',
-                  symbol: 'none',
-                  // symbolSize: [8, 15],
-                  // symbolRotate: (value) => 180 - value[2],
-                },
-              ],
+              series: [],
             }
-            this.echartsList[item.siteValue - 1][
-              item.heightValue - 1
-            ].setOption(option)
+            // 判断最大/最小速度数据是否存在
+            var avgData = []
+            if ('maxSpeed' in res.data[0]) var maxData = []
+            if ('minSpeed' in res.data[0]) var minData = []
+            res.data.forEach((item) => {
+              var time = new Date(item.chartTime)
+              var chartTime = dateFormatter(time, 'typical')
+              avgData.push({
+                name: time.toString(),
+                value: [chartTime, item.speed],
+              })
+              if ('maxSpeed' in res.data[0]) {
+                maxData.push({
+                  name: time.toString(),
+                  value: [chartTime, item.maxSpeed],
+                })
+              }
+              if ('minSpeed' in res.data[0]) {
+                minData.push({
+                  name: time.toString(),
+                  value: [chartTime, item.minSpeed],
+                })
+              }
+            })
+            if ('maxSpeed' in res.data[0]) {
+              option.series.push({
+                name: '最大风速',
+                data: maxData,
+                type: 'line',
+                symbol: 'none',
+                // symbolSize: [8, 15],
+                // symbolRotate: (value) => 180 - value[2],
+              })
+            }
+            option.series.push({
+              name: '平均风速',
+              data: avgData,
+              type: 'line',
+              symbol: 'none',
+              // symbolSize: [8, 15],
+              // symbolRotate: (value) => 180 - value[2],
+            })
+            if ('minSpeed' in res.data[0]) {
+              option.series.push({
+                name: '最小风速',
+                data: minData,
+                type: 'line',
+                symbol: 'none',
+                // symbolSize: [8, 15],
+                // symbolRotate: (value) => 180 - value[2],
+              })
+            }
+
+            this.echartsList[item.siteValue][item.heightValue].setOption(option)
             item.loading = false
           })
           .catch((e) => {

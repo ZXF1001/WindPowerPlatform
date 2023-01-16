@@ -7,10 +7,10 @@
                  multiple
                  placeholder="选择测风塔"
                  size="small">
-        <el-option v-for="site in siteOptions"
-                   :key="site.value"
-                   :label="site.label"
-                   :value="site.value">
+        <el-option v-for="(site,index) in siteOptions"
+                   :key="index"
+                   :label="site"
+                   :value="index">
 
         </el-option>
       </el-select>
@@ -18,10 +18,11 @@
                  multiple
                  placeholder="选择高度"
                  size="small">
-        <el-option v-for="height in heightOptions"
-                   :key="height.value"
-                   :label="height.label"
-                   :value="height.value">
+        <el-option v-for="(height,index) in heightOptions"
+                   :disabled="!isHeightInSelectedSite(height)"
+                   :key="index"
+                   :label="height"
+                   :value="index">
         </el-option>
       </el-select>
 
@@ -40,14 +41,15 @@
                    size="mini"
                    plain>重置</el-button>
       </el-popconfirm>
+
     </div>
     <!-- 遍历的风玫瑰图 -->
     <div class="roseGroup">
-      <div v-for="options in vforList"
-           :key="options.value">
+      <div v-for="(options,index) in vforList"
+           :key="index">
         <el-card class="card"
                  shadow="never"
-                 v-show="((siteValue.indexOf(options.siteValue)!=-1)||(siteValue.length==0))&&((heightValue.indexOf(options.heightValue)!=-1)||(heightValue.length==0))"
+                 v-show="((siteValue.indexOf(options.siteValue)!==-1)||(siteValue.length===0))&&((heightValue.indexOf(options.heightValue)!==-1)||(heightValue.length===0))"
                  v-loading="options.loading">
           <div class="title">
             <p class="titleleft">{{options.siteLabel}}测风塔 {{options.heightLabel}}数据</p>
@@ -55,7 +57,6 @@
                        @click="drawPDF(options.siteLabel,options.heightLabel)">风速PDF</el-button>
           </div>
           <div class="windrose"
-               ref="roseChart"
                :id="'windRose'+options.siteLabel+options.heightLabel"></div>
         </el-card>
       </div>
@@ -83,14 +84,14 @@ export default {
   data() {
     return {
       //筛选框的数据
-      siteOptions: [],
-      heightOptions: [],
-      siteValue: [],
-      heightValue: [],
-      dateValue: null,
+      siteOptions: [], //所有的site选项
+      heightOptions: [], //所有的height选项
+      siteValue: [], //选择的site选项的value值
+      heightValue: [], //选择的height选项的value值
+      dateValue: null, //选择的日期范围
       //所有的echarts玫瑰图
       range: [0, 3, 5, 7, 9, 11, 13, 15], //要画的风速区间
-      vforList: [], //为了一个v-for就能遍历
+      vforList: [], //为了一个v-for就能遍历（不然嵌套v-for会导致每个site的几张图为一组，不同site的组中间会换行）
       echartsList: null, //存放所有echarts实例方便redraw
       //风速分布弹窗的数据
       dialogVisible: false,
@@ -101,6 +102,24 @@ export default {
   watch: {
     dateValue() {
       this.redrawRose()
+    },
+  },
+  computed: {
+    isHeightInSelectedSite() {
+      //用于判断传入的高度选项是否在选中的site里
+      return function (heightLable) {
+        if (this.siteValue.length === 0) return true
+        let status = false
+        for (let i = 0; i < this.siteValue.length; i++) {
+          if (
+            this.siteAndHeight[this.siteValue[i]].height.indexOf(
+              heightLable
+            ) !== -1
+          )
+            status = true
+        }
+        return status
+      }
     },
   },
   methods: {
@@ -124,37 +143,26 @@ export default {
     fetchFilterData() {
       getSiteAndHeight().then((res) => {
         //获取筛选框的站点和高度数据
-        var siteOptions = res.data.map((item) => item.site)
-        var heightOptions = []
+        this.siteAndHeight = res.data
+        this.siteOptions = res.data.map((item) => item.site)
+        this.heightOptions = []
         res.data.forEach((siteObj) => {
           siteObj.height.forEach((heightObj) => {
-            if (heightOptions.indexOf(heightObj) === -1) {
-              heightOptions.push(heightObj)
+            if (this.heightOptions.indexOf(heightObj) === -1) {
+              this.heightOptions.push(heightObj)
             }
           })
         })
-        siteOptions.forEach((element, index) => {
-          this.siteOptions.push({
-            value: index + 1,
-            label: element,
-          })
-        })
-        heightOptions.forEach((element) => {
-          this.heightOptions.push({
-            value: this.heightOptions.length + 1,
-            label: element,
-          })
-        })
+
         //根据每个测风塔有的高度数据生成v-for要用到的数组
         res.data.forEach((siteObj, siteIndex) => {
           siteObj.height.forEach((heightObj) => {
             this.vforList.push({
               value: this.vforList.length,
               siteLabel: siteObj.site,
-              siteValue: siteIndex + 1,
+              siteValue: siteIndex,
               heightLabel: heightObj,
-              // heightValue: heightIndex + 1,
-              heightValue: heightOptions.indexOf(heightObj) + 1,
+              heightValue: this.heightOptions.indexOf(heightObj),
               loading: true,
             })
           })
@@ -188,12 +196,11 @@ export default {
         post4WDData(data)
           .then((res) => {
             var roseData = res.data
-            this.echartsList[item.siteValue - 1][item.heightValue - 1] =
-              echarts.init(
-                document.getElementById(
-                  'windRose' + item.siteLabel + item.heightLabel
-                )
+            this.echartsList[item.siteValue][item.heightValue] = echarts.init(
+              document.getElementById(
+                'windRose' + item.siteLabel + item.heightLabel
               )
+            )
             var seriesData = []
             var color = []
             //极坐标堆叠图的数据是从正北方向顺时针排布
@@ -292,11 +299,9 @@ export default {
               },
             }
 
-            this.echartsList[item.siteValue - 1][
-              item.heightValue - 1
-            ].setOption(option)
+            this.echartsList[item.siteValue][item.heightValue].setOption(option)
             item.loading = false
-            this.echartsList[item.siteValue - 1][item.heightValue - 1].on(
+            this.echartsList[item.siteValue][item.heightValue].on(
               'click',
               (params) => {
                 const dirList = [
@@ -385,15 +390,14 @@ export default {
               }
 
               var option =
-                this.echartsList[ele.siteValue - 1][
-                  ele.heightValue - 1
-                ].getOption()
+                this.echartsList[ele.siteValue][ele.heightValue].getOption()
               option.series = seriesData
               option.color = color
 
-              this.echartsList[ele.siteValue - 1][
-                ele.heightValue - 1
-              ].setOption(option, { notMerge: true })
+              this.echartsList[ele.siteValue][ele.heightValue].setOption(
+                option,
+                { notMerge: true }
+              )
               ele.loading = false
             })
             .catch((e) => {
