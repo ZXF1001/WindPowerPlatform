@@ -79,26 +79,29 @@ export default {
     initMap() {
       var baseLayers = []
       // 从底图列表baseLayers.json文件中读取底图
-      baseLayersData.forEach((element) => {
-        if ('annotationUrl' in element) {
+      for (let i = 0; i < baseLayersData.length; i++) {
+        if ('annotationUrl' in baseLayersData[i]) {
           //底图的标注annotation也要加进来
-          var map = L.tileLayer(element.url, {
-            minZoom: element.minZoom,
-            maxZoom: element.maxZoom,
+          var map = L.tileLayer(baseLayersData[i].url, {
+            minZoom: baseLayersData[i].minZoom,
+            maxZoom: baseLayersData[i].maxZoom,
           })
-          var annotation = L.tileLayer(element.annotationUrl, {
-            minZoom: element.minZoom,
-            maxZoom: element.maxZoom,
+          var annotation = L.tileLayer(baseLayersData[i].annotationUrl, {
+            minZoom: baseLayersData[i].minZoom,
+            maxZoom: baseLayersData[i].maxZoom,
           })
-          baseLayers[element.name] = L.layerGroup([map, annotation])
+          baseLayers[baseLayersData[i].name] = L.layerGroup([map, annotation])
         } else {
           //没有annotation就不用考虑组成图层组
-          baseLayers[element.name] = L.tileLayer(element.url, {
-            minZoom: element.minZoom,
-            maxZoom: element.maxZoom,
-          })
+          baseLayers[baseLayersData[i].name] = L.tileLayer(
+            baseLayersData[i].url,
+            {
+              minZoom: baseLayersData[i].minZoom,
+              maxZoom: baseLayersData[i].maxZoom,
+            }
+          )
         }
-      })
+      }
 
       this.map = L.map('map', {
         //参考坐标系
@@ -232,27 +235,27 @@ export default {
         //把数据库返回的零散数据按集群id整合
         var clusterIdList = []
         var data = []
-        res.data.forEach((turbineItem) => {
-          if (clusterIdList.indexOf(turbineItem.cluster_id) == -1) {
-            clusterIdList.push(turbineItem.cluster_id)
-            this.clusterOptions.push(turbineItem.cluster_name)
-            this.checkedClusters.push(turbineItem.cluster_name)
+        for (let i = 0; i < res.data.length; i++) {
+          if (clusterIdList.indexOf(res.data[i].cluster_id) == -1) {
+            clusterIdList.push(res.data[i].cluster_id)
+            this.clusterOptions.push(res.data[i].cluster_name)
+            this.checkedClusters.push(res.data[i].cluster_name)
             data.push({
-              cluster_id: turbineItem.cluster_id,
-              cluster_name: turbineItem.cluster_name,
+              cluster_id: res.data[i].cluster_id,
+              cluster_name: res.data[i].cluster_name,
               turbine: [],
             })
           }
           var index = data.findIndex(
-            (item) => item.cluster_id == turbineItem.cluster_id
+            (item) => item.cluster_id == res.data[i].cluster_id
           )
           data[index].turbine.push({
-            turbine_id: turbineItem.turbine_id,
-            lat: turbineItem.lat,
-            lng: turbineItem.lng,
-            height: turbineItem.height,
+            turbine_id: res.data[i].turbine_id,
+            lat: res.data[i].lat,
+            lng: res.data[i].lng,
+            height: res.data[i].height,
           })
-        })
+        }
         this.loading = false
         return data
       }
@@ -269,19 +272,23 @@ export default {
               iconAnchor: [12, 12],
               popupAnchor: [0, -15],
             })
-            cluster.turbine.forEach((turbine) => {
-              var tempMarker = L.marker([turbine.lat, turbine.lng], {
-                icon: icon,
-              })
-              var popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
+            for (let i = 0; i < cluster.turbine.length; i++) {
+              var tempMarker = L.marker(
+                [cluster.turbine[i].lat, cluster.turbine[i].lng],
+                {
+                  icon: icon,
+                }
+              )
+              var popupContent = `<span>风力机编号：${cluster.turbine[i].turbine_id}</span><br>
                                   <span>所属集群：${cluster.cluster_name}</span><br>
-                                  <span>经度：${turbine.lng}</span><br>
-                                  <span>纬度：${turbine.lat}</span><br>
-                                  <span>高程：${turbine.height}</span>`
+                                  <span>经度：${cluster.turbine[i].lng}</span><br>
+                                  <span>纬度：${cluster.turbine[i].lat}</span><br>
+                                  <span>高程：${cluster.turbine[i].height}</span>`
 
               tempMarker.bindPopup(popupContent)
               markerList.push(tempMarker)
-            })
+            }
+
             var templayerGroup = L.canvasMarkerLayer({
               collisionFlg: false, // 碰撞检测
             }).addTo(this.map)

@@ -172,8 +172,6 @@ export default {
         const hh0 = this.userDefinedTimeRangeValue[0].getHours()
         const hh1 = this.userDefinedTimeRangeValue[1].getHours()
         return YY0 === YY1 && MM0 === MM1 && DD0 === DD1 && hh0 === hh1
-          ? true
-          : false
       } else {
         return true
       }
@@ -187,7 +185,7 @@ export default {
         const MM1 = this.userDefinedTimeRangeValue[1].getMonth() + 1
         const DD0 = this.userDefinedTimeRangeValue[0].getDate()
         const DD1 = this.userDefinedTimeRangeValue[1].getDate()
-        return YY0 === YY1 && MM0 === MM1 && DD0 === DD1 ? true : false
+        return YY0 === YY1 && MM0 === MM1 && DD0 === DD1
       } else {
         return true
       }

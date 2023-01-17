@@ -205,15 +205,15 @@ export default {
       }
       var tempList = []
       //时间列表获取
-      this.hourlyWeather.forEach((element) => {
-        let time = new Date(element.fxTime)
+      for (let i = 0; i < this.hourlyWeather.length; i++) {
+        let time = new Date(this.hourlyWeather[i].fxTime)
         let chartTime = dateFormatter(time, 'typical')
 
         tempList.push({
           name: time.toString(),
-          value: [chartTime, element.temp],
+          value: [chartTime, this.hourlyWeather[i].temp],
         })
-      })
+      }
       this.Techart.setOption({
         series: {
           data: tempList,
@@ -273,14 +273,14 @@ export default {
 
       var humidList = []
       //时间列表获取
-      this.hourlyWeather.forEach((element) => {
-        let time = new Date(element.fxTime)
+      for (let i = 0; i < this.hourlyWeather.length; i++) {
+        let time = new Date(this.hourlyWeather[i].fxTime)
         let chartTime = dateFormatter(time, 'typical')
         humidList.push({
           name: time.toString(),
-          value: [chartTime, element.humidity],
+          value: [chartTime, this.hourlyWeather[i].humidity],
         })
-      })
+      }
 
       this.Hechart.setOption({
         series: {
@@ -345,18 +345,18 @@ export default {
       }
 
       var windList = []
-      this.hourlyWeather.forEach((element) => {
-        let time = new Date(element.fxTime)
+      for (let i = 0; i < this.hourlyWeather.length; i++) {
+        let time = new Date(this.hourlyWeather[i].fxTime)
         let chartTime = dateFormatter(time, 'typical')
         windList.push({
           name: time.toString(),
           value: [
             chartTime,
-            (element.windSpeed / 3.6).toFixed(1),
-            element.wind360,
+            (this.hourlyWeather[i].windSpeed / 3.6).toFixed(1),
+            this.hourlyWeather[i].wind360,
           ],
         })
-      })
+      }
 
       this.Wechart.setOption({
         series: {

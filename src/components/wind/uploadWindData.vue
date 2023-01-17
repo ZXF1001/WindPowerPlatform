@@ -67,6 +67,7 @@
                 </template>
 
               </el-table-column>
+
             </el-table>
           </div>
         </el-col>
@@ -450,16 +451,13 @@ export default {
             throw '缺少日期时间字段'
           }
         }
-
         //检验是否有空的高度行
         this.multipleSelection.forEach((element) => {
           if (
             element.typeOptions[0] === 'v' ||
             element.typeOptions[0] === 'deg'
           ) {
-            if (element.height === null) {
-              throw '请输入高度'
-            }
+            if (element.height === null) throw '请输入高度'
           }
         })
         //检验完毕，没有错误就上传
