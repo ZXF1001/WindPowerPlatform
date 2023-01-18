@@ -44,17 +44,16 @@ export default {
         },
         series: [],
       }
-      echarts1.setOption(option)
+      // echarts1.setOption(option)
       window.onresize = () => {
         echarts1.resize()
       }
 
       //创建完echarts后建立ws连接
       this.ws = connectWS('/turbines/get-powers', (res) => {
-        let chartOption = echarts1.getOption()
-        if (chartOption.series.length === 0) {
-          // 如果是第一次收到数据，全部更新到echarts上
-          let seriesData = new Array(res.length)
+        let seriesData = new Array(res.length)
+        if (res[0].data.length > 1) {
+          //表示接收到的是整个序列数据
           for (let i = 0; i < res.length; i++) {
             var lineData = new Array(res[0].data.length)
             for (let j = 0; j < res[i].data.length; j++) {
@@ -76,24 +75,22 @@ export default {
               smooth: true,
             }
           }
-          chartOption.series = seriesData
-
-          this.loading = false
+          option.series = seriesData
         } else {
-          // 如果不是第一次收到数据，把最新一组数据更新到echarts上
-          for (let i = 0; i < chartOption.series.length; i++) {
-            chartOption.series[i].data.shift()
-            var latestData = res[i].data[res[i].data.length - 1]
-            chartOption.series[i].data.push({
-              name: new Date(latestData.date),
+          //表示接收到的是更新的单条数据
+          for (let i = 0; i < res.length; i++) {
+            option.series[i].data.shift()
+            option.series[i].data.push({
+              name: new Date(res[i].data[0].date),
               value: [
-                dateFormatter(new Date(latestData.date), 'typical'),
-                latestData.power,
+                dateFormatter(new Date(res[i].data[0].date), 'typical'),
+                res[i].data[0].power,
               ],
             })
           }
         }
-        echarts1.setOption(chartOption)
+        echarts1.setOption(option)
+        this.loading = false
       })
     },
   },

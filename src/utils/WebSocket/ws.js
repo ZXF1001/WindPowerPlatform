@@ -25,7 +25,7 @@ function initWS(url, _callback) {
   };
   websocket.onerror = function (e) {
     console.log(e);
-    alert("ws连接出错");
+    console.log("ws连接出错");
   };
   websocket.onclose = function (e) {
     wsOnClose(e, websocket, pingTimer, url, _callback);
@@ -43,7 +43,7 @@ function wsOnMessage(e, _callback) {
   _callback(data);
 }
 function wsOnClose(e, _ws, _pingTimer, url, _callback) {
-  // 令人心碎的对象耦合，但是水平有限只好将就这么写了
+  // 令人心碎的耦合，但是水平有限只好将就这么写了
   console.log("ws连接断开");
   console.log(e);
   if (_pingTimer) {
@@ -65,7 +65,7 @@ function wsOnClose(e, _ws, _pingTimer, url, _callback) {
 function wsPing(_ws, interval) {
   let pingTimer = setInterval(() => {
     if (_ws.readyState === _ws.OPEN) {
-      // 连接已建立
+      // 如果连接已建立
       _ws.send("ping");
       console.log("ping");
     } else if (_ws.readyState === _ws.CLOSED || !_ws) {
