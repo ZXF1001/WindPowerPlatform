@@ -146,27 +146,32 @@ export default {
         this.siteAndHeight = res.data
         this.siteOptions = res.data.map((item) => item.site)
         this.heightOptions = []
-        res.data.forEach((siteObj) => {
-          siteObj.height.forEach((heightObj) => {
+        for (let i = 0; i < res.data.length; i++) {
+          const siteObj = res.data[i]
+          for (let j = 0; j < siteObj.height.length; j++) {
+            const heightObj = siteObj.height[j]
             if (this.heightOptions.indexOf(heightObj) === -1) {
               this.heightOptions.push(heightObj)
             }
-          })
-        })
+          }
+        }
 
         //根据每个测风塔有的高度数据生成v-for要用到的数组
-        res.data.forEach((siteObj, siteIndex) => {
-          siteObj.height.forEach((heightObj) => {
+        for (let i = 0; i < res.data.length; i++) {
+          const siteObj = res.data[i]
+          for (let j = 0; j < siteObj.height.length; j++) {
+            const heightObj = siteObj.height[j]
             this.vforList.push({
               value: this.vforList.length,
               siteLabel: siteObj.site,
-              siteValue: siteIndex,
+              siteValue: i,
               heightLabel: heightObj,
               heightValue: this.heightOptions.indexOf(heightObj),
               loading: true,
             })
-          })
-        })
+          }
+        }
+
         //初始化echarts的列表
         this.echartsList = new Array(this.siteOptions.length)
         for (var i = 0; i < this.siteOptions.length; i++) {
@@ -215,9 +220,11 @@ export default {
               }
 
               var barData = []
-              roseData[key].forEach((dirData) => {
+              for (let i = 0; i < roseData[key].length; i++) {
+                const dirData = roseData[key][i]
                 barData[dirData.direction] = dirData.frequency
-              })
+              }
+
               if (roseData[key].length != 0) {
                 seriesData.push({
                   animationDuration: 0,
@@ -373,9 +380,10 @@ export default {
                   color.push(colorBar[index])
                 }
                 var barData = []
-                roseData[key].forEach((dirData) => {
+                for (let i = 0; i < roseData[key].length; i++) {
+                  const dirData = roseData[key][i]
                   barData[dirData.direction] = dirData.frequency
-                })
+                }
                 if (roseData[key].length != 0) {
                   seriesData.push({
                     animationDuration: 0,

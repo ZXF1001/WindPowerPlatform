@@ -256,27 +256,31 @@ export default {
         this.siteAndHeight = res.data
         this.siteOptions = res.data.map((item) => item.site)
         this.heightOptions = []
-        res.data.forEach((siteObj) => {
-          siteObj.height.forEach((heightObj) => {
-            if (this.heightOptions.indexOf(heightObj) === -1) {
-              this.heightOptions.push(heightObj)
+
+        for (let i = 0; i < res.data.length; i++) {
+          let siteObj = res.data[i]
+          for (let j = 0; j < siteObj.height.length; j++) {
+            if (this.heightOptions.indexOf(siteObj.height[j]) === -1) {
+              this.heightOptions.push(siteObj.height[j])
             }
-          })
-        })
+          }
+        }
 
         //根据每个测风塔有的高度数据生成v-for要用到的数组
-        res.data.forEach((siteObj, siteIndex) => {
-          siteObj.height.forEach((heightObj) => {
+        for (let i = 0; i < res.data.length; i++) {
+          let siteObj = res.data[i]
+          for (let j = 0; j < siteObj.height.length; j++) {
             this.vforList.push({
               value: this.vforList.length,
               siteLabel: siteObj.site,
-              siteValue: siteIndex,
-              heightLabel: heightObj,
-              heightValue: this.heightOptions.indexOf(heightObj),
+              siteValue: i,
+              heightLabel: siteObj.height[j],
+              heightValue: this.heightOptions.indexOf(siteObj.height[j]),
               loading: true,
             })
-          })
-        })
+          }
+        }
+
         //初始化echarts的列表
         this.echartsList = new Array(this.siteOptions.length)
         for (var i = 0; i < this.siteOptions.length; i++) {
@@ -309,7 +313,7 @@ export default {
         data.dateEnd = dateFormatter(datetimes[1], 'typical')
         data.granularity = this.granularityRadio
       }
-      //遍历获取数据并画图
+      //遍历并并行获取数据绘图
       this.vforList.forEach((item) => {
         data.site = item.siteLabel
         data.height = item.heightLabel
@@ -360,7 +364,9 @@ export default {
             var avgData = []
             if ('maxSpeed' in res.data[0]) var maxData = []
             if ('minSpeed' in res.data[0]) var minData = []
-            res.data.forEach((item) => {
+
+            for (let i = 0; i < res.data.length; i++) {
+              let item = res.data[i]
               var time = new Date(item.chartTime)
               var chartTime = dateFormatter(time, 'typical')
               avgData.push({
@@ -379,7 +385,8 @@ export default {
                   value: [chartTime, item.minSpeed],
                 })
               }
-            })
+            }
+
             if ('maxSpeed' in res.data[0]) {
               option.series.push({
                 name: '最大风速',

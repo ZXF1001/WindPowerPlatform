@@ -82,7 +82,9 @@ export default {
     initMap() {
       var baseLayers = []
       // 从底图列表baseLayers.json文件中读取底图
-      baseLayersData.forEach((element) => {
+      for (let i = 0; i < baseLayersData.length; i++) {
+        let element = baseLayersData[i]
+
         if ('annotationUrl' in element) {
           //底图的标注annotation也要加进来
           var map = L.tileLayer(element.url, {
@@ -101,7 +103,7 @@ export default {
             maxZoom: element.maxZoom,
           })
         }
-      })
+      }
 
       this.map = L.map('map', {
         //参考坐标系
@@ -238,7 +240,9 @@ export default {
         //把数据库返回的零散数据按集群id整合
         var clusterIdList = []
         var data = []
-        res.data.forEach((turbineItem) => {
+
+        for (let i = 0; i < res.data.length; i++) {
+          let turbineItem = res.data[i]
           if (clusterIdList.indexOf(turbineItem.cluster_id) == -1) {
             clusterIdList.push(turbineItem.cluster_id)
             this.clusterOptions.push(turbineItem.cluster_name)
@@ -258,7 +262,8 @@ export default {
             lng: turbineItem.lng,
             height: turbineItem.height,
           })
-        })
+        }
+
         this.loading = false
         return data
       }
@@ -275,7 +280,8 @@ export default {
               iconAnchor: [12, 12],
               popupAnchor: [0, -15],
             })
-            cluster.turbine.forEach((turbine) => {
+            for (let i = 0; i < cluster.turbine.length; i++) {
+              const turbine = cluster.turbine[i]
               var tempMarker = L.marker([turbine.lat, turbine.lng], {
                 icon: icon,
               })
@@ -287,7 +293,8 @@ export default {
 
               tempMarker.bindPopup(popupContent)
               markerList.push(tempMarker)
-            })
+            }
+
             var templayerGroup = L.canvasMarkerLayer({
               collisionFlg: false, // 碰撞检测
             }).addTo(this.map)

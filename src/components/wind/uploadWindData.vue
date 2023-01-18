@@ -366,23 +366,23 @@ export default {
       this.tableData = []
       this.headerListData = []
       if (this.jsonData.length > 0) {
-        jsonData[0].forEach((element, index) => {
+        for (let i = 0; i < jsonData[0].length; i++) {
           this.headerData.push({
-            prop: index.toString(),
-            label: this.firstLineAsHeader ? element : index.toString(),
+            prop: i.toString(),
+            label: this.firstLineAsHeader ? jsonData[0][i] : i.toString(),
           })
           this.headerListData.push({
-            index: index,
-            dataHeader: this.firstLineAsHeader ? element : index.toString(),
+            index: i,
+            dataHeader: this.firstLineAsHeader ? jsonData[0][i] : i.toString(),
             typeOptions: null,
             height: null,
           })
-        })
+        }
         for (let i = this.firstLineAsHeader ? 1 : 0; i < jsonData.length; i++) {
           var tableRecord = {}
-          jsonData[i].forEach((record, index) => {
-            tableRecord[this.headerData[index].prop] = record
-          })
+          for (let j = 0; j < jsonData[i].length; j++) {
+            tableRecord[this.headerData[j].prop] = jsonData[i][j]
+          }
           this.tableData.push(tableRecord)
         }
       }
@@ -464,7 +464,7 @@ export default {
 
         var uploadData = []
         //上传的时候把字段格式改成规范的形式（如70m_v_avg）
-        data.forEach((line) => {
+        for (let i = 0; i < data.length; i++) {
           var tempRecord = {}
           fieldData.forEach((field) => {
             //如果是速度/角度字段,前面要加上高度
@@ -474,13 +474,14 @@ export default {
             ) {
               tempRecord[
                 `${field.height}m_${field.typeOptions[0]}_${field.typeOptions[1]}`
-              ] = line[field.index]
+              ] = data[i][field.index]
             } else {
-              tempRecord[field.typeOptions[1]] = line[field.index]
+              tempRecord[field.typeOptions[1]] = data[i][field.index]
             }
           })
           uploadData.push(tempRecord)
-        })
+        }
+
         //创建数据表
         createTable({ site: this.siteInfo, data: uploadData[0] })
           .then(async () => {

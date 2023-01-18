@@ -39,14 +39,14 @@ export default {
           var maxV = 0
           var minV = 0
           var countSum = 0
-
-          res.data.forEach((range) => {
+          for (let i = 0; i < res.data.length; i++) {
+            const range = res.data[i]
             maxV =
               parseInt(range.rangeStart) > maxV
                 ? parseInt(range.rangeStart)
                 : maxV
             countSum += parseInt(range.count)
-          })
+          }
 
           if (maxV >= colorBar.length) {
             for (let i = 0; i < maxV + 1; i++) {
@@ -57,9 +57,11 @@ export default {
           var seriesData = []
 
           var countList = new Array(maxV - minV + 1).fill(0)
-          res.data.forEach((range) => {
+          for (let i = 0; i < res.data.length; i++) {
+            const range = res.data[i]
             countList[parseInt(range.rangeStart)] = parseInt(range.count)
-          })
+          }
+
           for (let i = 0; i < maxV - minV + 1; i++) {
             seriesData.push([i + delta / 2, countList[i] / countSum])
           }
