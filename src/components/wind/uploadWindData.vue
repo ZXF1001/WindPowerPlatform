@@ -103,7 +103,7 @@
 
 <script>
 import { createTable, upload2DB } from '@/api/wind/uploadData'
-import readCSV from '@/utils/readCSV'
+import readLocalCSV from '@/utils/readCSV'
 export default {
   data() {
     return {
@@ -340,9 +340,10 @@ export default {
       //把选择的csv文件显示在页面上
       this.fileName = this.$refs.upload.uploadFiles[0].name
       this.siteInfo = this.fileName.split('.')[0]
-      var selectedFile = this.$refs.upload.uploadFiles[0].raw
+      let selectedFile = this.$refs.upload.uploadFiles[0].raw
+
       try {
-        readCSV(selectedFile, (res) => {
+        readLocalCSV(selectedFile, (res) => {
           let data = res.data
           if (data[data.length - 1] == '') {
             //去除最后的空行
