@@ -29,10 +29,10 @@
 </template>
 <style lang="less" scoped>
 .el-col {
+  @height: calc(100vh - 65px);
   width: 100%;
-
   .menu {
-    height: calc(100vh - 65px);
+    height: @height;
     h4 {
       text-align: center;
     }
@@ -42,7 +42,7 @@
   }
   .menu:not(.el-menu--collapse) {
     width: 160px;
-    height: calc(100vh - 65px);
+    height: @height;
   }
   .collapseWrap {
     text-align: center;
@@ -61,14 +61,12 @@ export default {
           name: 'main',
           label: '总览',
           icon: 'el-icon-data-line',
-          url: 'Overview/Overview',
         },
         {
           path: '/wind',
           name: 'wind',
           label: '风资源',
           icon: 'el-icon-partly-cloudy',
-          url: 'Wind/Wind',
         },
         {
           path: '/terrain',
@@ -82,35 +80,30 @@ export default {
           name: 'simulation',
           label: '尾流仿真',
           icon: 'el-icon-wind-power',
-          url: 'Simulation/Simulation',
         },
         {
           path: '/optimize',
           name: 'optimize',
           label: '优化操作',
           icon: 'el-icon-odometer',
-          url: 'Optimize/Optimize',
         },
         {
           path: '/single',
           name: 'single',
           label: '单机管理',
           icon: 'el-icon-document',
-          url: 'Single/Single',
         },
         {
           path: '/cluster',
           name: 'cluster',
           label: '集群管理',
           icon: 'el-icon-document',
-          url: 'Cluster/Cluster',
         },
         {
           path: '/people',
           name: 'people',
           label: '人员管理',
           icon: 'el-icon-document',
-          url: 'People/People',
         },
       ],
     }
@@ -118,9 +111,9 @@ export default {
   methods: {
     changeCollapse() {
       this.$store.commit('COLLAPSE_MENU')
-      this.collapseIcon = ['el-icon-arrow-left', 'el-icon-arrow-right'][
-        Number(this.isCollapse)
-      ]
+      this.collapseIcon = this.isCollapse
+        ? 'el-icon-arrow-right'
+        : 'el-icon-arrow-left'
     },
     clickMenu: function (item) {
       if (this.$route.path !== item.path) {
