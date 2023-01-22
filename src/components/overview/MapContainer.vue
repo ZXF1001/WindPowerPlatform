@@ -69,7 +69,7 @@ export default {
     },
     handleCheckedClustersChange(value) {
       // 传入的是一个选中项目的Array
-      var checkedCount = value.length
+      const checkedCount = value.length
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
@@ -77,16 +77,16 @@ export default {
     },
     // 挂载后初始化地图并加载标记
     initMap() {
-      var baseLayers = []
+      const baseLayers = []
       // 从底图列表baseLayers.json文件中读取底图
       for (let i = 0; i < baseLayersData.length; i++) {
         if ('annotationUrl' in baseLayersData[i]) {
           //底图的标注annotation也要加进来
-          var map = L.tileLayer(baseLayersData[i].url, {
+          const map = L.tileLayer(baseLayersData[i].url, {
             minZoom: baseLayersData[i].minZoom,
             maxZoom: baseLayersData[i].maxZoom,
           })
-          var annotation = L.tileLayer(baseLayersData[i].annotationUrl, {
+          const annotation = L.tileLayer(baseLayersData[i].annotationUrl, {
             minZoom: baseLayersData[i].minZoom,
             maxZoom: baseLayersData[i].maxZoom,
           })
@@ -114,7 +114,7 @@ export default {
         preferCanvas: true,
       })
       // 定义图层控件
-      var layerControl = L.control
+      const layerControl = L.control
         .layers(
           baseLayers,
           {},
@@ -173,19 +173,19 @@ export default {
     drawStream(layerControlObj, windData) {
       //封装的绘制风场流场方法，windData有格式要求
       const n = windData[0].header.nx * windData[0].header.ny //网格数
-      var minMag = Math.sqrt(
+      let minMag = Math.sqrt(
         Math.pow(windData[0].data[0], 2) + Math.pow(windData[1].data[0], 2)
       )
-      var maxMag = 0
-      var mag = 0
-      for (var i = 0; i < n; i++) {
+      let maxMag = 0
+      let mag = 0
+      for (let i = 0; i < n; i++) {
         mag = Math.sqrt(
           Math.pow(windData[0].data[i], 2) + Math.pow(windData[1].data[i], 2)
         )
         minMag = mag < minMag ? mag : minMag
         maxMag = mag > maxMag ? mag : maxMag
       }
-      var velocityLayer1 = L.velocityLayer({
+      const velocityLayer1 = L.velocityLayer({
         displayValues: true,
         displayOptions: {
           velocityType: '',
@@ -211,7 +211,7 @@ export default {
       const velocityName = '风场流线'
       layerControlObj.addOverlay(velocityLayer1, velocityName)
       // <<这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来
-      var streamlineSelected = true
+      let streamlineSelected = true
       this.map.on('overlayremove', (event) => {
         if (event.name === velocityName) {
           streamlineSelected = false
@@ -231,10 +231,10 @@ export default {
       // 这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来>>
     },
     drawMarker() {
-      var groupByCluster = (res) => {
+      const groupByCluster = (res) => {
         //把数据库返回的零散数据按集群id整合
-        var clusterIdList = []
-        var data = []
+        const clusterIdList = []
+        const data = []
         for (let i = 0; i < res.data.length; i++) {
           if (clusterIdList.indexOf(res.data[i].cluster_id) == -1) {
             clusterIdList.push(res.data[i].cluster_id)
@@ -246,7 +246,7 @@ export default {
               turbine: [],
             })
           }
-          var index = data.findIndex(
+          const index = data.findIndex(
             (item) => item.cluster_id == res.data[i].cluster_id
           )
           data[index].turbine.push({
@@ -261,25 +261,25 @@ export default {
       }
       getMyTurbineData()
         .then((res) => {
-          var data = groupByCluster(res)
-          var Icons = importAllSVG()
+          const data = groupByCluster(res)
+          const Icons = importAllSVG()
           this.layerGroup = []
           data.forEach((cluster, index) => {
-            var markerList = []
-            var icon = L.icon({
+            const markerList = []
+            const icon = L.icon({
               iconUrl: Icons[index],
               iconSize: [24, 24],
               iconAnchor: [12, 12],
               popupAnchor: [0, -15],
             })
             for (let i = 0; i < cluster.turbine.length; i++) {
-              var tempMarker = L.marker(
+              const tempMarker = L.marker(
                 [cluster.turbine[i].lat, cluster.turbine[i].lng],
                 {
                   icon: icon,
                 }
               )
-              var popupContent = `<span>风力机编号：${cluster.turbine[i].turbine_id}</span><br>
+              const popupContent = `<span>风力机编号：${cluster.turbine[i].turbine_id}</span><br>
                                   <span>所属集群：${cluster.cluster_name}</span><br>
                                   <span>经度：${cluster.turbine[i].lng}</span><br>
                                   <span>纬度：${cluster.turbine[i].lat}</span><br>
@@ -289,7 +289,7 @@ export default {
               markerList.push(tempMarker)
             }
 
-            var templayerGroup = L.canvasMarkerLayer({
+            const templayerGroup = L.canvasMarkerLayer({
               collisionFlg: false, // 碰撞检测
             }).addTo(this.map)
             templayerGroup.addLayers(markerList)

@@ -109,16 +109,16 @@ export default {
       //用于判断传入的高度选项是否在选中的site里
       return function (heightLable) {
         if (this.siteValue.length === 0) return true
-        let status = false
+
         for (let i = 0; i < this.siteValue.length; i++) {
           if (
             this.siteAndHeight[this.siteValue[i]].height.indexOf(
               heightLable
             ) !== -1
           )
-            status = true
+            return true
         }
-        return status
+        return false
       }
     },
   },
@@ -174,7 +174,7 @@ export default {
 
         //初始化echarts的列表
         this.echartsList = new Array(this.siteOptions.length)
-        for (var i = 0; i < this.siteOptions.length; i++) {
+        for (let i = 0; i < this.siteOptions.length; i++) {
           this.echartsList[i] = new Array(this.heightOptions.length)
         }
         this.$nextTick(() => {
@@ -183,8 +183,8 @@ export default {
       })
     },
     drawRoseData() {
-      var dateBegin = null
-      var dateEnd = null
+      let dateBegin = null
+      let dateEnd = null
       if (this.dateValue) {
         dateBegin = dateFormatter(this.dateValue[0], 'typical')
         dateEnd = dateFormatter(this.dateValue[1], 'typical')
@@ -200,18 +200,19 @@ export default {
 
         post4WDData(data)
           .then((res) => {
-            var roseData = res.data
+            const roseData = res.data
             this.echartsList[item.siteValue][item.heightValue] = echarts.init(
               document.getElementById(
                 'windRose' + item.siteLabel + item.heightLabel
               )
             )
-            var seriesData = []
-            var color = []
+            const seriesData = []
+            const color = []
             //极坐标堆叠图的数据是从正北方向顺时针排布
-            for (var key in roseData) {
+
+            for (const key in roseData) {
               if (roseData[key].length != 0) {
-                var index = Math.round(
+                const index = Math.round(
                   (this.range.indexOf(parseInt(key.split('-')[0])) /
                     (this.range.length - 1)) *
                     (colorBar.length - 1)
@@ -219,7 +220,7 @@ export default {
                 color.push(colorBar[index])
               }
 
-              var barData = []
+              const barData = []
               for (let i = 0; i < roseData[key].length; i++) {
                 const dirData = roseData[key][i]
                 barData[dirData.direction] = dirData.frequency
@@ -241,7 +242,7 @@ export default {
               }
             }
 
-            var option = {
+            const option = {
               color: color,
               // title: {
               //   text: `${item.siteLabel} ${item.heightLabel}风向玫瑰图`,
@@ -351,7 +352,7 @@ export default {
       this.vforList.forEach((item) => {
         item.loading = true
       })
-      var data = {
+      const data = {
         site: null,
         height: null,
         range: this.range,
@@ -367,19 +368,19 @@ export default {
           (data.height = ele.heightLabel),
           post4WDData(data)
             .then((res) => {
-              var color = []
-              var roseData = res.data
-              var seriesData = []
-              for (var key in roseData) {
+              const color = []
+              const roseData = res.data
+              const seriesData = []
+              for (const key in roseData) {
                 if (roseData[key].length != 0) {
-                  var index = Math.round(
+                  const index = Math.round(
                     (this.range.indexOf(parseInt(key.split('-')[0])) /
                       (this.range.length - 1)) *
                       (colorBar.length - 1)
                   )
                   color.push(colorBar[index])
                 }
-                var barData = []
+                const barData = []
                 for (let i = 0; i < roseData[key].length; i++) {
                   const dirData = roseData[key][i]
                   barData[dirData.direction] = dirData.frequency
@@ -397,7 +398,7 @@ export default {
                 }
               }
 
-              var option =
+              const option =
                 this.echartsList[ele.siteValue][ele.heightValue].getOption()
               option.series = seriesData
               option.color = color

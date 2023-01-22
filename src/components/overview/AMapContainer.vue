@@ -1,4 +1,5 @@
 <template>
+  <!-- 已弃用 -->
   <el-card class="map">
     <div v-loading="loading">
       <el-row>

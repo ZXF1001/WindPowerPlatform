@@ -30,7 +30,7 @@ export default {
     },
     fetchData() {
       readRemoteCSV('http://localhost:8080/example/DEM/2dDEM.csv', (res) => {
-        let jsonData = res.data
+        const jsonData = res.data
         if (jsonData[jsonData.length - 1] == '') {
           //去除最后的空行
           jsonData.pop()
@@ -38,7 +38,7 @@ export default {
         const width = jsonData[0].length //x方向数据数量
         const height = jsonData.length //z向数据数量
         // 创建y高度数据
-        let data = new Float32Array(width * height)
+        const data = new Float32Array(width * height)
         for (let i = 0; i < height; i++) {
           const rowData = jsonData[i]
           for (let j = 0; j < width; j++) {
@@ -52,7 +52,7 @@ export default {
       })
     },
     init(worldWidth, worldDepth, data) {
-      let that = this
+      const that = this
       const worldHalfWidth = worldWidth / 2,
         worldHalfDepth = worldDepth / 2
       this.container = document.getElementById('container')

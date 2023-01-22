@@ -108,9 +108,8 @@ export default {
   },
   methods: {
     returnHour(date) {
-      var dateObj = new Date(date)
-      var returnTime = dateObj.getHours()
-      return returnTime
+      const dateObj = new Date(date)
+      return dateObj.getHours()
     },
     draw24hWeather() {
       this.ws2 = connectWS('/weather/get-24h-weather', (res) => {
@@ -118,53 +117,30 @@ export default {
         this.drawTemp()
         this.drawHumid()
         this.drawWind()
-        var now = new Date(this.hourlyWeather[0].updateTime)
-        var Hour = now.getHours()
-        var Minute = now.getMinutes()
+        const now = new Date(this.hourlyWeather[0].updateTime)
+        const Hour = now.getHours()
+        const Minute = now.getMinutes()
         this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
           Minute < 10 ? '0' + Minute : Minute
         }`
       })
-      // this.ws2 = new WebSocket('ws://1.117.224.40/ws/weather/get-24h-weather')
-      // this.ws2.onmessage = (e) => {
-      //   this.hourlyWeather = JSON.parse(e.data)
-      //   this.drawTemp()
-      //   this.drawHumid()
-      //   this.drawWind()
-      //   var now = new Date(this.hourlyWeather[0].updateTime)
-      //   var Hour = now.getHours()
-      //   var Minute = now.getMinutes()
-      //   this.hourlyUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
-      //     Minute < 10 ? '0' + Minute : Minute
-      //   }`
-      // }
     },
     fetchNowWeather() {
       this.ws1 = connectWS('/weather/get-now-weather', (res) => {
         this.nowWeather = res
-        var now = new Date(this.nowWeather.obsTime)
-        var Hour = now.getHours()
-        var Minute = now.getMinutes()
+        const now = new Date(this.nowWeather.obsTime)
+        const Hour = now.getHours()
+        const Minute = now.getMinutes()
         this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
           Minute < 10 ? '0' + Minute : Minute
         }`
       })
-      // this.ws1 = new WebSocket('ws://1.117.224.40/ws/weather/get-now-weather')
-      // this.ws1.onmessage = (e) => {
-      //   this.nowWeather = JSON.parse(e.data)
-      //   var now = new Date(this.nowWeather.obsTime)
-      //   var Hour = now.getHours()
-      //   var Minute = now.getMinutes()
-      //   this.nowUpdateTime = `${Hour < 10 ? '0' + Hour : Hour}:${
-      //     Minute < 10 ? '0' + Minute : Minute
-      //   }`
-      // }
     },
     drawTemp() {
       //Echarts绘制温度折线图
       if (!this.Techart) {
         this.Techart = echarts.init(this.$refs.Techarts)
-        var option = {
+        const option = {
           color: '#ee6666',
           tooltip: {
             trigger: 'axis',
@@ -203,11 +179,11 @@ export default {
         }
         this.Techart.setOption(option)
       }
-      var tempList = []
+      const tempList = []
       //时间列表获取
       for (let i = 0; i < this.hourlyWeather.length; i++) {
-        let time = new Date(this.hourlyWeather[i].fxTime)
-        let chartTime = dateFormatter(time, 'typical')
+        const time = new Date(this.hourlyWeather[i].fxTime)
+        const chartTime = dateFormatter(time, 'typical')
 
         tempList.push({
           name: time.toString(),
@@ -224,7 +200,7 @@ export default {
       //Echarts绘制湿度折线图
       if (!this.Hechart) {
         this.Hechart = echarts.init(this.$refs.Hecharts)
-        var option = {
+        const option = {
           color: '#5470c6',
 
           tooltip: {
@@ -271,11 +247,11 @@ export default {
         this.Hechart.setOption(option)
       }
 
-      var humidList = []
+      const humidList = []
       //时间列表获取
       for (let i = 0; i < this.hourlyWeather.length; i++) {
-        let time = new Date(this.hourlyWeather[i].fxTime)
-        let chartTime = dateFormatter(time, 'typical')
+        const time = new Date(this.hourlyWeather[i].fxTime)
+        const chartTime = dateFormatter(time, 'typical')
         humidList.push({
           name: time.toString(),
           value: [chartTime, this.hourlyWeather[i].humidity],
@@ -294,7 +270,7 @@ export default {
     drawWind() {
       if (!this.Wechart) {
         this.Wechart = echarts.init(this.$refs.Wecharts)
-        var option = {
+        const option = {
           color: '#73c0de',
 
           tooltip: {
@@ -344,10 +320,10 @@ export default {
         this.Wechart.setOption(option)
       }
 
-      var windList = []
+      const windList = []
       for (let i = 0; i < this.hourlyWeather.length; i++) {
-        let time = new Date(this.hourlyWeather[i].fxTime)
-        let chartTime = dateFormatter(time, 'typical')
+        const time = new Date(this.hourlyWeather[i].fxTime)
+        const chartTime = dateFormatter(time, 'typical')
         windList.push({
           name: time.toString(),
           value: [

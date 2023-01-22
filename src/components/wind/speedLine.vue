@@ -258,7 +258,7 @@ export default {
         this.heightOptions = []
 
         for (let i = 0; i < res.data.length; i++) {
-          let siteObj = res.data[i]
+          const siteObj = res.data[i]
           for (let j = 0; j < siteObj.height.length; j++) {
             if (this.heightOptions.indexOf(siteObj.height[j]) === -1) {
               this.heightOptions.push(siteObj.height[j])
@@ -268,7 +268,7 @@ export default {
 
         //根据每个测风塔有的高度数据生成v-for要用到的数组
         for (let i = 0; i < res.data.length; i++) {
-          let siteObj = res.data[i]
+          const siteObj = res.data[i]
           for (let j = 0; j < siteObj.height.length; j++) {
             this.vforList.push({
               value: this.vforList.length,
@@ -283,7 +283,7 @@ export default {
 
         //初始化echarts的列表
         this.echartsList = new Array(this.siteOptions.length)
-        for (var i = 0; i < this.siteOptions.length; i++) {
+        for (let i = 0; i < this.siteOptions.length; i++) {
           this.echartsList[i] = new Array(this.heightOptions.length)
         }
         this.$nextTick(() => {
@@ -299,7 +299,7 @@ export default {
       const selectedIndex = this.timeRangeOptions.findIndex(
         (item) => item.value == this.timeRangeValue
       )
-      var data = {
+      const data = {
         site: null,
         height: null,
         type: this.timeRangeOptions[selectedIndex].type,
@@ -326,7 +326,7 @@ export default {
                 )
               )
             }
-            var option = {
+            const option = {
               color: ['#5470c6', '#73c0de', '#9fdede'],
               tooltip: {
                 trigger: 'axis',
@@ -361,14 +361,14 @@ export default {
               series: [],
             }
             // 判断最大/最小速度数据是否存在，若存在再画折线图
-            var avgData = []
+            const avgData = []
             if ('maxSpeed' in res.data[0]) var maxData = []
             if ('minSpeed' in res.data[0]) var minData = []
 
             for (let i = 0; i < res.data.length; i++) {
-              let item = res.data[i]
-              var time = new Date(item.chartTime)
-              var chartTime = dateFormatter(time, 'typical')
+              const item = res.data[i]
+              const time = new Date(item.chartTime)
+              const chartTime = dateFormatter(time, 'typical')
               avgData.push({
                 name: time.toString(),
                 value: [chartTime, item.speed],

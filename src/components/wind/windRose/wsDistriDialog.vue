@@ -20,7 +20,7 @@ export default {
   props: ['selectedSpan'],
   methods: {
     drawDistribute() {
-      var data = {
+      const data = {
         site: this.selectedSpan.siteLabel,
         height: this.selectedSpan.heightLabel,
         dir: this.selectedSpan.dirIndex,
@@ -36,9 +36,9 @@ export default {
       }
       post4WSData(data)
         .then((res) => {
-          var maxV = 0
-          var minV = 0
-          var countSum = 0
+          let maxV = 0
+          let minV = 0
+          let countSum = 0
           for (let i = 0; i < res.data.length; i++) {
             const range = res.data[i]
             maxV =
@@ -54,9 +54,9 @@ export default {
             }
           }
           const delta = 1 //表示单个速度范围的跨度，与后端一致
-          var seriesData = []
+          const seriesData = []
 
-          var countList = new Array(maxV - minV + 1).fill(0)
+          const countList = new Array(maxV - minV + 1).fill(0)
           for (let i = 0; i < res.data.length; i++) {
             const range = res.data[i]
             countList[parseInt(range.rangeStart)] = parseInt(range.count)
@@ -74,7 +74,7 @@ export default {
           //   '#fde725', //25-
           // ]
           this.distributeChart = echarts.init(this.$refs.distributeChart)
-          var option = {
+          const option = {
             color: colorBar,
             toolbox: {
               top: 0,
@@ -106,10 +106,9 @@ export default {
                 // formatter: 'some text {value} some text',
               },
               formatter: function (params) {
-                var str = `风速：${params[0].data[0] - delta / 2}-${
+                return `风速：${params[0].data[0] - delta / 2}-${
                   params[0].data[0] + delta / 2
                 } m/s<br>频率：${(100 * params[0].data[1]).toFixed(2)}%`
-                return str
               },
             },
             grid: {

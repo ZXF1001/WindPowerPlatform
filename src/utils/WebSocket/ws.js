@@ -4,7 +4,7 @@ const wsBaseURL = "ws://1.117.224.40/ws";
 export function connectWS(subURL, callback) {
   const url = [wsBaseURL, subURL].join("");
 
-  let ws = initWS(url, callback);
+  const ws = initWS(url, callback);
   return ws;
 }
 
@@ -15,7 +15,7 @@ function initWS(url, _callback) {
     return false;
   }
   let pingTimer = null;
-  let websocket = new WebSocket(url);
+  const websocket = new WebSocket(url);
   websocket.onmessage = function (e) {
     wsOnMessage(e, _callback);
   };
@@ -35,10 +35,11 @@ function initWS(url, _callback) {
 
 // 监听到消息的函数
 function wsOnMessage(e, _callback) {
+  let data;
   try {
-    var data = JSON.parse(e.data);
+    data = JSON.parse(e.data);
   } catch (error) {
-    var data = e.data;
+    data = e.data;
   }
   _callback(data);
 }

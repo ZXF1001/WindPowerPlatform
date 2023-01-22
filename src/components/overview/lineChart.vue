@@ -20,7 +20,7 @@ export default {
     fetchLinedata() {
       //先创建空数据的echarts，在ws持续更新数据
       const echarts1 = echarts.init(this.$refs.echarts1)
-      var option = {
+      const option = {
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -51,11 +51,11 @@ export default {
 
       //创建完echarts后建立ws连接
       this.ws = connectWS('/turbines/get-powers', (res) => {
-        let seriesData = new Array(res.length)
+        const seriesData = new Array(res.length)
         if (res[0].data.length > 1) {
           //表示接收到的是整个序列数据
           for (let i = 0; i < res.length; i++) {
-            var lineData = new Array(res[0].data.length)
+            const lineData = new Array(res[0].data.length)
             for (let j = 0; j < res[i].data.length; j++) {
               lineData[j] = {
                 name: new Date(res[i].data[j].date),

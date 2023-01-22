@@ -340,11 +340,11 @@ export default {
       //把选择的csv文件显示在页面上
       this.fileName = this.$refs.upload.uploadFiles[0].name
       this.siteInfo = this.fileName.split('.')[0]
-      let selectedFile = this.$refs.upload.uploadFiles[0].raw
+      const selectedFile = this.$refs.upload.uploadFiles[0].raw
 
       try {
         readLocalCSV(selectedFile, (res) => {
-          let data = res.data
+          const data = res.data
           if (data[data.length - 1] == '') {
             //去除最后的空行
             data.pop()
@@ -380,7 +380,7 @@ export default {
           })
         }
         for (let i = this.firstLineAsHeader ? 1 : 0; i < jsonData.length; i++) {
-          var tableRecord = {}
+          const tableRecord = {}
           for (let j = 0; j < jsonData[i].length; j++) {
             tableRecord[this.headerData[j].prop] = jsonData[i][j]
           }
@@ -400,7 +400,7 @@ export default {
       // ...]
       // 这样的形式
       try {
-        var data = JSON.parse(JSON.stringify(this.jsonData))
+        const data = JSON.parse(JSON.stringify(this.jsonData))
         if (this.firstLineAsHeader) {
           data.shift()
         }
@@ -411,7 +411,7 @@ export default {
           }
         })
 
-        var fieldData = JSON.parse(JSON.stringify(this.multipleSelection))
+        let fieldData = JSON.parse(JSON.stringify(this.multipleSelection))
         const fieldList = fieldData.map((item) => item.typeOptions[1])
         const datetimeExist = fieldList.indexOf('datetime') !== -1
         const dateExist = fieldList.indexOf('date') !== -1
@@ -432,14 +432,14 @@ export default {
               typeOptions: ['datetime', 'datetime'],
             })
             //找到时间日期所在的index,并合并加到dt字段
-            var indexOfDate = fieldData.filter(
+            const indexOfDate = fieldData.filter(
               (item) => item.typeOptions[1] === 'date'
             )[0].index
-            var indexOfTime = fieldData.filter(
+            const indexOfTime = fieldData.filter(
               (item) => item.typeOptions[1] === 'time'
             )[0].index
             data.forEach((line) => {
-              var datetime = `${line[indexOfDate]} ${line[indexOfTime]}`
+              const datetime = `${line[indexOfDate]} ${line[indexOfTime]}`
               line.push(datetime)
             })
             //删除字段表的d,t信息
@@ -463,10 +463,10 @@ export default {
         })
         //检验完毕，没有错误就上传
 
-        var uploadData = []
+        const uploadData = []
         //上传的时候把字段格式改成规范的形式（如70m_v_avg）
         for (let i = 0; i < data.length; i++) {
-          var tempRecord = {}
+          const tempRecord = {}
           fieldData.forEach((field) => {
             //如果是速度/角度字段,前面要加上高度
             if (
@@ -491,8 +491,8 @@ export default {
               const uploadNum = Math.ceil(uploadData.length / MAX_RECORD_NUM)
               console.log(`单次上传${MAX_RECORD_NUM}条`)
               this.uploadButtonDisabled = true
-              for (var i = 0; i < uploadNum; i++) {
-                var postData = {
+              for (let i = 0; i < uploadNum; i++) {
+                const postData = {
                   site: this.siteInfo,
                   data: uploadData.slice(
                     i * MAX_RECORD_NUM,
@@ -500,7 +500,7 @@ export default {
                   ),
                 }
 
-                var res = await upload2DB(postData)
+                const res = await upload2DB(postData)
                 console.log(res)
                 var totalNum = res.data.totalNum
 
