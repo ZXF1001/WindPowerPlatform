@@ -138,7 +138,7 @@ export default {
       const tiffUrl =
         // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
         // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
-        'http://1.117.224.40/geotiff/testout.tif'
+        'http://1.117.224.40/geotiff/test.tif'
 
       this.drawContour(layerControl, tiffUrl)
       this.drawStream(layerControl, data)
@@ -146,32 +146,29 @@ export default {
       this.drawMarker()
     },
     drawContour(layerControlObj, url) {
-      const rendererOptions = {
+      const renderer = new L.LeafletGeotiff.Plotty({
         band: 0,
         displayMin: 0,
-        displayMax: 5,
-        //todo 这里要加上自动识别范围的功能(x)
+        displayMax: 1,
+        //todo 这里要加上自动识别范围的功能（好像不加也可以，他是自动识别的）
         applyDisplayRange: true,
         clampLow: true,
-        clampHigh: true,
+        clampHigh: false,
         colorScale: 'viridis',
-      }
-
-      const renderer = new L.LeafletGeotiff.Plotty(rendererOptions)
+      })
       const option = {
-        renderer: renderer,
+        renderer,
         // bounds: [
         //   [40.7, 114],
         //   [41.8, 115.8],
         // ],
 
         useWorker: true,
-        noDataValue: -99,
+        noDataValue: -32768,
         sourceFunction: GeoTIFF.fromUrl,
         opacity: 0.75,
       }
       this.geolayer = L.leafletGeotiff(url, option)
-
       layerControlObj.addOverlay(this.geolayer, '风场云图')
     },
     drawStream(layerControlObj, windData) {
