@@ -154,7 +154,7 @@ export default {
         applyDisplayRange: true,
         clampLow: true,
         clampHigh: false,
-        colorScale: 'viridis',
+        colorScale: 'greys',
       })
       const option = {
         renderer,
