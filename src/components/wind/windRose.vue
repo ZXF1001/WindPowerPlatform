@@ -211,7 +211,7 @@ export default {
             //极坐标堆叠图的数据是从正北方向顺时针排布
 
             for (const key in roseData) {
-              if (roseData[key].length != 0) {
+              if (roseData[key].length !== 0) {
                 const index = Math.round(
                   (this.range.indexOf(parseInt(key.split('-')[0])) /
                     (this.range.length - 1)) *
@@ -226,7 +226,7 @@ export default {
                 barData[dirData.direction] = dirData.frequency
               }
 
-              if (roseData[key].length != 0) {
+              if (roseData[key].length !== 0) {
                 seriesData.push({
                   animationDuration: 0,
                   type: 'bar',
@@ -359,7 +359,7 @@ export default {
         dateBegin: null,
         dateEnd: null,
       }
-      if (this.dateValue !== null) {
+      if (this.dateValue) {
         data.dateBegin = dateFormatter(this.dateValue[0], 'typical')
         data.dateEnd = dateFormatter(this.dateValue[1], 'typical')
       }
@@ -385,7 +385,7 @@ export default {
                   const dirData = roseData[key][i]
                   barData[dirData.direction] = dirData.frequency
                 }
-                if (roseData[key].length != 0) {
+                if (roseData[key].length !== 0) {
                   seriesData.push({
                     animationDuration: 0,
                     type: 'bar',

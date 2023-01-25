@@ -252,7 +252,7 @@ export default {
         const clusterIdList = []
         const data = []
         for (let i = 0; i < res.data.length; i++) {
-          if (clusterIdList.indexOf(res.data[i].cluster_id) == -1) {
+          if (clusterIdList.indexOf(res.data[i].cluster_id) === -1) {
             clusterIdList.push(res.data[i].cluster_id)
             this.clusterOptions.push(res.data[i].cluster_name)
             this.checkedClusters.push(res.data[i].cluster_name)

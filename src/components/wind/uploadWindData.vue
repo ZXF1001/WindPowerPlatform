@@ -345,8 +345,7 @@ export default {
       try {
         readLocalCSV(selectedFile, (res) => {
           const data = res.data
-          if (data[data.length - 1] == '') {
-            //去除最后的空行
+          if (data[data.length - 1][0] === '') {
             data.pop()
           }
           this.jsonData = data
@@ -406,7 +405,7 @@ export default {
         }
         //检验是否有空的选择框
         this.multipleSelection.forEach((element) => {
-          if (element.typeOptions === null) {
+          if (!element.typeOptions) {
             throw '空的选择框'
           }
         })
@@ -458,7 +457,7 @@ export default {
             element.typeOptions[0] === 'v' ||
             element.typeOptions[0] === 'deg'
           ) {
-            if (element.height === null) throw '请输入高度'
+            if (!element.height) throw '请输入高度'
           }
         })
         //检验完毕，没有错误就上传

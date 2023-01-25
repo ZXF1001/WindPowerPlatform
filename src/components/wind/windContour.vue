@@ -256,7 +256,7 @@ export default {
 
         for (let i = 0; i < res.data.length; i++) {
           const turbineItem = res.data[i]
-          if (clusterIdList.indexOf(turbineItem.cluster_id) == -1) {
+          if (clusterIdList.indexOf(turbineItem.cluster_id) === -1) {
             clusterIdList.push(turbineItem.cluster_id)
             this.clusterOptions.push(turbineItem.cluster_name)
             this.checkedClusters.push(turbineItem.cluster_name)
@@ -267,7 +267,7 @@ export default {
             })
           }
           const index = data.findIndex(
-            (item) => item.cluster_id == turbineItem.cluster_id
+            (item) => item.cluster_id === turbineItem.cluster_id
           )
           data[index].turbine.push({
             turbine_id: turbineItem.turbine_id,

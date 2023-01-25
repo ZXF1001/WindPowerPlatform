@@ -27,7 +27,7 @@ export default {
         dateBegin: null,
         dateEnd: null,
       }
-      if (this.selectedSpan.dateRange !== null) {
+      if (this.selectedSpan.dateRange) {
         data.dateBegin = dateFormatter(
           this.selectedSpan.dateRange[0],
           'typical'
@@ -170,7 +170,7 @@ export default {
     },
     closeDialog() {
       //在这里销毁当前玫瑰图的曲线数据(若有)
-      if (this.distributeChart !== null) {
+      if (this.distributeChart) {
         this.distributeChart.dispose()
         this.distributeChart = null
         window.onresize = () => {}

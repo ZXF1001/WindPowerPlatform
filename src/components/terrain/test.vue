@@ -31,8 +31,7 @@ export default {
     fetchData() {
       readRemoteCSV('http://localhost:8080/example/DEM/2dDEM.csv', (res) => {
         const jsonData = res.data
-        if (jsonData[jsonData.length - 1] == '') {
-          //去除最后的空行
+        if (jsonData[jsonData.length - 1][0] === '') {
           jsonData.pop()
         }
         const width = jsonData[0].length //x方向数据数量

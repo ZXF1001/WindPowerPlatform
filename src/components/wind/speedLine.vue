@@ -78,7 +78,7 @@
       <span slot="footer">
         <el-button @click="handleDialogCancel">取 消</el-button>
         <el-button type="primary"
-                   :disabled="userDefinedTimeRangeValue === null"
+                   :disabled="!userDefinedTimeRangeValue"
                    @click="handleDialogConfirm">确 定</el-button>
       </span>
     </el-dialog>
@@ -197,7 +197,7 @@ export default {
       } else if (this.timeRangeValue <= 6) {
         return this.timeRangeOptions[
           this.timeRangeOptions.findIndex(
-            (item) => item.value == this.timeRangeValue
+            (item) => item.value === this.timeRangeValue
           )
         ].label
       } else {
@@ -297,7 +297,7 @@ export default {
       })
       //遍历之前先确定时间范围
       const selectedIndex = this.timeRangeOptions.findIndex(
-        (item) => item.value == this.timeRangeValue
+        (item) => item.value === this.timeRangeValue
       )
       const data = {
         site: null,
