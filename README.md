@@ -10,6 +10,12 @@
   ```
   npm install
   ```
+  ***注意：***
+  ***leaflet-geotiff-plotty.js的line64缺一个let:***
+
+  `dataUrl = plot.colorScaleCanvas.toDataURL();`
+  
+  ***需要修改，否则绘制colorbar会报错***
 
   2. 项目运行
   ```

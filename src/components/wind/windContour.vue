@@ -27,8 +27,22 @@
       </el-collapse-transition>
     </el-card>
     <div id='map'>
+      <div id="colorbarAndLabel"
+           v-if="geotiffMinAndMax?geotiffMinAndMax[0]:false">
+        <div id="colorbar">
+          <img width="100%"
+               height="20"
+               draggable="false"
+               :src="colorbarData?colorbarData:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+        </div>
+        <div id="label">
+          <span v-for="item in [0,1,2,3,4]"
+                :key="item">{{geotiffMinAndMax[0]+(geotiffMinAndMax[1]-geotiffMinAndMax[0])*item/4}}</span>
 
+        </div>
+      </div>
     </div>
+
   </div>
 </template>
 
@@ -61,6 +75,8 @@ export default {
       isIndeterminate: false,
       map: null,
       geolayer: null,
+      colormap: 'viridis',
+      colorbarData: null,
     }
   },
   methods: {
@@ -138,7 +154,7 @@ export default {
       const tiffUrl =
         // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
         // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
-        'http://1.117.224.40/geotiff/test.tif'
+        'http://1.117.224.40/geotiff/test_compress.tif'
 
       this.drawContour(layerControl, tiffUrl)
       this.drawStream(layerControl, data)
@@ -146,29 +162,29 @@ export default {
       this.drawMarker()
     },
     drawContour(layerControlObj, url) {
-      const renderer = new L.LeafletGeotiff.Plotty({
+      const plottyOption = {
         band: 0,
-        displayMin: 0,
-        displayMax: 1,
-        //todo 这里要加上自动识别范围的功能（好像不加也可以，他是自动识别的）
-        applyDisplayRange: true,
-        clampLow: true,
+        clampLow: false, // 表示高于范围的不显示
         clampHigh: false,
-        colorScale: 'greys',
-      })
+        colorScale: this.colormap,
+      }
+      const renderer = new L.LeafletGeotiff.Plotty(plottyOption)
       const option = {
         renderer,
         // bounds: [
         //   [40.7, 114],
         //   [41.8, 115.8],
         // ],
-
+        onError: (error) => {
+          console.log('error', error)
+        },
         useWorker: true,
         noDataValue: -32768,
         sourceFunction: GeoTIFF.fromUrl,
         opacity: 0.75,
       }
       this.geolayer = L.leafletGeotiff(url, option)
+
       layerControlObj.addOverlay(this.geolayer, '风场云图')
     },
     drawStream(layerControlObj, windData) {
@@ -323,7 +339,7 @@ export default {
       return this.$store.state.tab.isCollapse
     },
     geotiffMinAndMax() {
-      if (this.geolayer !== null) {
+      if (this.geolayer) {
         return [this.geolayer.min, this.geolayer.max]
       } else {
         return null
@@ -338,12 +354,18 @@ export default {
       }, 400)
     },
     geotiffMinAndMax() {
-      if (this.geotiffMinAndMax != null) {
-        this.geolayer.options.renderer.setDisplayRange(
-          this.geotiffMinAndMax[0],
-          this.geotiffMinAndMax[1]
-        )
-        this.geolayer.addTo(this.map)
+      // 与computed中的geotiffMinAndMax配合使用，使得geotiff
+      // 读取到最大最小值的时候定义contour渲染器的最大最小值
+      if (this.geotiffMinAndMax) {
+        if (this.geotiffMinAndMax[0]) {
+          this.geolayer.options.renderer.setDisplayRange(
+            this.geotiffMinAndMax[0],
+            this.geotiffMinAndMax[1]
+          )
+          this.geolayer.addTo(this.map)
+          this.colorbarData =
+            this.geolayer.options.renderer.getColourbarDataUrl(this.colormap)
+        }
       }
     },
   },
@@ -383,5 +405,22 @@ export default {
 }
 #map {
   height: calc(100vh - 154px);
+  display: flex;
+  justify-content: center;
+  #colorbarAndLabel {
+    position: absolute;
+    bottom: 5px;
+    width: 40%;
+    padding: 10px;
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(0, 0, 0, 0.5);
+    #colorbar,
+    #label {
+      display: flex;
+      justify-content: space-between;
+      user-select: none; // 文字不可选
+    }
+  }
 }
 </style>
