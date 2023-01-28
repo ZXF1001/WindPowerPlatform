@@ -60,10 +60,12 @@ export default {
   methods: {
     refresh() {
       // 上传完成后刷新上传页面的方法
-      this.existList.uploadWindData = false
-      this.$nextTick(() => {
-        this.existList.uploadWindData = true
-      })
+      if (this.existList.uploadWindData) {
+        this.existList.uploadWindData = false
+        this.$nextTick(() => {
+          this.existList.uploadWindData = true
+        })
+      }
     },
     beforeTagsLeave(newTab, oldTab) {
       this.existList[newTab] = true

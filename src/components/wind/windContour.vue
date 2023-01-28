@@ -58,12 +58,12 @@ import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
 import 'leaflet-velocity/dist/leaflet-velocity.css'
 import 'leaflet-velocity/dist/leaflet-velocity'
 //相关静态资源
-import data from '@/json/zb.json'
 import baseLayersData from '@/json/map/baseLayers.json'
 import importAllSVG from '@/assets/windTurbineSvg/import.js'
 
 //请求风机点位的api
 import { getMyTurbineData } from '@/api/wind/getMapData.js'
+import axios from 'axios'
 export default {
   data() {
     return {
@@ -150,18 +150,18 @@ export default {
           imperial: false,
         })
         .addTo(this.map)
+      const streamlineURL = 'http://1.117.224.40/streamline/zb.json'
       // 定义标量云图图层
-      const tiffUrl =
-        // 'https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif'
-        // 'https://s3.amazonaws.com/elevation-tiles-prod/geotiff/11/1679/765.tif'
-        'http://1.117.224.40/geotiff/test_compress.tif'
+      const tiffURL = 'http://1.117.224.40/geotiff/test_compress.tif'
 
-      this.drawContour(layerControl, tiffUrl)
-      this.drawStream(layerControl, data)
+      this.drawContour(layerControl, tiffURL)
+      this.drawStream(layerControl, streamlineURL)
       // 画标记点
       this.drawMarker()
     },
     drawContour(layerControlObj, url) {
+      this.$message('正在加载标量云图...')
+
       const plottyOption = {
         band: 0,
         clampLow: false, // 表示高于范围的不显示
@@ -187,66 +187,76 @@ export default {
 
       layerControlObj.addOverlay(this.geolayer, '风场云图')
     },
-    drawStream(layerControlObj, windData) {
+    drawStream(layerControlObj, streamlineURL) {
       //封装的绘制风场流场方法，windData有格式要求
-      const n = windData[0].header.nx * windData[0].header.ny //网格数
-      let minMag = Math.sqrt(
-        Math.pow(windData[0].data[0], 2) + Math.pow(windData[1].data[0], 2)
-      )
-      let maxMag = 0
-      let mag = 0
-      for (let i = 0; i < n; i++) {
-        mag = Math.sqrt(
-          Math.pow(windData[0].data[i], 2) + Math.pow(windData[1].data[i], 2)
-        )
-        minMag = mag < minMag ? mag : minMag
-        maxMag = mag > maxMag ? mag : maxMag
-      }
-      const velocityLayer1 = L.velocityLayer({
-        displayValues: true,
-        displayOptions: {
-          velocityType: '',
-          position: 'bottomright',
-          emptyString: '此处没有风数据',
-          angleConvention: 'meteoCCW',
-          showCardinal: true,
-          speedUnit: 'm/s',
-          directionString: '风向',
-          speedString: '风速',
-        },
-        data: windData,
-        minVelocity: minMag,
-        maxVelocity: maxMag,
-        velocityScale: 0.005,
-        frameRate: 40,
-        // particleAge: 20,
-        // lineWidth: 2,
-        // particleMultiplier: 0.005,
-        // colorScale:[],
-      })
-      this.map.addLayer(velocityLayer1)
-      const velocityName = '风场流线'
-      layerControlObj.addOverlay(velocityLayer1, velocityName)
-
-      // <<这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来
-      let streamlineSelected = true
-      this.map.on('overlayremove', (event) => {
-        if (event.name === velocityName) {
-          streamlineSelected = false
-        }
-      })
-      this.map.on('overlayadd', (event) => {
-        if (event.name === velocityName) {
-          streamlineSelected = true
-        }
-      })
-      this.map.on('moveend', () => {
-        if (streamlineSelected === true) {
-          velocityLayer1.remove()
+      axios
+        .get(streamlineURL)
+        .then((res) => {
+          const windData = res.data
+          const n = windData[0].header.nx * windData[0].header.ny //网格数
+          let minMag,
+            maxMag = Math.sqrt(
+              Math.pow(windData[0].data[0], 2) +
+                Math.pow(windData[1].data[0], 2)
+            )
+          let mag
+          for (let i = 0; i < n; i++) {
+            mag = Math.sqrt(
+              Math.pow(windData[0].data[i], 2) +
+                Math.pow(windData[1].data[i], 2)
+            )
+            minMag = Math.min(mag, minMag)
+            maxMag = Math.max(mag, maxMag)
+          }
+          const velocityLayer1 = L.velocityLayer({
+            displayValues: true,
+            displayOptions: {
+              velocityType: '',
+              position: 'bottomright',
+              emptyString: '此处没有风数据',
+              angleConvention: 'meteoCCW',
+              showCardinal: true,
+              speedUnit: 'm/s',
+              directionString: '风向',
+              speedString: '风速',
+            },
+            data: windData,
+            minVelocity: minMag,
+            maxVelocity: maxMag,
+            velocityScale: 0.005,
+            frameRate: 40,
+            // particleAge: 20,
+            // lineWidth: 2,
+            // particleMultiplier: 0.005,
+            // colorScale:[],
+          })
           this.map.addLayer(velocityLayer1)
-        }
-      })
-      // 这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来>>
+          const velocityName = '风场流线'
+          layerControlObj.addOverlay(velocityLayer1, velocityName)
+
+          // <<这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来
+          let streamlineSelected = true
+          this.map.on('overlayremove', (event) => {
+            if (event.name === velocityName) {
+              streamlineSelected = false
+            }
+          })
+          this.map.on('overlayadd', (event) => {
+            if (event.name === velocityName) {
+              streamlineSelected = true
+            }
+          })
+          this.map.on('moveend', () => {
+            if (streamlineSelected === true) {
+              velocityLayer1.remove()
+              this.map.addLayer(velocityLayer1)
+            }
+          })
+          // 这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来>>
+        })
+        .catch((e) => {
+          console.log(e)
+        })
     },
     drawMarker() {
       const groupByCluster = (res) => {
@@ -339,7 +349,7 @@ export default {
       return this.$store.state.tab.isCollapse
     },
     geotiffMinAndMax() {
-      if (this.geolayer) {
+      if (this.geolayer ? this.geolayer.min : false) {
         return [this.geolayer.min, this.geolayer.max]
       } else {
         return null
@@ -356,16 +366,16 @@ export default {
     geotiffMinAndMax() {
       // 与computed中的geotiffMinAndMax配合使用，使得geotiff
       // 读取到最大最小值的时候定义contour渲染器的最大最小值
-      if (this.geotiffMinAndMax) {
-        if (this.geotiffMinAndMax[0]) {
-          this.geolayer.options.renderer.setDisplayRange(
-            this.geotiffMinAndMax[0],
-            this.geotiffMinAndMax[1]
-          )
-          this.geolayer.addTo(this.map)
-          this.colorbarData =
-            this.geolayer.options.renderer.getColourbarDataUrl(this.colormap)
-        }
+      if (this.geotiffMinAndMax ? this.geotiffMinAndMax[0] : false) {
+        this.$message({ message: '加载标量云图完成', type: 'success' })
+        this.geolayer.options.renderer.setDisplayRange(
+          this.geotiffMinAndMax[0],
+          this.geotiffMinAndMax[1]
+        )
+        this.geolayer.addTo(this.map)
+        this.colorbarData = this.geolayer.options.renderer.getColourbarDataUrl(
+          this.colormap
+        )
       }
     },
   },
