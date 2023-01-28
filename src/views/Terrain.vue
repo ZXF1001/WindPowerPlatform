@@ -24,7 +24,7 @@ export default {
   },
   data() {
     return {
-      activeName: 'test',
+      activeName: 'demo',
       existList: {
         demo: false,
         test: true,

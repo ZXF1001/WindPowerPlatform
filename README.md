@@ -11,9 +11,9 @@
   npm install
   ```
   ***注意：***
-  ***leaflet-geotiff-plotty.js的line64缺一个let:***
+  ***leaflet-geotiff-plotty.js的64行开头缺一个let:***
 
-  `dataUrl = plot.colorScaleCanvas.toDataURL();`
+  `(let )dataUrl = plot.colorScaleCanvas.toDataURL();`
   
   ***需要修改，否则绘制colorbar会报错***
 
@@ -44,18 +44,20 @@
   - [x] 上传完成后提示“已将xxx条数据上传至数据库”
   - [x] 异步forEach替换为同步的for
   - [x] 总览页数据错乱，服务器崩溃
+  - [x] （上传）屏幕不能大片空白
+  - [ ] ~~（上传）上传时间太长加入取消功能（暂时不需要这么复杂）~~
   - [ ] （地图）地图显示范围自动设置为风电场位置范围
   - [ ] （地图）点击某位置显示contour的值
   - [ ] （地图）根据数据生成geotiff
-  - [ ] （上传）上传时间太长加入取消功能
+
   - [ ] （上传）! 光修改字段设置表的输入框不会改变实际的上传值
   - [ ] （风速）风速-时间曲线自定义日期范围时，如果数据量太大要提示
   - [ ] （上传）缺少平均速度要报错
-  - [ ] （上传）屏幕不能大片空白
 
 ## 下阶段开发计划
   - [ ] 地形可视化模块
     - three.js
+    - geotiff高程文件的读取
     - 后端画网格功能
   - [x] websocket配置
   - [ ] ~~拓展上传的格式（如xlsx）~~
