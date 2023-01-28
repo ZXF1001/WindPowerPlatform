@@ -18,9 +18,9 @@
       <qweather v-if="existList.weather" />
     </el-tab-pane>
     <el-tab-pane label="风资源图"
-                 name="contour"
+                 name="map"
                  :lazy="true">
-      <wind-contour v-if="existList.contour" />
+      <wind-map v-if="existList.map" />
     </el-tab-pane>
     <el-tab-pane label="上传数据"
                  name="uploadWindData"
@@ -32,14 +32,14 @@
 </template>
 
 <script>
-import windContour from '@/components/wind/windContour.vue'
+import windMap from '@/components/wind/windMap.vue'
 import windRose from '@/components/wind/windRose.vue'
 import speedLine from '@/components/wind/speedLine.vue'
 import qweather from '@/components/wind/qweather.vue'
 import uploadWindData from '@/components/wind/uploadWindData.vue'
 export default {
   components: {
-    windContour,
+    windMap,
     windRose,
     speedLine,
     qweather,
@@ -52,7 +52,7 @@ export default {
         windRose: true,
         speedLine: true,
         weather: true,
-        contour: true,
+        map: true,
         uploadWindData: true,
       },
     }

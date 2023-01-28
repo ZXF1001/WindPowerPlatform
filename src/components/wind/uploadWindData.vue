@@ -2,20 +2,31 @@
   <div v-if="refresh">
     <!-- 上传文件 -->
     <el-upload ref="upload"
+               :drag='!fileName'
                action="#"
                accept=".csv"
                :show-file-list="false"
                :auto-upload="false"
                :on-change="handleChange">
-      <el-button slot="trigger"
-                 type="primary"
-                 size="medium"
-                 plain>{{selectBtnContent}}</el-button>
-      <span class="filename"
-            v-show="fileName"><i class="el-icon-document" /> {{fileName}}</span>
-      <el-button style="position:absolute;right:0"
-                 size="medium"
-                 @click="test">test</el-button>
+      <div class="dragDiv"
+           v-if="!fileName">
+        <i class="el-icon-upload" />
+        <div class="el-upload__text">将.csv文件拖到此处，或<em>点击上传</em></div>
+      </div>
+
+      <div style="text-align:left;"
+           v-if="fileName">
+        <el-button slot="trigger"
+                   type="primary"
+                   size="medium"
+                   plain>{{selectBtnContent}}</el-button>
+        <span class="filename"
+              v-show="fileName"><i class="el-icon-document" /> {{fileName}}</span>
+        <el-button style="position:absolute;right:0"
+                   size="medium"
+                   @click="test">test</el-button>
+      </div>
+
     </el-upload>
     <div v-if="headerData.length>0">
       <!-- 显示csv为表格 -->
@@ -554,6 +565,17 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+/deep/.el-upload {
+  width: 100%;
+}
+/deep/.el-upload-dragger {
+  @main_height: calc(100vh - 160px);
+  width: 100%;
+  height: @main_height;
+  .dragDiv {
+    margin-top: calc(@main_height / 2 - 100px);
+  }
+}
 .filename {
   margin-left: 10px;
   font-size: 14px;
