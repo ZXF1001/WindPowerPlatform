@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="refresh">
     <!-- 上传文件 -->
     <el-upload ref="upload"
                action="#"
@@ -49,20 +49,19 @@
               <el-table-column prop="dataHeader"
                                label="字段" />
               <el-table-column label="字段类型">
-                <template slot-scope="scope">
-
-                  <el-cascader v-model="scope.row.typeOptions"
+                <template slot-scope="typeScope">
+                  <el-cascader v-model="typeScope.row.typeOptions"
                                :options="typeOptions"
-                               :disabled="casaderDisabled(scope.row.index)"
+                               :disabled="casaderDisabled(typeScope.row.index)"
                                :show-all-levels="false"
                                :props="{ expandTrigger: 'hover' }" />
                 </template>
               </el-table-column>
               <el-table-column prop="height"
                                label="高度/[m]">
-                <template slot-scope="scope">
-                  <el-input v-model="scope.row.height"
-                            v-show="!(casaderDisabled(scope.row.index)||heightInputDisabled(scope.row.typeOptions))"
+                <template slot-scope="heightScope">
+                  <el-input v-model="heightScope.row.height"
+                            v-show="!(casaderDisabled(heightScope.row.index)||heightInputDisabled(heightScope.row.typeOptions))"
                             placeholder="请输入高度" />
                 </template>
 
@@ -107,6 +106,7 @@ import readLocalCSV from '@/utils/readCSV'
 export default {
   data() {
     return {
+      refresh: true,
       selectBtnContent: '选取文件',
       fileName: null, //显示的文件名
       firstLineAsHeader: true, //第一行数据是否为表头
@@ -189,146 +189,150 @@ export default {
   },
   methods: {
     test() {
-      this.multipleSelection = [
-        {
-          index: 0,
-          dataHeader: 'date',
-          typeOptions: ['datetime', 'date'],
-          height: null,
-        },
-        {
-          index: 1,
-          dataHeader: 'time',
-          typeOptions: ['datetime', 'time'],
-          height: null,
-        },
-        {
-          index: 2,
-          dataHeader: '70m_v_avg',
-          typeOptions: ['v', 'avg'],
-          height: '70',
-        },
-        {
-          index: 4,
-          dataHeader: '70m_v_max',
-          typeOptions: ['v', 'max'],
-          height: '70',
-        },
-        {
-          index: 5,
-          dataHeader: '70m_v_min',
-          typeOptions: ['v', 'min'],
-          height: '70',
-        },
-        {
-          index: 6,
-          dataHeader: '60m_v_avg',
-          typeOptions: ['v', 'avg'],
-          height: '60',
-        },
-        {
-          index: 8,
-          dataHeader: '60m_v_max',
-          typeOptions: ['v', 'max'],
-          height: '60',
-        },
-        {
-          index: 9,
-          dataHeader: '60m_v_min',
-          typeOptions: ['v', 'min'],
-          height: '60',
-        },
-        {
-          index: 10,
-          dataHeader: '40m_v_avg',
-          typeOptions: ['v', 'avg'],
-          height: '40',
-        },
-        {
-          index: 12,
-          dataHeader: '40m_v_max',
-          typeOptions: ['v', 'max'],
-          height: '40',
-        },
-        {
-          index: 13,
-          dataHeader: '40m_v_min',
-          typeOptions: ['v', 'min'],
-          height: '40',
-        },
-        {
-          index: 14,
-          dataHeader: '10m_v_avg',
-          typeOptions: ['v', 'avg'],
-          height: '10',
-        },
-        {
-          index: 16,
-          dataHeader: '10m_v_max',
-          typeOptions: ['v', 'max'],
-          height: '10',
-        },
-        {
-          index: 17,
-          dataHeader: '10m_v_min',
-          typeOptions: ['v', 'min'],
-          height: '10',
-        },
-        {
-          index: 18,
-          dataHeader: '70m_deg_avg',
-          typeOptions: ['deg', 'avg'],
-          height: '70',
-        },
-        {
-          index: 20,
-          dataHeader: '70m_deg_max',
-          typeOptions: ['deg', 'max'],
-          height: '70',
-        },
-        {
-          index: 21,
-          dataHeader: '70m_deg_min',
-          typeOptions: ['deg', 'min'],
-          height: '70',
-        },
-        {
-          index: 22,
-          dataHeader: '40m_deg_avg',
-          typeOptions: ['deg', 'avg'],
-          height: '40',
-        },
-        {
-          index: 24,
-          dataHeader: '40m_deg_max',
-          typeOptions: ['deg', 'max'],
-          height: '40',
-        },
-        {
-          index: 25,
-          dataHeader: '40m_deg_min',
-          typeOptions: ['deg', 'min'],
-          height: '40',
-        },
-        {
-          index: 26,
-          dataHeader: '10m_deg_avg',
-          typeOptions: ['deg', 'avg'],
-          height: '10',
-        },
-        {
-          index: 28,
-          dataHeader: '10m_deg_max',
-          typeOptions: ['deg', 'max'],
-          height: '10',
-        },
-        {
-          index: 29,
-          dataHeader: '10m_deg_min',
-          typeOptions: ['deg', 'min'],
-          height: '10',
-        },
-      ]
+      // this.multipleSelection = [
+      //   {
+      //     index: 0,
+      //     dataHeader: 'date',
+      //     typeOptions: ['datetime', 'date'],
+      //     height: null,
+      //   },
+      //   {
+      //     index: 1,
+      //     dataHeader: 'time',
+      //     typeOptions: ['datetime', 'time'],
+      //     height: null,
+      //   },
+      //   {
+      //     index: 2,
+      //     dataHeader: '70m_v_avg',
+      //     typeOptions: ['v', 'avg'],
+      //     height: '70',
+      //   },
+      //   {
+      //     index: 4,
+      //     dataHeader: '70m_v_max',
+      //     typeOptions: ['v', 'max'],
+      //     height: '70',
+      //   },
+      //   {
+      //     index: 5,
+      //     dataHeader: '70m_v_min',
+      //     typeOptions: ['v', 'min'],
+      //     height: '70',
+      //   },
+      //   {
+      //     index: 6,
+      //     dataHeader: '60m_v_avg',
+      //     typeOptions: ['v', 'avg'],
+      //     height: '60',
+      //   },
+      //   {
+      //     index: 8,
+      //     dataHeader: '60m_v_max',
+      //     typeOptions: ['v', 'max'],
+      //     height: '60',
+      //   },
+      //   {
+      //     index: 9,
+      //     dataHeader: '60m_v_min',
+      //     typeOptions: ['v', 'min'],
+      //     height: '60',
+      //   },
+      //   {
+      //     index: 10,
+      //     dataHeader: '40m_v_avg',
+      //     typeOptions: ['v', 'avg'],
+      //     height: '40',
+      //   },
+      //   {
+      //     index: 12,
+      //     dataHeader: '40m_v_max',
+      //     typeOptions: ['v', 'max'],
+      //     height: '40',
+      //   },
+      //   {
+      //     index: 13,
+      //     dataHeader: '40m_v_min',
+      //     typeOptions: ['v', 'min'],
+      //     height: '40',
+      //   },
+      //   {
+      //     index: 14,
+      //     dataHeader: '10m_v_avg',
+      //     typeOptions: ['v', 'avg'],
+      //     height: '10',
+      //   },
+      //   {
+      //     index: 16,
+      //     dataHeader: '10m_v_max',
+      //     typeOptions: ['v', 'max'],
+      //     height: '10',
+      //   },
+      //   {
+      //     index: 17,
+      //     dataHeader: '10m_v_min',
+      //     typeOptions: ['v', 'min'],
+      //     height: '10',
+      //   },
+      //   {
+      //     index: 18,
+      //     dataHeader: '70m_deg_avg',
+      //     typeOptions: ['deg', 'avg'],
+      //     height: '70',
+      //   },
+      //   {
+      //     index: 20,
+      //     dataHeader: '70m_deg_max',
+      //     typeOptions: ['deg', 'max'],
+      //     height: '70',
+      //   },
+      //   {
+      //     index: 21,
+      //     dataHeader: '70m_deg_min',
+      //     typeOptions: ['deg', 'min'],
+      //     height: '70',
+      //   },
+      //   {
+      //     index: 22,
+      //     dataHeader: '40m_deg_avg',
+      //     typeOptions: ['deg', 'avg'],
+      //     height: '40',
+      //   },
+      //   {
+      //     index: 24,
+      //     dataHeader: '40m_deg_max',
+      //     typeOptions: ['deg', 'max'],
+      //     height: '40',
+      //   },
+      //   {
+      //     index: 25,
+      //     dataHeader: '40m_deg_min',
+      //     typeOptions: ['deg', 'min'],
+      //     height: '40',
+      //   },
+      //   {
+      //     index: 26,
+      //     dataHeader: '10m_deg_avg',
+      //     typeOptions: ['deg', 'avg'],
+      //     height: '10',
+      //   },
+      //   {
+      //     index: 28,
+      //     dataHeader: '10m_deg_max',
+      //     typeOptions: ['deg', 'max'],
+      //     height: '10',
+      //   },
+      //   {
+      //     index: 29,
+      //     dataHeader: '10m_deg_min',
+      //     typeOptions: ['deg', 'min'],
+      //     height: '10',
+      //   },
+      // ]
+      this.refresh = false
+      this.$nextTick(() => {
+        this.refresh = true
+      })
     },
     handleChange() {
       this.selectBtnContent = '重新选取'
@@ -514,7 +518,7 @@ export default {
                 type: 'success',
                 showClose: false,
                 callback: () => {
-                  console.log('这里应该刷新本页')
+                  this.$emit('refresh')
                 },
               })
             } catch (error) {

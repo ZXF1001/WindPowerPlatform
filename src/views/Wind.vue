@@ -25,12 +25,8 @@
     <el-tab-pane label="上传数据"
                  name="uploadWindData"
                  :lazy="true">
-      <upload-wind-data v-if="existList.uploadWindData" />
-    </el-tab-pane>
-    <el-tab-pane label="WebSocket测试"
-                 name="websocketTest"
-                 :lazy="true">
-      <websocket-test v-if="existList.uploadWindData" />
+      <upload-wind-data v-if="existList.uploadWindData"
+                        @refresh="refresh" />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -41,7 +37,6 @@ import windRose from '@/components/wind/windRose.vue'
 import speedLine from '@/components/wind/speedLine.vue'
 import qweather from '@/components/wind/qweather.vue'
 import uploadWindData from '@/components/wind/uploadWindData.vue'
-import websocketTest from '@/components/wind/websocketTest.vue'
 export default {
   components: {
     windContour,
@@ -49,23 +44,27 @@ export default {
     speedLine,
     qweather,
     uploadWindData,
-    websocketTest,
   },
   data() {
     return {
       activeName: 'windRose',
-      // activeName: 'websocketTest',
       existList: {
         windRose: true,
         speedLine: true,
         weather: true,
         contour: true,
         uploadWindData: true,
-        websocketTest: true,
       },
     }
   },
   methods: {
+    refresh() {
+      // 上传完成后刷新上传页面的方法
+      this.existList.uploadWindData = false
+      this.$nextTick(() => {
+        this.existList.uploadWindData = true
+      })
+    },
     beforeTagsLeave(newTab, oldTab) {
       this.existList[newTab] = true
       this.existList[oldTab] = false
