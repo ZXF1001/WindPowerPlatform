@@ -1,6 +1,5 @@
 <template>
   <div>
-    <el-progress :percentage="progress"></el-progress>
     <div id="container"></div>
   </div>
 </template>
@@ -12,7 +11,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 export default {
   data() {
     return {
-      progress: 0,
       container: null,
       camera: null,
       controls: null,
@@ -68,20 +66,18 @@ export default {
           this.container.clientHeight
         )
         this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap // default THREE.PCFShadowMap
-        // 添加canvas容器
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
         this.container.appendChild(this.renderer.domElement)
         // 场景对象
         this.scene = new THREE.Scene()
         this.scene.background = new THREE.Color('#bfd1e5')
         // 摄像机对象
-        const fov = 35,
-          aspect = this.container.clientWidth / this.container.clientHeight,
-          near = 50,
-          far = 500000
+        const fov = 35
+        const aspect = this.container.clientWidth / this.container.clientHeight
+        const near = 50
+        const far = 500000
         this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far)
-        this.camera.position.y = geoWidth / 2
-        this.camera.position.z = geoWidth / 2
+        this.camera.position.set(0, 0.8 * geoWidth, 0.8 * geoWidth) // 第二个坐标是高度，第三个坐标是前后
         // 拖拽控制器对象
         this.controls = new OrbitControls(this.camera, this.renderer.domElement)
         this.controls.minDistance = near
@@ -98,23 +94,12 @@ export default {
         )
         geometry.rotateX(-Math.PI / 2)
 
-        const mapGeo = () => {
-          // 这里直接修改plane的y坐标，即高度坐标
-          const vertices = geometry.attributes.position.array
-          for (let i = 0; i < data.length; i++) {
-            vertices[3 * i + 1] = data[i]
-          }
-          geometry.computeVertexNormals()
+        // 这里直接修改plane的y坐标，即高度坐标
+        const vertices = geometry.attributes.position.array
+        for (let i = 0; i < data.length; i++) {
+          vertices[3 * i + 1] = data[i]
         }
-        // 使用webWorker防止页面卡住
-        // function createWorker(f) {
-        //   var blob = new Blob(['(' + f.toString() + ')()'])
-        //   var url = window.URL.createObjectURL(blob)
-        //   var worker = new Worker(url)
-        //   return worker
-        // }
-        // createWorker(mapGeo)
-        mapGeo()
+        geometry.computeVertexNormals()
         // 组装成Mesh
         this.mesh = new THREE.Mesh(
           geometry,
@@ -172,6 +157,6 @@ export default {
 <style lang="less" scoped>
 #container {
   width: 100%;
-  height: calc(100vh - 210px);
+  height: calc(100vh - 155px);
 }
 </style>
