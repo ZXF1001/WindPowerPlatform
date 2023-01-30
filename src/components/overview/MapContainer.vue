@@ -161,7 +161,7 @@ export default {
       this.drawMarker()
     },
     drawContour(layerControlObj, url) {
-      this.$message('正在加载标量云图...')
+      this.contourLoading = this.$message('正在加载标量云图...')
       const plottyOption = {
         band: 0,
         clampLow: false, // 表示高于范围的不显示
@@ -366,6 +366,7 @@ export default {
       // 与computed中的geotiffMinAndMax配合使用，使得geotiff
       // 读取到最大最小值的时候定义contour渲染器的最大最小值
       if (this.geotiffMinAndMax ? this.geotiffMinAndMax[0] : false) {
+        if (this.contourLoading) this.contourLoading.close()
         this.$message({ message: '加载标量云图完成', type: 'success' })
         this.geolayer.options.renderer.setDisplayRange(
           this.geotiffMinAndMax[0],
