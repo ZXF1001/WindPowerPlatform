@@ -419,11 +419,12 @@ export default {
           data.shift()
         }
         //检验是否有空的选择框
-        this.multipleSelection.forEach((element) => {
+        for (let i = 0; i < this.multipleSelection.length; i++) {
+          const element = this.multipleSelection[i]
           if (!element.typeOptions) {
             throw '空的选择框'
           }
-        })
+        }
 
         let fieldData = JSON.parse(JSON.stringify(this.multipleSelection))
         const fieldList = fieldData.map((item) => item.typeOptions[1])

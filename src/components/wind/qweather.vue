@@ -263,9 +263,6 @@ export default {
           data: humidList,
         },
       })
-      // window.onresize = () => {
-      //   Hecharts.resize()
-      // }
     },
     drawWind() {
       if (!this.Wechart) {

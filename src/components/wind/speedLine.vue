@@ -224,7 +224,7 @@ export default {
     handleDialogConfirm() {
       if (this.timeRangeOptions.length === 6 + 1) {
         this.timeRangeOptions.splice(
-          this.timeRangeOptions.findIndex((item) => item.value == 6 + 1),
+          this.timeRangeOptions.findIndex((item) => item.value === 6 + 1),
           1
         )
       }
@@ -245,7 +245,7 @@ export default {
       this.userDefinedTimeRangeValue = null
       if (this.timeRangeOptions.length === 6 + 1) {
         this.timeRangeOptions.splice(
-          this.timeRangeOptions.findIndex((item) => item.value == 0),
+          this.timeRangeOptions.findIndex((item) => item.value === 0),
           1
         )
       }
