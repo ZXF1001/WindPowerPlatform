@@ -26,8 +26,8 @@ export default {
     return {
       activeName: 'demo',
       existList: {
-        demo: false,
-        test: true,
+        demo: true,
+        test: false,
       },
     }
   },

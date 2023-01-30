@@ -23,11 +23,7 @@ export default {
     }
   },
   methods: {
-    test() {
-      readRemoteCSV('http://localhost:8080/example/DEM/2dDEM.csv', (res) => {
-        console.log(res)
-      })
-    },
+    test() {},
     fetchData() {
       readRemoteCSV('http://localhost:8080/example/DEM/2dDEM.csv', (res) => {
         const jsonData = res.data
@@ -51,6 +47,7 @@ export default {
       })
     },
     init(worldWidth, worldDepth, data) {
+      console.log(data)
       const that = this
       const worldHalfWidth = worldWidth / 2,
         worldHalfDepth = worldDepth / 2

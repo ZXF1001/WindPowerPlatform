@@ -358,6 +358,7 @@ export default {
   },
   watch: {
     isCollapse() {
+      //todo 这里可以用nexttick来取代setTimeout
       setTimeout(() => {
         this.map.invalidateSize(false)
       }, 400)
