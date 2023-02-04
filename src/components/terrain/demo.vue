@@ -8,16 +8,17 @@
 import { fromUrl } from 'geotiff'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { Lut } from 'three/addons/math/Lut.js'
 export default {
   data() {
     return {
       container: null,
       camera: null,
+      lut: null,
       controls: null,
       scene: null,
       renderer: null,
       mesh: null,
-      texture: null,
       animationID: null,
     }
   },
@@ -30,7 +31,7 @@ export default {
         const url = 'http://1.117.224.40/geotiff/test_compress.tif'
         const tiff = await fromUrl(url)
         const image = await tiff.getImage()
-        const bbox = await image.getBoundingBox()
+        const bbox = image.getBoundingBox()
         const rastersData = await image.readRasters()
         console.log('加载完成，正在渲染')
         this.createTHREE(bbox, rastersData)
@@ -38,17 +39,17 @@ export default {
     },
 
     createTHREE(boundingBox, rastersData) {
+      function D2R(deg) {
+        // 角度转弧度
+        const rad = (deg * Math.PI) / 180
+        return rad
+      }
+
       const init = () => {
         const lngMin = boundingBox[0]
         const lngMax = boundingBox[2]
         const latMin = boundingBox[1]
         const latMax = boundingBox[3]
-
-        function D2R(deg) {
-          // 角度转弧度
-          const rad = (deg * Math.PI) / 180
-          return rad
-        }
 
         const earthRadius = 6371393 //地球半径，用于计算区域边界的真实距离
         const geoWidth = Math.round(
@@ -68,6 +69,7 @@ export default {
           this.container.clientWidth,
           this.container.clientHeight
         )
+        this.renderer.autoClear = false
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
         this.container.appendChild(this.renderer.domElement)
@@ -99,15 +101,51 @@ export default {
 
         // 这里直接修改plane的y坐标，即高度坐标
         const vertices = geometry.attributes.position.array
+        const colors = []
         for (let i = 0; i < data.length; i++) {
           vertices[3 * i + 1] = data[i]
+          colors.push(1, 1, 1)
         }
+
+        geometry.setAttribute(
+          'color',
+          new THREE.Float32BufferAttribute(colors, 3)
+        )
+        //设置lut
+        this.uiScene = new THREE.Scene()
+        this.lut = new Lut()
+
+        this.orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 2)
+        this.orthoCamera.position.set(-0.9, 0, 1)
+        const sprite = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(this.lut.createCanvas()),
+          })
+        )
+        sprite.scale.x = 0.05
+
+        this.uiScene.add(sprite)
+        //todo 需要自动选择最大最小值
+        this.lut.setColorMap('rainbow')
+        this.lut.setMax(2000)
+        this.lut.setMin(0)
         geometry.computeVertexNormals()
+        // 设置模型颜色
+        //todo 可以和上面的for循环合并
+        for (let i = 0; i < data.length; i++) {
+          const colorValue = data[i]
+          const color = this.lut.getColor(colorValue)
+          geometry.attributes.color.setXYZ(i, color.r, color.g, color.b)
+        }
+        geometry.attributes.color.needsUpdate = true
+
         // 组装成Mesh
         this.mesh = new THREE.Mesh(
           geometry,
-          // new THREE.MeshPhongMaterial({ map: this.texture })
-          new THREE.MeshLambertMaterial({ color: 0xc7c7c7 })
+          new THREE.MeshLambertMaterial({
+            color: 0xc7c7c7,
+            vertexColors: true,
+          })
         )
         this.mesh.receiveShadow = true
         this.mesh.castShadow = true
@@ -137,6 +175,7 @@ export default {
       const animate = () => {
         this.animationID = requestAnimationFrame(animate)
         this.renderer.render(this.scene, this.camera)
+        this.renderer.render(this.uiScene, this.orthoCamera)
       }
 
       init()

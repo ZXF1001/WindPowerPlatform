@@ -98,7 +98,7 @@ export default {
   },
   watch: {
     isCollapse() {
-      //todo 这里可以用nexttick来取代setTimeout
+      // 这里得等侧边栏折叠完才能更新地图容器边界
       setTimeout(() => {
         this.map.invalidateSize(false)
       }, 400)
