@@ -23,8 +23,9 @@
         <el-main>
           <div id='map'>
             <div id="colorbarAndLabel"
-                 v-if="geotiffMinAndMax?geotiffMinAndMax[0]:false">
+                 v-if="colorbarVisible">
               <div id="colorbar">
+                <!-- 一张透明图为colorbar占位 -->
                 <img width="100%"
                      height="20"
                      draggable="false"
@@ -77,6 +78,7 @@ export default {
       geolayer: null,
       colormap: 'viridis',
       colorbarData: null,
+      contourSelected: false,
     }
   },
   methods: {
@@ -185,8 +187,18 @@ export default {
         opacity: 0.75,
       }
       this.geolayer = L.leafletGeotiff(url, option)
-
-      layerControlObj.addOverlay(this.geolayer, '风场云图')
+      const contourName = '风场云图'
+      layerControlObj.addOverlay(this.geolayer, contourName)
+      this.map.on('overlayremove', (event) => {
+        if (event.name === contourName) {
+          this.contourSelected = false
+        }
+      })
+      this.map.on('overlayadd', (event) => {
+        if (event.name === contourName) {
+          this.contourSelected = true
+        }
+      })
     },
     drawStream(layerControlObj, streamlineURL) {
       axios
@@ -353,6 +365,13 @@ export default {
         return [this.geolayer.min, this.geolayer.max]
       } else {
         return null
+      }
+    },
+    colorbarVisible() {
+      if (this.contourSelected) {
+        return this.geotiffMinAndMax ? this.geotiffMinAndMax[0] : false
+      } else {
+        return false
       }
     },
   },

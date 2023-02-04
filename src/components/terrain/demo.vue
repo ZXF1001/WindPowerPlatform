@@ -24,12 +24,15 @@ export default {
   methods: {
     fetchTIFF() {
       // 使用匿名函数的写法
+
       (async () => {
+        console.log('加载DEM')
         const url = 'http://1.117.224.40/geotiff/test_compress.tif'
         const tiff = await fromUrl(url)
         const image = await tiff.getImage()
-        const bbox = image.getBoundingBox()
+        const bbox = await image.getBoundingBox()
         const rastersData = await image.readRasters()
+        console.log('加载完成，正在渲染')
         this.createTHREE(bbox, rastersData)
       })()
     },
