@@ -21,7 +21,6 @@ export default {
     let perpCamera, orthoCamera, renderer, lut
     let mesh, sprite
     let scene, uiScene
-    let params
     init()
 
     function init() {
@@ -134,13 +133,8 @@ export default {
       }
 
       colors.needsUpdate = true
-
-      // const map = sprite.material.map
-      // lut.updateCanvas(map.image)
-      // map.needsUpdate = true
     }
   },
-  beforeDestroy() {},
 }
 </script>
 <style lang="less" scoped>
