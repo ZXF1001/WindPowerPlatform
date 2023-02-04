@@ -1,4 +1,3 @@
-//! 注意：在这里的更改记得在overview/mapContainer下同步更改
 <template>
   <div style="height=100%">
     <el-card class="floating">
@@ -8,7 +7,6 @@
       </div>
       <el-collapse-transition>
         <div class="select scroller"
-             v-loading="loading"
              v-show="isShow">
           <el-checkbox :indeterminate="isIndeterminate"
                        v-model="checkAll"
@@ -28,8 +26,9 @@
     </el-card>
     <div id='map'>
       <div id="colorbarAndLabel"
-           v-if="geotiffMinAndMax?geotiffMinAndMax[0]:false">
+           v-if="colorbarVisible">
         <div id="colorbar">
+          <!-- 一张透明图为colorbar占位 -->
           <img width="100%"
                height="20"
                draggable="false"
@@ -47,28 +46,12 @@
 </template>
 
 <script>
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet/dist/leaflet'
-import '@panzhiyue/leaflet-canvasmarker' //canvas渲染marker的插件
-//geotiff渲染插件
-import 'leaflet-geotiff-2'
-import GeoTIFF from 'geotiff'
-import 'leaflet-geotiff-2/dist/leaflet-geotiff-plotty'
-//流线图插件
-import 'leaflet-velocity/dist/leaflet-velocity.css'
-import 'leaflet-velocity/dist/leaflet-velocity'
-//相关静态资源
-import baseLayersData from '@/json/map/baseLayers.json'
-import importAllSVG from '@/assets/windTurbineSvg/import.js'
+import * as myMapFunc from '@/js/map/map'
 
-//请求风机点位的api
-import { getMyTurbineData } from '@/api/wind/getMapData.js'
-import axios from 'axios'
 export default {
   data() {
     return {
       isShow: true,
-      loading: true,
       checkAll: true,
       clusterOptions: [],
       checkedClusters: [], //这是选中的集群Array
@@ -77,6 +60,7 @@ export default {
       geolayer: null,
       colormap: 'viridis',
       colorbarData: null,
+      contourSelected: false,
     }
   },
   methods: {
@@ -92,256 +76,7 @@ export default {
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
-      this.redrawMarker(this.map)
-    },
-    // 挂载后初始化地图并加载标记
-    initMap() {
-      const baseLayers = []
-      // 从底图列表baseLayers.json文件中读取底图
-      for (let i = 0; i < baseLayersData.length; i++) {
-        const element = baseLayersData[i]
-
-        if ('annotationUrl' in element) {
-          //底图的标注annotation也要加进来
-          const map = L.tileLayer(element.url, {
-            minZoom: element.minZoom,
-            maxZoom: element.maxZoom,
-          })
-          const annotation = L.tileLayer(element.annotationUrl, {
-            minZoom: element.minZoom,
-            maxZoom: element.maxZoom,
-          })
-          baseLayers[element.name] = L.layerGroup([map, annotation])
-        } else {
-          //没有annotation就不用考虑组成图层组
-          baseLayers[element.name] = L.tileLayer(element.url, {
-            minZoom: element.minZoom,
-            maxZoom: element.maxZoom,
-          })
-        }
-      }
-
-      this.map = L.map('map', {
-        //参考坐标系
-        // crs: L.CRS.EPSG3857,
-        attributionControl: false,
-        zoomControl: false,
-        center: [41.25, 114.9],
-        zoom: 9,
-        layers: baseLayers['天地图地形'], //默认加载图层
-        preferCanvas: true,
-      })
-      // 定义图层控件
-      const layerControl = L.control
-        .layers(
-          baseLayers,
-          {},
-          {
-            position: 'topright',
-            collapsed: true,
-          }
-        )
-        .addTo(this.map)
-      //定义比例尺控件
-      L.control
-        .scale({
-          position: 'bottomleft',
-          maxWidth: '100',
-          imperial: false,
-        })
-        .addTo(this.map)
-      const streamlineURL = 'http://1.117.224.40/streamline/zb.json'
-      // 定义标量云图图层
-      const tiffURL = 'http://1.117.224.40/geotiff/test_compress.tif'
-
-      this.drawContour(layerControl, tiffURL)
-      this.drawStream(layerControl, streamlineURL)
-      // 画标记点
-      this.drawMarker()
-    },
-    drawContour(layerControlObj, url) {
-      this.contourLoading = this.$message('正在加载标量云图...')
-
-      const plottyOption = {
-        band: 0,
-        clampLow: false, // 表示高于范围的不显示
-        clampHigh: false,
-        colorScale: this.colormap,
-      }
-      const renderer = new L.LeafletGeotiff.Plotty(plottyOption)
-      const option = {
-        renderer,
-        // bounds: [
-        //   [40.7, 114],
-        //   [41.8, 115.8],
-        // ],
-        onError: (error) => {
-          console.log('error', error)
-        },
-        useWorker: true,
-        noDataValue: -32768,
-        sourceFunction: GeoTIFF.fromUrl,
-        opacity: 0.75,
-      }
-      this.geolayer = L.leafletGeotiff(url, option)
-
-      layerControlObj.addOverlay(this.geolayer, '风场云图')
-    },
-    drawStream(layerControlObj, streamlineURL) {
-      //封装的绘制风场流场方法，windData有格式要求
-      axios
-        .get(streamlineURL)
-        .then((res) => {
-          const windData = res.data
-          const n = windData[0].header.nx * windData[0].header.ny //网格数
-          let minMag,
-            maxMag = Math.sqrt(
-              Math.pow(windData[0].data[0], 2) +
-                Math.pow(windData[1].data[0], 2)
-            )
-          let mag
-          for (let i = 0; i < n; i++) {
-            mag = Math.sqrt(
-              Math.pow(windData[0].data[i], 2) +
-                Math.pow(windData[1].data[i], 2)
-            )
-            minMag = Math.min(mag, minMag)
-            maxMag = Math.max(mag, maxMag)
-          }
-          const velocityLayer1 = L.velocityLayer({
-            displayValues: true,
-            displayOptions: {
-              velocityType: '',
-              position: 'bottomright',
-              emptyString: '此处没有风数据',
-              angleConvention: 'meteoCCW',
-              showCardinal: true,
-              speedUnit: 'm/s',
-              directionString: '风向',
-              speedString: '风速',
-            },
-            data: windData,
-            minVelocity: minMag,
-            maxVelocity: maxMag,
-            velocityScale: 0.005,
-            frameRate: 40,
-            // particleAge: 20,
-            // lineWidth: 2,
-            // particleMultiplier: 0.005,
-            // colorScale:[],
-          })
-          this.map.addLayer(velocityLayer1)
-          const velocityName = '风场流线'
-          layerControlObj.addOverlay(velocityLayer1, velocityName)
-
-          // <<这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来
-          let streamlineSelected = true
-          this.map.on('overlayremove', (event) => {
-            if (event.name === velocityName) {
-              streamlineSelected = false
-            }
-          })
-          this.map.on('overlayadd', (event) => {
-            if (event.name === velocityName) {
-              streamlineSelected = true
-            }
-          })
-          this.map.on('moveend', () => {
-            if (streamlineSelected === true) {
-              velocityLayer1.remove()
-              this.map.addLayer(velocityLayer1)
-            }
-          })
-          // 这段程序是为了避免没勾选流线图时移动地图导致流线图自己刷新出来>>
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-    drawMarker() {
-      const groupByCluster = (res) => {
-        //把数据库返回的零散数据按集群id整合
-        const clusterIdList = []
-        const data = []
-
-        for (let i = 0; i < res.data.length; i++) {
-          const turbineItem = res.data[i]
-          if (clusterIdList.indexOf(turbineItem.cluster_id) === -1) {
-            clusterIdList.push(turbineItem.cluster_id)
-            this.clusterOptions.push(turbineItem.cluster_name)
-            this.checkedClusters.push(turbineItem.cluster_name)
-            data.push({
-              cluster_id: turbineItem.cluster_id,
-              cluster_name: turbineItem.cluster_name,
-              turbine: [],
-            })
-          }
-          const index = data.findIndex(
-            (item) => item.cluster_id === turbineItem.cluster_id
-          )
-          data[index].turbine.push({
-            turbine_id: turbineItem.turbine_id,
-            lat: turbineItem.lat,
-            lng: turbineItem.lng,
-            height: turbineItem.height,
-          })
-        }
-
-        this.loading = false
-        return data
-      }
-      getMyTurbineData()
-        .then((res) => {
-          const data = groupByCluster(res)
-          this.layerGroup = []
-          const Icons = importAllSVG()
-          data.forEach((cluster, index) => {
-            const markerList = []
-            const icon = L.icon({
-              iconUrl: Icons[index],
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-              popupAnchor: [0, -15],
-            })
-            for (let i = 0; i < cluster.turbine.length; i++) {
-              const turbine = cluster.turbine[i]
-              const tempMarker = L.marker([turbine.lat, turbine.lng], {
-                icon: icon,
-              })
-              const popupContent = `<span>风力机编号：${turbine.turbine_id}</span><br>
-                                  <span>所属集群：${cluster.cluster_name}</span><br>
-                                  <span>经度：${turbine.lng}</span><br>
-                                  <span>纬度：${turbine.lat}</span><br>
-                                  <span>高程：${turbine.height}</span>`
-
-              tempMarker.bindPopup(popupContent)
-              markerList.push(tempMarker)
-            }
-
-            const templayerGroup = L.canvasMarkerLayer({
-              collisionFlg: false, // 碰撞检测
-            }).addTo(this.map)
-            templayerGroup.addLayers(markerList)
-
-            this.layerGroup.push({
-              name: cluster.cluster_name,
-              data: templayerGroup,
-            })
-          })
-          // mapObj.on('zoomend', () => {})
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-    redrawMarker(mapObj) {
-      this.layerGroup.forEach((layer) => {
-        if (this.checkedClusters.indexOf(layer.name) !== -1) {
-          mapObj.addLayer(layer.data)
-        } else {
-          layer.data.remove()
-        }
-      })
+      myMapFunc.redrawMarker(this)
     },
   },
   computed: {
@@ -353,6 +88,13 @@ export default {
         return [this.geolayer.min, this.geolayer.max]
       } else {
         return null
+      }
+    },
+    colorbarVisible() {
+      if (this.contourSelected) {
+        return this.geotiffMinAndMax ? this.geotiffMinAndMax[0] : false
+      } else {
+        return false
       }
     },
   },
@@ -381,7 +123,14 @@ export default {
     },
   },
   mounted() {
-    this.initMap()
+    const baseLayers = myMapFunc.handleBaseLayers()
+    const { map, layerControl } = myMapFunc.mapInit(baseLayers)
+    this.map = map
+    // 画流线图和云图
+    myMapFunc.drawContour(this, layerControl)
+    myMapFunc.drawStream(this, layerControl)
+    // 画标记点
+    myMapFunc.drawMarker(this)
   },
   beforeDestroy() {
     if (this.map) {
