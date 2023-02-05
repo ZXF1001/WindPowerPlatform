@@ -25,6 +25,7 @@ export default {
     }
   },
   methods: {
+    // 获取geotiff高程数据
     fetchTIFF() {
       // 使用匿名函数的写法
       (async () => {
@@ -40,13 +41,123 @@ export default {
     },
 
     createTHREE(boundingBox, rastersData) {
+      const { WEdistance, NSdistance } = calcWH(boundingBox)
+      const rasterWidth = rastersData.width,
+        rasterHeight = rastersData.height
+      const data = rastersData[0]
+
+      this.container = document.getElementById('container')
+      // 渲染器对象
+      this.renderer = new THREE.WebGLRenderer({ antialias: true })
+      this.renderer.setSize(
+        this.container.clientWidth,
+        this.container.clientHeight
+      )
+      this.renderer.autoClear = false
+      this.renderer.shadowMap.enabled = true
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+      this.container.appendChild(this.renderer.domElement)
+      // 场景对象
+      this.scene = new THREE.Scene()
+      this.scene.background = new THREE.Color('#bfd1e5')
+      // 摄像机对象
+      const fov = 35
+      const aspect = this.container.clientWidth / this.container.clientHeight
+      const near = 50
+      const far = 500000
+      this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far)
+      this.camera.position.set(0, 0.8 * WEdistance, 0.8 * WEdistance) // 第二个坐标是高度，第三个坐标是前后
+      this.orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 2)
+      this.orthoCamera.position.set(-0.9, 0, 1)
+      // 拖拽控制器对象
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+      this.controls.minDistance = near
+      this.controls.maxDistance = far
+      this.controls.maxPolarAngle = Math.PI / 2
+      const centerHeight = data[Math.floor(data.length / 2)]
+      this.controls.target.y = centerHeight + 1000
+      this.controls.update()
+      //设置颜色映射表
+      this.uiScene = new THREE.Scene()
+      this.lut = new Lut()
+      this.lut.setColorMap('rainbow')
+      const { min, max } = getMinAndMax(data)
+      this.lut.setMax(max)
+      this.lut.setMin(min)
+      const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: new THREE.CanvasTexture(this.lut.createCanvas()),
+        })
+      )
+      sprite.scale.x = 0.04
+      this.uiScene.add(sprite)
+      // 定义几何对象
+      let geometry = new THREE.PlaneGeometry(
+        WEdistance,
+        NSdistance,
+        rasterWidth - 1,
+        rasterHeight - 1
+      )
+      geometry.rotateX(-Math.PI / 2)
+      geometry = reshapePlane(geometry, data)
+      colorGeometry(data, geometry, this.lut) // 设置模型颜色
+
+      // 组装成Mesh
+      this.mesh = new THREE.Mesh(
+        geometry,
+        new THREE.MeshLambertMaterial({
+          color: 0xc7c7c7,
+          vertexColors: true,
+        })
+      )
+      this.mesh.receiveShadow = true
+      this.mesh.castShadow = true
+      this.scene.add(this.mesh)
+
+      //方向箭头提示
+      const Ndir = new THREE.Vector3(0, 0, -1)
+      const origin = new THREE.Vector3(0, 10000, -NSdistance / 2)
+      const length = 10000
+      const hex = '#ff0'
+      const arrowHelper = new THREE.ArrowHelper(Ndir, origin, length, hex)
+      this.scene.add(arrowHelper)
+
+      // 坐标轴指示，后面删掉
+      const axesHelper = new THREE.AxesHelper(WEdistance)
+      this.scene.add(axesHelper)
+      const gridHelper = new THREE.GridHelper(1.25 * WEdistance, 50)
+      this.scene.add(gridHelper)
+
+      // 光源对象
+      const light = new THREE.DirectionalLight('#fff', 1)
+      light.position.set(5, 3, 0)
+      light.castShadow = true
+      this.scene.add(light)
+
+      // 自适应窗口尺寸
+      window.onresize = () => {
+        const newAspect =
+          this.container.clientWidth / this.container.clientHeight
+        this.renderer.setSize(
+          this.container.clientWidth,
+          this.container.clientHeight
+        )
+        this.camera.aspect = newAspect
+        this.camera.updateProjectionMatrix()
+        this.orthoCamera.aspect = newAspect
+        this.orthoCamera.updateProjectionMatrix()
+      }
+      // 开始动画循环
+      const that = this
+      animate()
+
       // 角度转弧度
       function D2R(deg) {
         const rad = (deg * Math.PI) / 180
         return rad
       }
 
-      // 模型真实尺寸计算，单位统一为m
+      // 模型真实尺寸的计算，单位统一为m
       function calcWH(boundingBox) {
         const lngMin = boundingBox[0]
         const lngMax = boundingBox[2]
@@ -97,116 +208,13 @@ export default {
         }
         geometry.attributes.color.needsUpdate = true
       }
-
-      const init = (boundingBox, rastersData) => {
-        const { WEdistance, NSdistance } = calcWH(boundingBox)
-        const rasterWidth = rastersData.width,
-          rasterHeight = rastersData.height
-        const data = rastersData[0]
-
-        this.container = document.getElementById('container')
-        // 渲染器对象
-        this.renderer = new THREE.WebGLRenderer({ antialias: true })
-        this.renderer.setSize(
-          this.container.clientWidth,
-          this.container.clientHeight
-        )
-        this.renderer.autoClear = false
-        this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-        this.container.appendChild(this.renderer.domElement)
-        // 场景对象
-        this.scene = new THREE.Scene()
-        this.scene.background = new THREE.Color('#bfd1e5')
-        // 摄像机对象
-        const fov = 35
-        const aspect = this.container.clientWidth / this.container.clientHeight
-        const near = 50
-        const far = 500000
-        this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far)
-        this.camera.position.set(0, 0.8 * WEdistance, 0.8 * WEdistance) // 第二个坐标是高度，第三个坐标是前后
-        this.orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 2)
-        this.orthoCamera.position.set(-0.9, 0, 1)
-        // 拖拽控制器对象
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement)
-        this.controls.minDistance = near
-        this.controls.maxDistance = far
-        this.controls.maxPolarAngle = Math.PI / 2
-        this.controls.target.y = data[Math.floor(data.length / 2)] + 1000
-        this.controls.update()
-        // 定义几何对象
-        let geometry = new THREE.PlaneGeometry(
-          WEdistance,
-          NSdistance,
-          rasterWidth - 1,
-          rasterHeight - 1
-        )
-        geometry.rotateX(-Math.PI / 2)
-        geometry = reshapePlane(geometry, data)
-        //设置颜色映射表
-        this.uiScene = new THREE.Scene()
-        this.lut = new Lut()
-        this.lut.setColorMap('rainbow')
-        const { min, max } = getMinAndMax(data)
-        this.lut.setMax(max)
-        this.lut.setMin(min)
-        const sprite = new THREE.Sprite(
-          new THREE.SpriteMaterial({
-            map: new THREE.CanvasTexture(this.lut.createCanvas()),
-          })
-        )
-        sprite.scale.x = 0.04
-        this.uiScene.add(sprite)
-
-        // 设置模型颜色
-
-        colorGeometry(data, geometry, this.lut)
-
-        // 组装成Mesh
-        this.mesh = new THREE.Mesh(
-          geometry,
-          new THREE.MeshLambertMaterial({
-            color: 0xc7c7c7,
-            vertexColors: true,
-          })
-        )
-        this.mesh.receiveShadow = true
-        this.mesh.castShadow = true
-        this.scene.add(this.mesh)
-        // 坐标轴指示，后面删掉
-        const axesHelper = new THREE.AxesHelper(NSdistance)
-        this.scene.add(axesHelper)
-        // 光源对象
-        const light = new THREE.DirectionalLight('#fff', 1)
-        light.position.set(5, 3, 0)
-        light.castShadow = true
-        this.scene.add(light)
-
-        const gridHelper = new THREE.GridHelper(1.25 * WEdistance, 50)
-        this.scene.add(gridHelper)
-        // 自适应窗口尺寸
-        window.onresize = () => {
-          const newAspect =
-            this.container.clientWidth / this.container.clientHeight
-          this.renderer.setSize(
-            this.container.clientWidth,
-            this.container.clientHeight
-          )
-          this.camera.aspect = newAspect
-          this.camera.updateProjectionMatrix()
-          this.orthoCamera.aspect = newAspect
-          this.orthoCamera.updateProjectionMatrix()
-        }
-      }
       // 动画循环
-      const animate = () => {
-        this.animationID = requestAnimationFrame(animate)
-        this.renderer.render(this.scene, this.camera)
-        this.renderer.render(this.uiScene, this.orthoCamera)
+      function animate() {
+        that.animationID = requestAnimationFrame(animate)
+        that.renderer.clear()
+        that.renderer.render(that.scene, that.camera)
+        that.renderer.render(that.uiScene, that.orthoCamera)
       }
-
-      init(boundingBox, rastersData)
-      animate()
     },
   },
 
