@@ -7,8 +7,13 @@
 <script>
 import * as THREE from 'three'
 
+import Stats from 'three/addons/libs/stats.module.js'
+
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { Lut } from 'three/addons/math/Lut.js'
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
+import { Wireframe } from 'three/addons/lines/Wireframe.js'
+import { WireframeGeometry2 } from 'three/addons/lines/WireframeGeometry2.js'
 export default {
   data() {
     return {}
@@ -16,122 +21,220 @@ export default {
   methods: {},
 
   mounted() {
-    let container
-    let perpCamera, orthoCamera, renderer, lut
-    let mesh, sprite
-    let scene, uiScene
+    let wireframe, renderer, scene, camera, camera2, controls
+    let wireframe1
+    let matLine, matLineBasic, matLineDashed
+    let stats
+    let gui
+
+    // viewport
+    let insetWidth
+    let insetHeight
     init()
+    animate()
 
     function init() {
-      container = document.getElementById('container')
+      renderer = new THREE.WebGLRenderer({ antialias: true })
+      renderer.setPixelRatio(window.devicePixelRatio)
+      renderer.setClearColor(0x000000, 0.0)
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      document.body.appendChild(renderer.domElement)
 
       scene = new THREE.Scene()
-      scene.background = new THREE.Color(0xffffff)
 
-      uiScene = new THREE.Scene()
-
-      lut = new Lut()
-
-      const width = window.innerWidth
-      const height = window.innerHeight
-
-      perpCamera = new THREE.PerspectiveCamera(60, width / height, 1, 100)
-      perpCamera.position.set(0, 0, 10)
-      scene.add(perpCamera)
-
-      orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 2)
-      orthoCamera.position.set(-0.5, 0, 1)
-
-      sprite = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: new THREE.CanvasTexture(lut.createCanvas()),
-        })
+      camera = new THREE.PerspectiveCamera(
+        40,
+        window.innerWidth / window.innerHeight,
+        1,
+        1000
       )
-      sprite.scale.x = 0.1
-      uiScene.add(sprite)
+      camera.position.set(-50, 0, 50)
 
-      mesh = new THREE.Mesh(
-        undefined,
-        new THREE.MeshLambertMaterial({
-          side: THREE.DoubleSide,
-          color: 0xf5f5f5,
-          vertexColors: true, // 顶点着色
-        })
-      )
-      scene.add(mesh)
+      camera2 = new THREE.PerspectiveCamera(40, 1, 1, 1000)
+      camera2.position.copy(camera.position)
 
-      loadModel()
+      controls = new OrbitControls(camera, renderer.domElement)
+      controls.minDistance = 10
+      controls.maxDistance = 500
 
-      const pointLight = new THREE.PointLight(0xffffff, 1)
-      perpCamera.add(pointLight)
+      let geo = new THREE.IcosahedronGeometry(20, 1)
 
-      renderer = new THREE.WebGLRenderer({ antialias: true })
-      renderer.autoClear = false
-      renderer.setPixelRatio(window.devicePixelRatio)
-      renderer.setSize(width, height)
-      container.appendChild(renderer.domElement)
+      const geometry = new WireframeGeometry2(geo)
 
-      const controls = new OrbitControls(perpCamera, renderer.domElement)
-      controls.addEventListener('change', render)
+      matLine = new LineMaterial({
+        color: 0x4080ff,
+        linewidth: 5, // in pixels
+        //resolution:  // to be set by renderer, eventually
+        dashed: false,
+      })
+
+      wireframe = new Wireframe(geometry, matLine)
+      wireframe.computeLineDistances()
+      wireframe.scale.set(1, 1, 1)
+      scene.add(wireframe)
+
+      // Line ( THREE.WireframeGeometry, THREE.LineBasicMaterial ) - rendered with gl.LINE
+
+      geo = new THREE.WireframeGeometry(geo)
+
+      matLineBasic = new THREE.LineBasicMaterial({ color: 0x4080ff })
+      matLineDashed = new THREE.LineDashedMaterial({
+        scale: 2,
+        dashSize: 1,
+        gapSize: 1,
+      })
+
+      wireframe1 = new THREE.LineSegments(geo, matLineBasic)
+      wireframe1.computeLineDistances()
+      wireframe1.visible = false
+      scene.add(wireframe1)
+
+      //
+
+      window.addEventListener('resize', onWindowResize)
+      onWindowResize()
+
+      stats = new Stats()
+      document.body.appendChild(stats.dom)
+
+      initGui()
     }
+    function animate() {
+      requestAnimationFrame(animate)
 
-    function render() {
-      renderer.clear()
-      renderer.render(scene, perpCamera)
-      renderer.render(uiScene, orthoCamera)
+      stats.update()
+
+      // main scene
+
+      renderer.setClearColor(0x000000, 0)
+
+      renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
+
+      // renderer will set this eventually
+      matLine.resolution.set(window.innerWidth, window.innerHeight) // resolution of the viewport
+
+      renderer.render(scene, camera)
+
+      // inset scene
+
+      renderer.setClearColor(0x222222, 1)
+
+      renderer.clearDepth() // important!
+
+      renderer.setScissorTest(true)
+
+      renderer.setScissor(20, 20, insetWidth, insetHeight)
+
+      renderer.setViewport(20, 20, insetWidth, insetHeight)
+
+      //* copy相机的位置和方向
+      camera2.position.copy(camera.position)
+      camera2.quaternion.copy(camera.quaternion)
+
+      // renderer will set this eventually
+      matLine.resolution.set(insetWidth, insetHeight) // resolution of the inset viewport
+
+      renderer.render(scene, camera2)
+
+      renderer.setScissorTest(false)
     }
+    function initGui() {
+      gui = new GUI()
 
-    function loadModel() {
-      const loader = new THREE.BufferGeometryLoader()
-      loader.load(
-        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/json/pressure.json',
-        function (geometry) {
-          console.log(geometry)
-          geometry.center()
-          geometry.computeVertexNormals()
-
-          // default color attribute
-          const colors = []
-
-          for (let i = 0, n = geometry.attributes.position.count; i < n; ++i) {
-            colors.push(1, 1, 1)
-          }
-
-          geometry.setAttribute(
-            'color',
-            new THREE.Float32BufferAttribute(colors, 3)
-          )
-
-          mesh.geometry = geometry
-          updateColors()
-
-          render()
-        }
-      )
-    }
-
-    function updateColors() {
-      lut.setColorMap('rainbow')
-      lut.setMax(2000)
-      lut.setMin(0)
-
-      const geometry = mesh.geometry
-      const pressures = geometry.attributes.pressure
-      const colors = geometry.attributes.color
-
-      for (let i = 0; i < pressures.array.length; i++) {
-        const colorValue = pressures.array[i]
-
-        const color = lut.getColor(colorValue)
-
-        if (color === undefined) {
-          console.log('Unable to determine color for value:', colorValue)
-        } else {
-          colors.setXYZ(i, color.r, color.g, color.b)
-        }
+      const param = {
+        'line type': 0,
+        'width (px)': 5,
+        dashed: false,
+        'dash scale': 1,
+        'dash / gap': 1,
       }
 
-      colors.needsUpdate = true
+      gui
+        .add(param, 'line type', { LineGeometry: 0, 'gl.LINE': 1 })
+        .onChange(function (val) {
+          switch (val) {
+            case 0:
+              wireframe.visible = true
+
+              wireframe1.visible = false
+
+              break
+
+            case 1:
+              wireframe.visible = false
+
+              wireframe1.visible = true
+
+              break
+          }
+        })
+
+      gui.add(param, 'width (px)', 1, 10).onChange(function (val) {
+        matLine.linewidth = val
+      })
+
+      gui.add(param, 'dashed').onChange(function (val) {
+        matLine.dashed = val
+
+        // dashed is implemented as a defines -- not as a uniform. this could be changed.
+        // ... or THREE.LineDashedMaterial could be implemented as a separate material
+        // temporary hack - renderer should do this eventually
+        if (val) matLine.defines.USE_DASH = ''
+        else delete matLine.defines.USE_DASH
+        matLine.needsUpdate = true
+
+        wireframe1.material = val ? matLineDashed : matLineBasic
+      })
+
+      gui.add(param, 'dash scale', 0.5, 1, 0.1).onChange(function (val) {
+        matLine.dashScale = val
+        matLineDashed.scale = val
+      })
+
+      gui
+        .add(param, 'dash / gap', { '2 : 1': 0, '1 : 1': 1, '1 : 2': 2 })
+        .onChange(function (val) {
+          switch (val) {
+            case 0:
+              matLine.dashSize = 2
+              matLine.gapSize = 1
+
+              matLineDashed.dashSize = 2
+              matLineDashed.gapSize = 1
+
+              break
+
+            case 1:
+              matLine.dashSize = 1
+              matLine.gapSize = 1
+
+              matLineDashed.dashSize = 1
+              matLineDashed.gapSize = 1
+
+              break
+
+            case 2:
+              matLine.dashSize = 1
+              matLine.gapSize = 2
+
+              matLineDashed.dashSize = 1
+              matLineDashed.gapSize = 2
+
+              break
+          }
+        })
+    }
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+
+      renderer.setSize(window.innerWidth, window.innerHeight)
+
+      insetWidth = window.innerHeight / 4 // square
+      insetHeight = window.innerHeight / 4
+
+      camera2.aspect = insetWidth / insetHeight
+      camera2.updateProjectionMatrix()
     }
   },
 }

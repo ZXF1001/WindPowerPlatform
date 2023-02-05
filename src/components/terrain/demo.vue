@@ -211,9 +211,33 @@ export default {
       // 动画循环
       function animate() {
         that.animationID = requestAnimationFrame(animate)
-        that.renderer.clear()
+        // main scene
+
+        // that.renderer.clear()
+        that.renderer.setViewport(
+          0,
+          0,
+          that.container.clientWidth,
+          that.container.clientHeight
+        )
         that.renderer.render(that.scene, that.camera)
         that.renderer.render(that.uiScene, that.orthoCamera)
+
+        // that.renderer.setScissor(20, 20, 1000, 1000)
+
+        // that.renderer.setViewport(20, 20, 100, 100)
+        let insetWidth = that.container.clientWidth / 4
+        let insetHeight = that.container.clientHeight / 4
+        that.renderer.setClearColor(0x222222, 1)
+        that.renderer.clearDepth() // important!
+
+        that.renderer.setScissorTest(true)
+
+        that.renderer.setScissor(20, 20, insetWidth, insetHeight)
+
+        that.renderer.setViewport(20, 20, insetWidth, insetHeight)
+        that.renderer.render(that.scene, that.camera)
+        that.renderer.setScissorTest(false)
       }
     },
   },
