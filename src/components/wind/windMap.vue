@@ -32,7 +32,7 @@
           <img width="100%"
                height="20"
                draggable="false"
-               :src="colorbarData?colorbarData:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+               :src="colorbarData?colorbarData:emptyImg">
         </div>
         <div id="label">
           <span v-for="item in [0,1,2,3,4]"
@@ -61,6 +61,8 @@ export default {
       colormap: 'viridis',
       colorbarData: null,
       contourSelected: false,
+      emptyImg:
+        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
     }
   },
   methods: {
@@ -68,7 +70,7 @@ export default {
     handleCheckAllChange(val) {
       this.checkedClusters = val ? this.clusterOptions : []
       this.isIndeterminate = false
-      this.redrawMarker(this.map)
+      myMapFunc.redrawMarker(this)
     },
     handleCheckedClustersChange(value) {
       // 传入的是一个选中项目的Array

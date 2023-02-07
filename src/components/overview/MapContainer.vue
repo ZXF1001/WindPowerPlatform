@@ -2,8 +2,7 @@
   <el-card class="map">
     <el-container>
       <el-aside width="auto">
-        <div class="select scroller"
-             v-show="isShow">
+        <div class="select scroller">
           <el-checkbox :indeterminate="isIndeterminate"
                        v-model="checkAll"
                        @change="handleCheckAllChange">全选</el-checkbox>
@@ -27,7 +26,7 @@
               <img width="100%"
                    height="20"
                    draggable="false"
-                   :src="colorbarData?colorbarData:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+                   :src="colorbarData?colorbarData:emptyImg">
               <!-- 没有载入colormap时用透明图代替 -->
             </div>
             <div id="label">
@@ -49,7 +48,6 @@ import * as myMapFunc from '@/js/map/map'
 export default {
   data() {
     return {
-      isShow: true,
       checkAll: true,
       clusterOptions: [],
       checkedClusters: [], //这是选中的集群Array
@@ -59,6 +57,8 @@ export default {
       colormap: 'viridis',
       colorbarData: null,
       contourSelected: false,
+      emptyImg:
+        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
     }
   },
   methods: {
@@ -66,7 +66,7 @@ export default {
     handleCheckAllChange(val) {
       this.checkedClusters = val ? this.clusterOptions : []
       this.isIndeterminate = false
-      this.redrawMarker(this.map)
+      myMapFunc.redrawMarker(this)
     },
     handleCheckedClustersChange(value) {
       // 传入的是一个选中项目的Array
@@ -74,7 +74,7 @@ export default {
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
-      this.redrawMarker(this.map)
+      myMapFunc.redrawMarker(this)
     },
   },
   computed: {
