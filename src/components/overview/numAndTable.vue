@@ -64,30 +64,22 @@ export default {
       tableData: [],
     }
   },
-  methods: {
-    init() {
-      this.ws = connectWS('/turbines/get-overview-numdata', (res) => {
-        this.tableData = res.map((cluster) => {
-          return {
-            cluster: cluster.cluster_id,
-            power: cluster.power,
-            perpower: cluster.power / 16,
-          }
-        })
-        this.updateTime = `更新时间：${dateFormatter(new Date(), 'typical')}`
-        if (this.loading) {
-          this.loading = false
+
+  mounted() {
+    this.ws = connectWS('/turbines/get-overview-numdata', (res) => {
+      this.tableData = res.map((cluster) => {
+        return {
+          cluster: cluster.cluster_id,
+          power: cluster.power,
+          perpower: cluster.power / 16,
         }
       })
-    },
-  },
-  mounted() {
-    this.init()
+      this.updateTime = `更新时间：${dateFormatter(new Date(), 'typical')}`
+      if (this.loading) this.loading = false
+    })
   },
   beforeDestroy() {
-    if (this.ws) {
-      this.ws.close()
-    }
+    if (this.ws) this.ws.close()
   },
 }
 </script>

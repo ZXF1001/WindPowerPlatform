@@ -25,25 +25,10 @@ export default {
     }
   },
   methods: {
-    // 获取geotiff高程数据
-    fetchTIFF() {
-      // 使用匿名函数的写法
-      (async () => {
-        console.log('加载DEM')
-        const url = 'http://1.117.224.40/geotiff/test_compress.tif'
-        const tiff = await fromUrl(url)
-        const image = await tiff.getImage()
-        const bbox = image.getBoundingBox()
-        const rastersData = await image.readRasters()
-        console.log('加载完成，正在渲染')
-        this.createTHREE(bbox, rastersData)
-      })()
-    },
-
     createTHREE(boundingBox, rastersData) {
       const { WEdistance, NSdistance } = calcWH(boundingBox)
-      const rasterWidth = rastersData.width,
-        rasterHeight = rastersData.height
+      const rasterWidth = rastersData.width
+      const rasterHeight = rastersData.height
       const data = rastersData[0]
 
       this.container = document.getElementById('container')
@@ -243,16 +228,28 @@ export default {
   },
 
   mounted() {
-    this.fetchTIFF()
+    async function fetchTIFF(url, callback) {
+      const tiff = await fromUrl(url)
+      const image = await tiff.getImage()
+      const boundingBox = image.getBoundingBox()
+      const rastersData = await image.readRasters()
+      callback(boundingBox, rastersData)
+    }
+    // 传入url和回调函数，渲染三维模型
+    const url = 'http://1.117.224.40/geotiff/test_compress.tif'
+    fetchTIFF(url, this.createTHREE)
   },
   beforeDestroy() {
-    this.mesh.remove()
-    this.scene.clear()
-    this.uiScene.clear()
-    this.renderer.dispose()
-    this.renderer.forceContextLoss()
-    this.renderer.content = null
-    cancelAnimationFrame(this.animationID)
+    if (this.mesh) this.mesh.remove()
+    if (this.scene) this.scene.clear()
+    if (this.uiScene) this.uiScene.clear()
+    if (this.renderer) {
+      this.renderer.dispose()
+      this.renderer.forceContextLoss()
+      this.renderer.content = null
+    }
+    if (this.animationID) cancelAnimationFrame(this.animationID)
+    window.onresize = () => {}
   },
 }
 </script>

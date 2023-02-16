@@ -20,7 +20,7 @@ export default {
   props: ['selectedSpan'],
   methods: {
     drawDistribute() {
-      const data = {
+      const postData = {
         site: this.selectedSpan.siteLabel,
         height: this.selectedSpan.heightLabel,
         dir: this.selectedSpan.dirIndex,
@@ -28,23 +28,19 @@ export default {
         dateEnd: null,
       }
       if (this.selectedSpan.dateRange) {
-        data.dateBegin = dateFormatter(
-          this.selectedSpan.dateRange[0],
-          'typical'
-        )
-        data.dateEnd = dateFormatter(this.selectedSpan.dateRange[1], 'typical')
+        const dateRange = this.selectedSpan.dateRange
+        postData.dateBegin = dateFormatter(dateRange[0], 'typical')
+        postData.dateEnd = dateFormatter(dateRange[1], 'typical')
       }
-      post4WSData(data)
+      post4WSData(postData)
         .then((res) => {
-          let maxV = 0
-          let minV = 0
+          let maxV,
+            minV = 0
           let countSum = 0
           for (let i = 0; i < res.data.length; i++) {
             const range = res.data[i]
-            maxV =
-              parseInt(range.rangeStart) > maxV
-                ? parseInt(range.rangeStart)
-                : maxV
+            const rangeStart = parseInt(range.rangeStart)
+            maxV = rangeStart > maxV ? rangeStart : maxV
             countSum += parseInt(range.count)
           }
 
@@ -65,14 +61,6 @@ export default {
           for (let i = 0; i < maxV - minV + 1; i++) {
             seriesData.push([i + delta / 2, countList[i] / countSum])
           }
-          // const colorBar = [
-          //   '#453781', //0-5
-          //   '#32648e', //5-10
-          //   '#238a8d', //10-15
-          //   '#29af7f', //15-20
-          //   '#74d055', //20-25
-          //   '#fde725', //25-
-          // ]
           this.distributeChart = echarts.init(this.$refs.distributeChart)
           const option = {
             color: colorBar,
@@ -160,9 +148,7 @@ export default {
             ],
           }
           option && this.distributeChart.setOption(option)
-          window.onresize = () => {
-            this.distributeChart.resize()
-          }
+          window.onresize = () => this.distributeChart.resize()
         })
         .catch((e) => {
           console.log(e)

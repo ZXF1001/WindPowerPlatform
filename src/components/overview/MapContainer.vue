@@ -63,14 +63,14 @@ export default {
   },
   methods: {
     //多选框相关方法
-    handleCheckAllChange(val) {
-      this.checkedClusters = val ? this.clusterOptions : []
+    handleCheckAllChange(checkedAll) {
+      this.checkedClusters = checkedAll ? this.clusterOptions : []
       this.isIndeterminate = false
       myMapFunc.redrawMarker(this)
     },
-    handleCheckedClustersChange(value) {
+    handleCheckedClustersChange(checkedList) {
       // 传入的是一个选中项目的Array
-      const checkedCount = value.length
+      const checkedCount = checkedList.length
       this.checkAll = checkedCount === this.clusterOptions.length
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.clusterOptions.length
@@ -114,9 +114,8 @@ export default {
           this.geotiffMinAndMax[1]
         )
         this.geolayer.addTo(this.map)
-        this.colorbarData = this.geolayer.options.renderer.getColourbarDataUrl(
-          this.colormap
-        )
+        const renderer = this.geolayer.options.renderer
+        this.colorbarData = renderer.getColourbarDataUrl(this.colormap)
       }
     },
   },

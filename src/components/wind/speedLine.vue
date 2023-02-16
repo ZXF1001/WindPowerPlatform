@@ -436,6 +436,9 @@ export default {
       })
     }
   },
+  beforeDestroy() {
+    window.onresize = () => {}
+  },
 }
 </script>
 

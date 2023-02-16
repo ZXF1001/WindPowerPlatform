@@ -104,18 +104,24 @@ export default {
       hourlyUpdateTime: null,
       nowWeather: {},
       hourlyWeather: [],
+      Techart: null,
+      Hechart: null,
     }
   },
-  methods: {
-    returnHour(date) {
-      const dateObj = new Date(date)
-      return dateObj.getHours()
+  computed: {
+    returnHour() {
+      return function (date) {
+        const dateObj = new Date(date)
+        return dateObj.getHours()
+      }
     },
+  },
+  methods: {
     draw24hWeather() {
       this.ws2 = connectWS('/weather/get-24h-weather', (res) => {
         this.hourlyWeather = res
-        this.drawTemp()
-        this.drawHumid()
+        this.drawEcharts('temp')
+        this.drawEcharts('humid')
         this.drawWind()
         const now = new Date(this.hourlyWeather[0].updateTime)
         const Hour = now.getHours()
@@ -136,77 +142,37 @@ export default {
         }`
       })
     },
-    drawTemp() {
-      //Echarts绘制温度折线图
-      if (!this.Techart) {
-        this.Techart = echarts.init(this.$refs.Techarts)
-        const option = {
-          color: '#ee6666',
-          tooltip: {
-            trigger: 'axis',
-            valueFormatter: (value) => value + '°C',
-          },
-
-          grid: {
-            containLabel: true,
-            left: '2%',
-            right: '3%',
-            top: '10%',
-            bottom: '2%',
-          },
-
-          xAxis: {
-            type: 'time',
-            splitNumber: 11,
-          },
-          yAxis: {
-            type: 'value',
-            axisLabel: {
-              formatter: '{value} °C',
-            },
-          },
-
-          series: {
-            name: '温度',
-            data: [],
-            type: 'line',
-            smooth: true,
-            // animationDuration: 0,
-            emphasis: {
-              focus: 'series',
-            },
-          },
-        }
-        this.Techart.setOption(option)
+    drawEcharts(type) {
+      let chartObj, dom, color, unit, name, fieldName
+      switch (type) {
+        case 'temp':
+          chartObj = this.Techart
+          dom = this.$refs.Techarts
+          color = '#ee6666'
+          unit = '°C'
+          name = '温度'
+          fieldName = 'temp'
+          break
+        case 'humid':
+          chartObj = this.Hechart
+          dom = this.$refs.Hecharts
+          color = '#5470c6'
+          unit = '%'
+          name = '湿度'
+          fieldName = 'humidity'
+          break
+        default:
+          break
       }
-      const tempList = []
-      //时间列表获取
-      for (let i = 0; i < this.hourlyWeather.length; i++) {
-        const time = new Date(this.hourlyWeather[i].fxTime)
-        const chartTime = dateFormatter(time, 'typical')
-
-        tempList.push({
-          name: time.toString(),
-          value: [chartTime, this.hourlyWeather[i].temp],
-        })
-      }
-      this.Techart.setOption({
-        series: {
-          data: tempList,
-        },
-      })
-    },
-    drawHumid() {
-      //Echarts绘制湿度折线图
-      if (!this.Hechart) {
-        this.Hechart = echarts.init(this.$refs.Hecharts)
+      if (!chartObj) {
+        chartObj = echarts.init(dom)
         const option = {
-          color: '#5470c6',
+          color: color,
 
           tooltip: {
             trigger: 'axis',
             // formatter:{}
-            valueFormatter: (value) => value + '%',
+            valueFormatter: (value) => `${value}${unit}`,
           },
 
           grid: {
@@ -228,13 +194,13 @@ export default {
             {
               type: 'value',
               axisLabel: {
-                formatter: '{value} %',
+                formatter: `{value}${unit}`,
               },
             },
           ],
           series: [
             {
-              name: '湿度',
+              name: name,
               data: [],
               type: 'line',
               smooth: true,
@@ -244,23 +210,21 @@ export default {
             },
           ],
         }
-        this.Hechart.setOption(option)
+        chartObj.setOption(option)
       }
-
-      const humidList = []
+      const dataList = []
       //时间列表获取
       for (let i = 0; i < this.hourlyWeather.length; i++) {
         const time = new Date(this.hourlyWeather[i].fxTime)
         const chartTime = dateFormatter(time, 'typical')
-        humidList.push({
+        dataList.push({
           name: time.toString(),
-          value: [chartTime, this.hourlyWeather[i].humidity],
+          value: [chartTime, this.hourlyWeather[i][fieldName]],
         })
       }
-
-      this.Hechart.setOption({
+      chartObj.setOption({
         series: {
-          data: humidList,
+          data: dataList,
         },
       })
     },
@@ -313,7 +277,6 @@ export default {
             },
           ],
         }
-        console.log(option)
         this.Wechart.setOption(option)
       }
 
@@ -348,6 +311,7 @@ export default {
     }
   },
   beforeDestroy() {
+    window.onresize = () => {}
     if (this.ws1) {
       this.ws1.close()
       this.ws1 = undefined
