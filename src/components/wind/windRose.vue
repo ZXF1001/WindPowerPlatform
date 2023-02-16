@@ -67,7 +67,7 @@
                @opened="parentDrawDistribute"
                @close="parentCloseDialog">
       <ws-distri-dialog :selectedSpan="drawDistributeParams"
-                        ref="distriDialog"></ws-distri-dialog>
+                        ref="distriDialog" />
     </el-dialog>
   </div>
 </template>

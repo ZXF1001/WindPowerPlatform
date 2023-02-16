@@ -319,6 +319,7 @@ export default {
         data.height = item.heightLabel
         post4SpeedTimeData(data)
           .then((res) => {
+            //! 这里要考虑没有选定日期里的数据的情况
             if (!this.echartsList[item.siteValue][item.heightValue]) {
               this.echartsList[item.siteValue][item.heightValue] = echarts.init(
                 document.getElementById(
