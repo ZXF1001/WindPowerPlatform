@@ -216,13 +216,12 @@ export default {
         that.renderer.setClearColor(0x222222, 1)
         that.renderer.clearDepth() // important!
 
-        that.renderer.setScissorTest(true)
-
-        that.renderer.setScissor(20, 20, insetWidth, insetHeight)
-
-        that.renderer.setViewport(20, 20, insetWidth, insetHeight)
-        that.renderer.render(that.scene, that.camera)
-        that.renderer.setScissorTest(false)
+        //! 左下角的小图
+        // that.renderer.setScissorTest(true)
+        // that.renderer.setScissor(20, 20, insetWidth, insetHeight)
+        // that.renderer.setViewport(20, 20, insetWidth, insetHeight)
+        // that.renderer.render(that.scene, that.camera)
+        // that.renderer.setScissorTest(false)
       }
     },
   },

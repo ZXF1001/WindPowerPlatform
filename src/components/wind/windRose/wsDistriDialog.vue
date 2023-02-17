@@ -34,8 +34,8 @@ export default {
       }
       post4WSData(postData)
         .then((res) => {
-          let maxV,
-            minV = 0
+          let maxV = 0
+          let minV = 0
           let countSum = 0
           for (let i = 0; i < res.data.length; i++) {
             const range = res.data[i]
@@ -51,7 +51,7 @@ export default {
           }
           const delta = 1 //表示单个速度范围的跨度，与后端一致
           const seriesData = []
-
+          console.log(maxV, minV)
           const countList = new Array(maxV - minV + 1).fill(0)
           for (let i = 0; i < res.data.length; i++) {
             const range = res.data[i]

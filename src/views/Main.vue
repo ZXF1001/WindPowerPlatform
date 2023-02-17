@@ -1,15 +1,15 @@
 <template>
   <el-container>
     <el-header>
-      <common-header></common-header>
+      <common-header />
     </el-header>
     <el-container>
       <el-aside width="auto">
-        <common-aside></common-aside>
+        <common-aside />
       </el-aside>
       <el-main class="scroller-large">
         <!-- <keep-alive> -->
-        <router-view></router-view>
+        <router-view />
         <!-- </keep-alive> -->
       </el-main>
     </el-container>
