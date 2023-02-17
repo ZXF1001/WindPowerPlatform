@@ -88,8 +88,8 @@ export default {
               label: '地形数据',
             },
             {
-              path: '/single',
-              name: 'single',
+              path: '/turbine',
+              name: 'turbine',
               label: '风机信息',
             },
           ],
@@ -101,12 +101,17 @@ export default {
             {
               path: '/simulation',
               name: 'simulation',
-              label: '尾流仿真',
+              label: '发电仿真',
             },
             {
               path: '/optimize',
               name: 'optimize',
               label: '优化控制',
+            },
+            {
+              path: '/load',
+              name: 'load',
+              label: '载荷分析',
             },
           ],
         },

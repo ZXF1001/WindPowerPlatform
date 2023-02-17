@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>这是Single</h1>
+    <h1>这是Load</h1>
   </div>
 </template>
 <script>

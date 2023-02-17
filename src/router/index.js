@@ -6,9 +6,10 @@ import Optimize from "../views/Optimize.vue";
 import Overview from "../views/Overview.vue";
 import People from "../views/People.vue";
 import Simulation from "../views/Simulation.vue";
-import Single from "../views/Single.vue";
+import Turbine from "../views/Turbine.vue";
 import Terrain from "../views/Terrain.vue";
 import Wind from "../views/Wind.vue";
+import Load from "../views/Load.vue";
 
 Vue.use(VueRouter);
 
@@ -23,9 +24,10 @@ const routes = [
       { path: "terrain", component: Terrain },
       { path: "simulation", component: Simulation },
       { path: "optimize", component: Optimize },
-      { path: "single", component: Single },
+      { path: "turbine", component: Turbine },
       { path: "cluster", component: Cluster },
       { path: "people", component: People },
+      { path: "load", component: Load },
     ],
   },
 ];
