@@ -84,7 +84,7 @@ export default {
         {
           path: '/optimize',
           name: 'optimize',
-          label: '优化操作',
+          label: '优化控制',
           icon: 'el-icon-odometer',
         },
         {

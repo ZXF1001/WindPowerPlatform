@@ -1,7 +1,7 @@
 <template>
   <div class="header-container">
     <div class="l-content">
-      <h2 style="color:#fff">虚拟激光雷达区域化风电场优化云计算平台</h2>
+      <h2 style="color:#fff">风电场规划设计优化运行系统化云计算平台</h2>
     </div>
     <div class="r-content">
       <div class="nowtime">
