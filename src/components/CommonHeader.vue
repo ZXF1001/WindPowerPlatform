@@ -64,18 +64,16 @@ export default {
     .nowtime {
       margin-right: 40px;
     }
-  }
-  .text {
-    color: #fff;
-    font-size: 14px;
-    margin-left: 14px;
-  }
-  .r-content {
     .user {
       width: 40px;
       height: 40px;
       border-radius: 50%;
     }
+  }
+  .text {
+    color: #fff;
+    font-size: 14px;
+    margin-left: 14px;
   }
 }
 </style>
