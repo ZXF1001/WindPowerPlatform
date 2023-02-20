@@ -7,7 +7,12 @@ export function connectWS(subURL, callback) {
   const ws = initWS(url, callback);
   return ws;
 }
+export function connectLocalWS(URL, callback) {
+  const url = URL;
 
+  const ws = initWS(url, callback);
+  return ws;
+}
 // 初始化ws
 function initWS(url, _callback) {
   if (typeof WebSocket === "undefined") {
