@@ -141,6 +141,7 @@
 <script>
 import { createTable, upload2DB } from "@/api/wind/uploadData";
 import readLocalCSV from "@/utils/readCSV";
+import * as checkRules from "@/js/upload/checkRules";
 export default {
   data() {
     return {
@@ -301,105 +302,34 @@ export default {
       // ...]
       // 这样的形式
 
-      //* 一些封装的数据校验规则函数
-      //检验是否有空的选择框
-      function checkEmptySelect(fieldData) {
-        for (let i = 0; i < fieldData.length; i++) {
-          const element = fieldData[i];
-          if (!element.typeOptions) {
-            throw "空的选择框";
-          }
-        }
-      }
-      // 日期时间的拼接处理
-      function checkDatetime(data, fieldData) {
-        const fieldList = fieldData.map((item) => item.typeOptions[1]);
-        const datetimeExist = fieldList.indexOf("datetime") !== -1;
-        const dateExist = fieldList.indexOf("date") !== -1;
-        const timeExist = fieldList.indexOf("time") !== -1;
-        //以下为日期拼接的前处理（若需要拼接）
-        if (datetimeExist) {
-          //过滤掉multi列表里的d和t
-          fieldData = fieldData.filter(
-            (item) =>
-              item.typeOptions[1] !== "date" && item.typeOptions[1] !== "time"
-          );
-        } else {
-          if (dateExist && timeExist) {
-            //把d和t拼成一个dt,再删掉d和t
-            //修改字段表数据
-            fieldData.push({
-              index: data[0].length,
-              typeOptions: ["datetime", "datetime"],
-            });
-            //找到时间日期所在的index,并合并加到dt字段
-            const indexOfDate = fieldData.filter(
-              (item) => item.typeOptions[1] === "date"
-            )[0].index;
-            const indexOfTime = fieldData.filter(
-              (item) => item.typeOptions[1] === "time"
-            )[0].index;
-            data.forEach((line) => {
-              const datetime = `${line[indexOfDate]} ${line[indexOfTime]}`;
-              line.push(datetime);
-            });
-            //删除字段表的d,t信息
-            fieldData = fieldData.filter(
-              (item) =>
-                item.typeOptions[1] !== "date" && item.typeOptions[1] !== "time"
-            );
-          } else {
-            //报错:没有日期时间
-            throw "缺少日期时间字段";
-          }
-        }
-        return { data, fieldData };
-      }
-      // 检验是否有空的高度行
-      function checkEmptyHeight(fieldData) {
-        fieldData.forEach((element) => {
-          if (
-            element.typeOptions[0] === "v" ||
-            element.typeOptions[0] === "deg"
-          ) {
-            if (!element.height) throw "请输入高度";
-          }
-        });
-      }
-      // 判断有没有至少一对风速风向数据
-      function checkLeastWSAndWD(fieldData) {
-        console.log(fieldData);
-        const vAvgList = fieldData.filter(
-          (item) => item.typeOptions[0] === "v" && item.typeOptions[1] === "avg"
-        );
-        const degAvgList = fieldData.filter(
-          (item) =>
-            item.typeOptions[0] === "deg" && item.typeOptions[1] === "avg"
-        );
-        const vHeight = vAvgList.map((item) => item.height);
-        const degHeight = degAvgList.map((item) => item.height);
-        let isExist = false;
-        for (let i = 0; i < vHeight.length; i++) {
-          if (degHeight.indexOf(vHeight[i]) !== -1) isExist = true;
-        }
-        if (!isExist) throw "没有高度相同的成对风速风向";
-      }
-
       try {
         let data = JSON.parse(JSON.stringify(this.jsonData));
         if (this.firstLineAsHeader) data.shift();
         //* 先校验数据
+        // 深拷贝一份数据
         let fieldData = JSON.parse(JSON.stringify(this.multipleSelection));
         // 检验是否有空的选择框，有的话就throw error
-        checkEmptySelect(fieldData);
+        checkRules.checkEmptySelect(fieldData);
+        // 检查日期时间或日期加时间是否存在
+        const { datetimeExist, dateAndTimeExist } =
+          checkRules.checkDatetimeExist(fieldData);
+        // 检查日期时间是否唯一
+        checkRules.checkUniqueDatetime(fieldData);
         // 日期时间的拼接处理
-        ({ data, fieldData } = checkDatetime(data, fieldData));
+        ({ data, fieldData } = checkRules.handleDatetime(
+          data,
+          fieldData,
+          datetimeExist,
+          dateAndTimeExist
+        ));
         // 检验是否有空的高度行
-        checkEmptyHeight(fieldData);
+        checkRules.checkEmptyHeight(fieldData);
         // 判断有没有至少一对风速风向数据
-        checkLeastWSAndWD(fieldData);
+        checkRules.checkLeastWSAndWD(fieldData);
+        // 校验数据格式（有无空数据、非数字数据...）
+        checkRules.checkDataType(data, fieldData);
 
-        //检验完毕，没有错误就上传
+        //* 检验完毕，没有错误就上传
         const uploadData = [];
         //上传的时候把字段格式改成规范的形式（如70m_v_avg）
         for (let i = 0; i < data.length; i++) {
