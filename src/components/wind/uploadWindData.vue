@@ -227,12 +227,7 @@ export default {
     },
   },
   methods: {
-    test() {
-      this.refresh = false;
-      this.$nextTick(() => {
-        this.refresh = true;
-      });
-    },
+    test() {},
     handleChange() {
       this.selectBtnContent = "重新选取";
 
@@ -291,32 +286,24 @@ export default {
       }
     },
     submitUpload() {
-      // 要把上传的数据变成
-      // [{
-      //   datetime:"2022-12-23 11:40:00",
-      //   70m_v_avg:9.8,
-      // },
-      // {
-      //   ...
-      // },
-      // ...]
-      // 这样的形式
+      function conventData(data, fieldData) {
+        // 要把上传的数据变成
+        // [{
+        //   datetime:"2022-12-23 11:40:00",
+        //   70m_v_avg:9.8,
+        // },
+        // {
+        //   ...
+        // },
+        // ...]
+        // 这样的形式
 
-      try {
-        let data = JSON.parse(JSON.stringify(this.jsonData));
-        if (this.firstLineAsHeader) data.shift();
-
-        // 深拷贝一份数据
-        let fieldData = JSON.parse(JSON.stringify(this.multipleSelection));
-        //* 先校验数据（封装的校验函数）
-        checkUpload(data, fieldData);
-
-        //* 检验完毕，没有错误就上传
         const uploadData = [];
         //上传的时候把字段格式改成规范的形式（如70m_v_avg）
         for (let i = 0; i < data.length; i++) {
           const tempRecord = {};
-          fieldData.forEach((field) => {
+          for (let j = 0; j < fieldData.length; j++) {
+            const field = fieldData[j];
             //如果是速度/角度字段,前面要加上高度
             if (
               field.typeOptions[0] === "v" ||
@@ -328,15 +315,31 @@ export default {
             } else {
               tempRecord[field.typeOptions[1]] = data[i][field.index];
             }
-          });
+          }
           uploadData.push(tempRecord);
         }
+        console.log(uploadData);
+        return uploadData;
+      }
+
+      try {
+        let data = JSON.parse(JSON.stringify(this.jsonData));
+        if (this.firstLineAsHeader) data.shift();
+
+        // 深拷贝一份数据
+        let fieldData = JSON.parse(JSON.stringify(this.multipleSelection));
+        //* 先校验数据（封装的校验函数）
+
+        ({ data, fieldData } = checkUpload(data, fieldData));
+
+        //* 检验完毕，没有错误就上传
+        const uploadData = conventData(data, fieldData);
 
         //创建数据表
         createTable({ site: this.siteInfo, data: uploadData[0] })
           .then(async () => {
             try {
-              const MAX_RECORD_NUM = Math.round(30000 / fieldData.length); //分块上传，每块上传30000个数据（不是条，是个）
+              const MAX_RECORD_NUM = Math.round(30000 / fieldData.length); //分块上传，每块上传30000个数据（不是条，是个，这个可以根据服务器速度来调整）
               const uploadNum = Math.ceil(uploadData.length / MAX_RECORD_NUM);
               console.log(`单次上传${MAX_RECORD_NUM}条`);
               this.uploadButtonDisabled = true;
@@ -368,7 +371,8 @@ export default {
                 },
               });
             } catch (e) {
-              this.$alert("上传失败，请检查重试", "错误", {
+              const errorText = e.response.data;
+              this.$alert(errorText, "错误", {
                 confirmButtonText: "确定",
                 type: "error",
                 showClose: false,

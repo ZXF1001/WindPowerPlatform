@@ -3,10 +3,17 @@ export const checkUpload = (data, fieldData) => {
   checkEmptySelect(fieldData);
   const { datetimeExist, dateAndTimeExist } = checkDatetimeExist(fieldData);
   checkUniqueDatetime(fieldData);
-  handleDatetime(data, fieldData, datetimeExist, dateAndTimeExist);
+  ({ data, fieldData } = handleDatetime(
+    data,
+    fieldData,
+    datetimeExist,
+    dateAndTimeExist
+  ));
   checkEmptyHeight(fieldData);
   checkLeastWSAndWD(fieldData);
   checkDataType(data, fieldData);
+
+  return { data, fieldData };
 };
 
 function checkEmptySelect(fieldData) {
@@ -49,6 +56,7 @@ function handleDatetime(data, fieldData, datetimeExist, dateAndTimeExist) {
       (item) => item.typeOptions[1] !== "date" && item.typeOptions[1] !== "time"
     );
   }
+  return { data, fieldData };
 }
 
 function checkEmptyHeight(fieldData) {
