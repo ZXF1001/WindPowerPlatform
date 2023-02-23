@@ -1,5 +1,15 @@
 //* 封装起来的校验函数，用在uploadWindData.vue组件中
-export const checkEmptySelect = (fieldData) => {
+export const checkUpload = (data, fieldData) => {
+  checkEmptySelect(fieldData);
+  const { datetimeExist, dateAndTimeExist } = checkDatetimeExist(fieldData);
+  checkUniqueDatetime(fieldData);
+  handleDatetime(data, fieldData, datetimeExist, dateAndTimeExist);
+  checkEmptyHeight(fieldData);
+  checkLeastWSAndWD(fieldData);
+  checkDataType(data, fieldData);
+};
+
+function checkEmptySelect(fieldData) {
   //检验是否有空的选择框
   for (let i = 0; i < fieldData.length; i++) {
     const element = fieldData[i];
@@ -7,14 +17,9 @@ export const checkEmptySelect = (fieldData) => {
       throw "空的选择框";
     }
   }
-};
+}
 
-export const handleDatetime = (
-  data,
-  fieldData,
-  datetimeExist,
-  dateAndTimeExist
-) => {
+function handleDatetime(data, fieldData, datetimeExist, dateAndTimeExist) {
   // 日期时间的拼接处理
   if (datetimeExist) {
     //过滤掉multi列表里的d和t
@@ -44,17 +49,21 @@ export const handleDatetime = (
       (item) => item.typeOptions[1] !== "date" && item.typeOptions[1] !== "time"
     );
   }
-  return { data, fieldData };
-};
-export const checkEmptyHeight = (fieldData) => {
-  // 检验是否有空的高度行
+}
+
+function checkEmptyHeight(fieldData) {
+  // 检验是否有空/非数字的高度行
   fieldData.forEach((element) => {
     if (element.typeOptions[0] === "v" || element.typeOptions[0] === "deg") {
       if (!element.height) throw "请输入高度";
+      const heightStr = element.height.trim();
+      const heightNotAllowed = heightStr === "" || isNaN(Number(heightStr));
+      if (heightNotAllowed) throw "请输入正确的高度（不带单位的数字）";
     }
   });
-};
-export const checkLeastWSAndWD = (fieldData) => {
+}
+
+function checkLeastWSAndWD(fieldData) {
   // 判断有没有至少一对风速风向数据
   const vAvgList = fieldData.filter(
     (item) => item.typeOptions[0] === "v" && item.typeOptions[1] === "avg"
@@ -69,9 +78,9 @@ export const checkLeastWSAndWD = (fieldData) => {
     if (degHeight.indexOf(vHeight[i]) !== -1) isExist = true;
   }
   if (!isExist) throw "没有高度相同的成对风速风向";
-};
+}
 
-export const checkDatetimeExist = (fieldData) => {
+function checkDatetimeExist(fieldData) {
   // 检查是否存在日期+时间/日期时间
   const fieldList = fieldData.map((item) => item.typeOptions[1]);
   const datetimeExist = fieldList.indexOf("datetime") !== -1;
@@ -81,15 +90,29 @@ export const checkDatetimeExist = (fieldData) => {
   const isExist = datetimeExist || dateAndTimeExist;
   if (!isExist) throw "缺少日期时间字段";
   return { datetimeExist, dateAndTimeExist };
-};
+}
 
-export const checkUniqueDatetime = (fieldData) => {
+function checkUniqueDatetime(fieldData) {
   // 检查日期时间是否唯一
-  // 还没写这个功能
-  // console.log(fieldData);
-};
+  console.log(fieldData);
+  //* 1.检查dt、d、t分别的个数，如果大于一个就是重复
+  const datetimeList = fieldData.filter(
+    (item) => item.typeOptions[0] === "datetime"
+  );
+  const dtList = datetimeList.filter(
+    (item) => item.typeOptions[1] === "datetime"
+  );
+  const dList = datetimeList.filter((item) => item.typeOptions[1] === "date");
+  const tList = datetimeList.filter((item) => item.typeOptions[1] === "time");
+  if (dtList.length > 1 || dList.length > 1 || tList.length > 1)
+    throw "多个日期时间字段存在冲突，请选择一个保留";
 
-export const checkDataType = (data, fieldData) => {
+  //* 2.dt存在的情况下，检查有没有d或t
+  if (dtList.length > 0 && (dList.length > 0 || tList.length > 0))
+    throw "多个日期时间字段存在冲突，请选择一个保留";
+}
+
+function checkDataType(data, fieldData) {
   // 校验数据格式（有无空数据、非数字数据...）
   console.log(data);
   console.log(fieldData);
@@ -101,18 +124,28 @@ export const checkDataType = (data, fieldData) => {
         //校验风速字段（大于0的数字）
         for (let j = 0; j < data.length; j++) {
           const dataItem = data[j];
-          const rule =
-            dataItem[fieldIndex] === "" || isNaN(Number(dataItem[fieldIndex]));
-          if (rule) throw `第${j + 1}行数据格式错误！`;
+          const str = dataItem[fieldIndex].trim();
+          const typeNotAllowed = str === "" || isNaN(Number(str));
+          if (typeNotAllowed)
+            throw `第${j + 1}行风速数据"${dataItem[fieldIndex]}"格式错误！`;
+          const rangeNotAllowed = Number(str) < 0;
+          if (rangeNotAllowed)
+            throw `第${j + 1}行风速数据"${dataItem[fieldIndex]}"范围错误！`;
         }
         break;
       case "deg":
         //校验风向角字段（0-360的数字）
         for (let j = 0; j < data.length; j++) {
           const dataItem = data[j];
-          const rule =
-            dataItem[fieldIndex] === "" || isNaN(Number(dataItem[fieldIndex]));
-          if (rule) throw `第${j + 1}行数据格式错误！`;
+          const str = dataItem[fieldIndex].trim();
+          const typeNotAllowed = str === "" || isNaN(Number(str));
+          if (typeNotAllowed)
+            throw `第${j + 1}行风向角数据"${dataItem[fieldIndex]}"格式错误！`;
+          const range = [0, 360];
+          const rangeNotAllowed =
+            Number(str) < range[0] || Number(str) > range[1];
+          if (rangeNotAllowed)
+            throw `第${j + 1}行风向角数据"${dataItem[fieldIndex]}"范围错误！`;
         }
         break;
 
@@ -120,4 +153,4 @@ export const checkDataType = (data, fieldData) => {
         break;
     }
   }
-};
+}

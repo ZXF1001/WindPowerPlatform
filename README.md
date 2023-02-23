@@ -11,7 +11,7 @@
   npm install
   ```
   ***注意：***
-  ***leaflet-geotiff-plotty.js的64行开头缺一个let:***
+  依赖安装完后，***[leaflet-geotiff-plotty.js](node_modules\leaflet-geotiff-2\dist\leaflet-geotiff-plotty.js)的64行开头缺一个let:***
 
   `(let )dataUrl = plot.colorScaleCanvas.toDataURL();`
   

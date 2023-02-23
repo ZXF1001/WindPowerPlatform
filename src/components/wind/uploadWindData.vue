@@ -141,7 +141,7 @@
 <script>
 import { createTable, upload2DB } from "@/api/wind/uploadData";
 import readLocalCSV from "@/utils/readCSV";
-import * as checkRules from "@/js/upload/checkRules";
+import { checkUpload } from "@/js/upload/checkRules";
 export default {
   data() {
     return {
@@ -305,29 +305,11 @@ export default {
       try {
         let data = JSON.parse(JSON.stringify(this.jsonData));
         if (this.firstLineAsHeader) data.shift();
-        //* 先校验数据
+
         // 深拷贝一份数据
         let fieldData = JSON.parse(JSON.stringify(this.multipleSelection));
-        // 检验是否有空的选择框，有的话就throw error
-        checkRules.checkEmptySelect(fieldData);
-        // 检查日期时间或日期加时间是否存在
-        const { datetimeExist, dateAndTimeExist } =
-          checkRules.checkDatetimeExist(fieldData);
-        // 检查日期时间是否唯一
-        checkRules.checkUniqueDatetime(fieldData);
-        // 日期时间的拼接处理
-        ({ data, fieldData } = checkRules.handleDatetime(
-          data,
-          fieldData,
-          datetimeExist,
-          dateAndTimeExist
-        ));
-        // 检验是否有空的高度行
-        checkRules.checkEmptyHeight(fieldData);
-        // 判断有没有至少一对风速风向数据
-        checkRules.checkLeastWSAndWD(fieldData);
-        // 校验数据格式（有无空数据、非数字数据...）
-        checkRules.checkDataType(data, fieldData);
+        //* 先校验数据（封装的校验函数）
+        checkUpload(data, fieldData);
 
         //* 检验完毕，没有错误就上传
         const uploadData = [];
