@@ -1,8 +1,8 @@
-const wsBaseURL = "ws://1.117.224.40/ws";
+import { rootWSURL } from "/rootURL";
 
 //发起ws的主函数
 export function connectWS(subURL, callback) {
-  const url = [wsBaseURL, subURL].join("");
+  const url = [rootWSURL, subURL].join("");
 
   const ws = initWS(url, callback);
   return ws;

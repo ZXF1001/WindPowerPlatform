@@ -18,7 +18,7 @@ import { getMyTurbineData } from "@/api/wind/getMapData.js";
 // 静态资源的引入
 import importAllSVG from "@/assets/windTurbineSvg/import.js";
 import baseLayersData from "@/json/map/baseLayers.json";
-
+import { URL } from "/rootURL.js";
 //对baseLayersData底图列表进行处理（路网、标注合并到纯底图上）
 export const handleBaseLayers = () => {
   const baseLayers = [];
@@ -120,7 +120,8 @@ export const drawContour = (that, layerControlObj) => {
     sourceFunction: GeoTIFF.fromUrl,
     opacity: 0.75,
   };
-  const url = "http://1.117.224.40/geotiff/test_compress.tif";
+
+  const url = `${URL}/geotiff/test_compress.tif`;
   that.geolayer = L.leafletGeotiff(url, option);
   const contourName = "风场云图";
   layerControlObj.addOverlay(that.geolayer, contourName);
@@ -166,7 +167,7 @@ function handleMove(that, velocityName, velocityLayer) {
 }
 // 画流线图
 export const drawStream = (that, layerControlObj) => {
-  const streamlineURL = "http://1.117.224.40/streamline/zb.json";
+  const streamlineURL = `${URL}/streamline/zb.json`;
   axios
     .get(streamlineURL)
     .then((res) => {

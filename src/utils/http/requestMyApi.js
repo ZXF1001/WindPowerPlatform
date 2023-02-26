@@ -1,8 +1,8 @@
 import axios from "axios";
-
+import { rootURL } from "/rootURL";
 const http = axios.create({
   // 通用请求地址前缀
-  baseURL: "http://1.117.224.40/api",
+  baseURL: `${rootURL}/api`,
   // headers: { "X-Requested-With": "XMLHttpRequest" },
   timeout: 15000,
 });
