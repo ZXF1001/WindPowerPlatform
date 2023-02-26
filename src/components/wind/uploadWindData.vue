@@ -113,10 +113,7 @@
             <el-form>
               <el-form-item label="测风数据编号（仅支持英文与数字）">
                 <div class="inputBox">
-                  <el-input
-                    v-model="siteInfo"
-                    placeholder="请输入编号"
-                  ></el-input>
+                  <el-input v-model="siteInfo" placeholder="请输入编号" />
                 </div>
               </el-form-item>
             </el-form>
@@ -129,8 +126,9 @@
               class="bottom"
               :disabled="uploadButtonDisabled"
               @click="submitUpload"
-              >{{ uploadButtonContent }}</el-button
             >
+              {{ uploadButtonContent }}
+            </el-button>
           </el-card>
         </el-col>
       </el-row>
