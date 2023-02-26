@@ -7,9 +7,7 @@ export function connectWS(subURL, callback) {
   const ws = initWS(url, callback);
   return ws;
 }
-export function connectLocalWS(URL, callback) {
-  const url = URL;
-
+export function connectLocalWS(url, callback) {
   const ws = initWS(url, callback);
   return ws;
 }

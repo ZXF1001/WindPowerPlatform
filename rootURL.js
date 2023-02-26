@@ -1,6 +1,6 @@
 const baseURLs = {
   production: "localhost", // 线上 (生产环境)
-  development: "http://192.168.159.131", // 本地 (开发环境)
+  development: "192.168.159.131", // 本地 (开发环境)
 };
 const baseHttpURLs = {
   production: `http://${baseURLs.production}`, // 线上 (生产环境)
