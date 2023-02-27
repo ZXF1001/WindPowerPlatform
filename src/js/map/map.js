@@ -25,7 +25,6 @@ export const handleBaseLayers = () => {
   // 从底图列表baseLayers.json文件中读取底图
   for (let i = 0; i < baseLayersData.length; i++) {
     const element = baseLayersData[i];
-
     if ("annotationUrl" in element) {
       //底图的标注annotation也要加进来
       const map = L.tileLayer(element.url, {
