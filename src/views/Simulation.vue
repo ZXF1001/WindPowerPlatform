@@ -66,10 +66,13 @@ export default {
         },
         useWorker: true,
         noDataValue: -32768,
-        sourceFunction: GeoTIFF.fromUrl,
+        sourceFunction: GeoTIFF.fromArrayBuffer,
+        // 这里传入ArrayBuffer
+        arrayBuffer: [1],
         opacity: 0.75,
       };
-      const url = `${rootURL}/geotiff/test_compress.tif`;
+      // const url = `${rootURL}/geotiff/test_compress.tif`;
+      const url = null;
       this.geolayer = L.leafletGeotiff(url, option);
       const contourName = "风场云图";
       layerControl.addOverlay(this.geolayer, contourName);
