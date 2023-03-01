@@ -14,7 +14,7 @@ import "leaflet-velocity/dist/leaflet-velocity.css";
 import "leaflet-velocity/dist/leaflet-velocity";
 // 网络请求
 import axios from "axios";
-import { getMyTurbineData } from "@/api/wind/getMapData.js";
+import { post4MyTurbineData } from "@/api/wind/post4Position.js";
 // 静态资源的引入
 import importAllSVG from "@/assets/windTurbineSvg/import.js";
 import baseLayersData from "@/json/map/baseLayers.json";
@@ -259,8 +259,11 @@ function handleMarkerList(cluster, icon) {
 }
 
 export const drawMarker = (that) => {
-  getMyTurbineData()
+  const site = ["zb", "ss2"];
+  const postData = { site };
+  post4MyTurbineData(postData)
     .then((res) => {
+      console.log(res.data);
       const Icons = importAllSVG();
       const turbineData = groupByCluster(that, res.data);
       that.layerGroup = [];

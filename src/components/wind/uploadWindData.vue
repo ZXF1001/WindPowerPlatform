@@ -138,7 +138,7 @@
 
 <script>
 import { createTable, upload2DB } from "@/api/wind/uploadData";
-import readLocalCSV from "@/utils/readCSV";
+import { readLocalCSV } from "@/utils/readCSV";
 import { checkUpload } from "@/js/upload/checkRules";
 export default {
   data() {

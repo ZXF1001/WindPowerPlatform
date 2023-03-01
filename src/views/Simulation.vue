@@ -9,15 +9,10 @@
 // leaflet库
 import L from "leaflet/dist/leaflet";
 import "leaflet/dist/leaflet.css";
-import "@panzhiyue/leaflet-canvasmarker"; //canvas渲染marker的插件
-//geotiff渲染插件（必须放在leaflet后）
-import GeoTIFF from "geotiff";
-import "leaflet-geotiff-2";
-import "leaflet-geotiff-2/dist/leaflet-geotiff-plotty";
 
 // 静态资源的引入
 import { rootURL } from "/rootURL.js";
-
+import { readRemoteCSV } from "@/utils/readCSV.js";
 import * as myMapFunc from "@/js/map/map";
 export default {
   data() {
@@ -52,40 +47,86 @@ export default {
       const baseLayers = myMapFunc.handleBaseLayers();
       const { map, layerControl } = myMapFunc.mapInit(baseLayers);
       this.map = map;
-      const plottyOption = {
-        band: 0,
-        clampLow: false, // 表示高于范围的不显示
-        clampHigh: false,
-        colorScale: "viridis",
-      };
-      const renderer = new L.LeafletGeotiff.Plotty(plottyOption);
-      const option = {
-        renderer,
-        onError: (error) => {
-          console.log(error);
-        },
-        useWorker: true,
-        noDataValue: -32768,
-        sourceFunction: GeoTIFF.fromArrayBuffer,
-        // 这里传入ArrayBuffer
-        arrayBuffer: [1],
-        opacity: 0.75,
-      };
-      // const url = `${rootURL}/geotiff/test_compress.tif`;
-      const url = null;
-      this.geolayer = L.leafletGeotiff(url, option);
-      const contourName = "风场云图";
-      layerControl.addOverlay(this.geolayer, contourName);
+
+      this.drawContour();
+      this.drawMarkers();
+    },
+    drawContour() {
+      function handleRawData(rawData) {
+        // read the csv and return its metadata and data
+
+        const n_row = Number(rawData[0][0]);
+        const n_col = Number(rawData[1][0]);
+        const lng_west = Number(rawData[2][0]);
+        const lat_north = Number(rawData[3][0]);
+        const lng_east = Number(rawData[4][0]);
+        const lat_south = Number(rawData[5][0]);
+        const data = rawData.slice(6);
+        const obj = {
+          n_row,
+          n_col,
+          lng_west,
+          lat_north,
+          lng_east,
+          lat_south,
+          data,
+        };
+        return obj;
+      }
+      function createArrayBufferData(csvDataObj) {
+        const canvas = document.createElement("canvas");
+        let exampledata = new Float32Array(csvDataObj.n_row * csvDataObj.n_col);
+        for (let y = 0; y <= csvDataObj.n_row; y++) {
+          for (let x = 0; x <= csvDataObj.n_col; x++) {
+            // Save the sine.
+            exampledata[y * csvDataObj.n_col + x] = csvDataObj.data[y][x];
+          }
+        }
+        return exampledata;
+      }
+
+      const url = `${rootURL}/contour/data1.csv`;
+      readRemoteCSV(url, (res) => {
+        const csvDataObj = handleRawData(res.data);
+        const exampledata = createArrayBufferData(csvDataObj);
+        console.log(exampledata);
+        const canvas = document.createElement("canvas");
+        const plotty = require("plotty");
+        let plot = new plotty.plot({
+          canvas: canvas,
+          data: exampledata,
+          width: csvDataObj.n_col,
+          height: csvDataObj.n_row,
+          domain: [0, 20],
+          colorScale: "viridis",
+        });
+
+        // Render the plot.
+        plot.render();
+
+        const canvasUrl = canvas.toDataURL("image/png");
+
+        const bounds = L.latLngBounds(
+          L.latLng(csvDataObj.lat_north, csvDataObj.lng_west),
+          L.latLng(csvDataObj.lat_south, csvDataObj.lng_east)
+        );
+        const options = { opacity: 0.75 };
+        L.imageOverlay(canvasUrl, bounds, options).addTo(this.map);
+      });
+    },
+    drawMarkers() {
+      //draw markers fetch from api
     },
   },
   mounted() {
+    // this.showMap();
     this.showMap();
   },
 };
 </script>
 <style lang="less" scoped>
 #map {
-  height: 800px;
+  height: 700px;
   width: 100%;
 }
 </style>

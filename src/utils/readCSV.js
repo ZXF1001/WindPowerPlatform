@@ -1,5 +1,5 @@
 const Papa = require("papaparse");
-module.exports = function readLocalCSV(selectedFile, callback) {
+export function readLocalCSV(selectedFile, callback) {
   const reader = new FileReader();
   reader.readAsDataURL(selectedFile);
   reader.onload = (evt) => {
@@ -11,7 +11,7 @@ module.exports = function readLocalCSV(selectedFile, callback) {
       complete: callback,
     });
   };
-};
+}
 
 function checkEncoding(base64Str) {
   // 返回编码方式
@@ -26,9 +26,10 @@ function checkEncoding(base64Str) {
   }
   return encoding;
 }
-module.exports = function readRemoteCSV(url, callback) {
+
+export function readRemoteCSV(url, callback) {
   Papa.parse(url, {
     download: true,
     complete: callback,
   });
-};
+}
