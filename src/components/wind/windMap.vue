@@ -133,7 +133,12 @@ export default {
     },
   },
   mounted() {
-    const { map, layerControl } = myMapFunc.mapInit();
+    const mapOptions = {
+      center: [41.25, 114.9],
+      zoom: 9,
+      layerName: "天地图卫星",
+    };
+    const { map, layerControl } = myMapFunc.mapInit(mapOptions);
     this.map = map;
     // 画流线图和云图
     myMapFunc.drawContour(this, layerControl);

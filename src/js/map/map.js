@@ -48,14 +48,18 @@ function handleBaseLayers() {
 }
 
 // 创建leaflet总体框架控件，返回这些组件（map和layerControl）到vue部件中
-export const mapInit = () => {
+export const mapInit = (options) => {
   const baseLayers = handleBaseLayers();
+  const center = options.center || [41.25, 114.9];
+  const zoom = options.zoom || 9;
+  const layerName = options.layerName || baseLayers["天地图卫星"];
+
   const mapOptions = {
     attributionControl: false,
     zoomControl: false,
-    center: [41.25, 114.9], //todo 要改成根据坐标数据显示区域
-    zoom: 9,
-    layers: baseLayers["天地图卫星"], //默认加载图层
+    center,
+    zoom,
+    layers: baseLayers[layerName],
     preferCanvas: true,
   };
   const map = L.map("map", mapOptions);

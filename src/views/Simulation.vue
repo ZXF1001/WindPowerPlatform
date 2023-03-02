@@ -44,7 +44,12 @@ export default {
   },
   methods: {
     showMap() {
-      const { map, layerControl } = myMapFunc.mapInit();
+      const mapOptions = {
+        center: [41.25, 114.9],
+        zoom: 9,
+        layerName: "天地图卫星",
+      };
+      const { map, layerControl } = myMapFunc.mapInit(mapOptions);
       this.map = map;
 
       this.drawContour();
@@ -73,31 +78,52 @@ export default {
         return obj;
       }
       function createArrayBufferData(csvDataObj) {
+        //find the max and min of the data
+        let max = -Infinity;
+        let min = Infinity;
         let exampledata = new Float32Array(csvDataObj.n_row * csvDataObj.n_col);
-        for (let y = 0; y <= csvDataObj.n_row; y++) {
-          for (let x = 0; x <= csvDataObj.n_col; x++) {
-            // Save the sine.
+        for (let y = 0; y < csvDataObj.n_row; y++) {
+          for (let x = 0; x < csvDataObj.n_col; x++) {
             exampledata[y * csvDataObj.n_col + x] =
               csvDataObj.data[csvDataObj.n_row - y][x];
+            max =
+              max > exampledata[y * csvDataObj.n_col + x]
+                ? max
+                : exampledata[y * csvDataObj.n_col + x];
+            min =
+              min < exampledata[y * csvDataObj.n_col + x]
+                ? min
+                : exampledata[y * csvDataObj.n_col + x];
           }
         }
-        return exampledata;
+        return { exampledata, max, min };
       }
 
       const url = `${rootURL}/contour/data1.csv`;
       readRemoteCSV(url, (res) => {
         const csvDataObj = handleRawData(res.data);
-        const exampledata = createArrayBufferData(csvDataObj);
-        console.log(exampledata);
+        // set the center of the map to the center of the data and zoom to the data
+        this.map.fitBounds([
+          [csvDataObj.lat_north, csvDataObj.lng_west],
+          [csvDataObj.lat_south, csvDataObj.lng_east],
+        ]);
+
+        const { exampledata, max, min } = createArrayBufferData(csvDataObj);
         const canvas = document.createElement("canvas");
         const plotty = require("plotty");
+
+        plotty.addColorScale(
+          "mycolorscale",
+          ["rgba(8, 52, 113, 1)", "rgba(141, 193, 221,0)"],
+          [0, 1]
+        );
         let plot = new plotty.plot({
           canvas: canvas,
           data: exampledata,
           width: csvDataObj.n_col,
           height: csvDataObj.n_row,
-          domain: [0, 20],
-          colorScale: "viridis",
+          domain: [min, max],
+          colorScale: "mycolorscale",
         });
 
         // Render the plot.
@@ -105,16 +131,13 @@ export default {
 
         const canvasUrl = canvas.toDataURL("image/png");
 
-        const bounds = L.latLngBounds(
+        const imgBounds = L.latLngBounds(
           L.latLng(csvDataObj.lat_north, csvDataObj.lng_west),
           L.latLng(csvDataObj.lat_south, csvDataObj.lng_east)
         );
-        const options = { opacity: 0.75 };
-        L.imageOverlay(canvasUrl, bounds, options).addTo(this.map);
+        const options = { opacity: 1 };
+        L.imageOverlay(canvasUrl, imgBounds, options).addTo(this.map);
       });
-    },
-    drawMarkers() {
-      //draw markers fetch from api
     },
   },
   mounted() {
