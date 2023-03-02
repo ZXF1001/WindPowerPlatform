@@ -54,7 +54,7 @@ export const mapInit = (baseLayers) => {
     zoomControl: false,
     center: [41.25, 114.9], //todo 要改成根据坐标数据显示区域
     zoom: 9,
-    layers: baseLayers["天地图地形"], //默认加载图层
+    layers: baseLayers["天地图卫星"], //默认加载图层
     preferCanvas: true,
   };
   const map = L.map("map", mapOptions);
@@ -207,7 +207,7 @@ export const drawStream = (that, layerControlObj) => {
 
 // 画风机标记
 // 把数据库返回的零散数据按集群id整合
-function groupByCluster(that, data) {
+function groupByCluster(that, data, isAddToSelector) {
   const clusterIdList = [];
   const turbineData = [];
 
@@ -215,8 +215,10 @@ function groupByCluster(that, data) {
     const turbineItem = data[i];
     if (clusterIdList.indexOf(turbineItem.cluster_id) === -1) {
       clusterIdList.push(turbineItem.cluster_id);
-      that.clusterOptions.push(turbineItem.cluster_name);
-      that.checkedClusters.push(turbineItem.cluster_name);
+      if (isAddToSelector) {
+        that.clusterOptions.push(turbineItem.cluster_name);
+        that.checkedClusters.push(turbineItem.cluster_name);
+      }
       turbineData.push({
         cluster_id: turbineItem.cluster_id,
         cluster_name: turbineItem.cluster_name,
@@ -234,7 +236,6 @@ function groupByCluster(that, data) {
     });
   }
 
-  // this.loading = false
   return turbineData;
 }
 
@@ -258,18 +259,20 @@ function handleMarkerList(cluster, icon) {
   return markerList;
 }
 
-export const drawMarker = (that) => {
+export const drawMarker = (that, options) => {
+  const isAddToSelector = options.isAddToSelector || false;
   const site = ["zb", "ss2"];
   const postData = { site };
   post4MyTurbineData(postData)
     .then((res) => {
-      console.log(res.data);
       const Icons = importAllSVG();
-      const turbineData = groupByCluster(that, res.data);
+      const IconsNum = Icons.length;
+      const turbineData = groupByCluster(that, res.data, isAddToSelector);
       that.layerGroup = [];
+
       turbineData.forEach((cluster, index) => {
         const icon = L.icon({
-          iconUrl: Icons[index],
+          iconUrl: Icons[index % IconsNum],
           iconSize: [24, 24],
           iconAnchor: [12, 12],
           popupAnchor: [0, -15],
@@ -279,11 +282,12 @@ export const drawMarker = (that) => {
           collisionFlg: false, // 碰撞检测
         }).addTo(that.map);
         templayerGroup.addLayers(markerList);
-
-        that.layerGroup.push({
-          name: cluster.cluster_name,
-          data: templayerGroup,
-        });
+        if (isAddToSelector) {
+          that.layerGroup.push({
+            name: cluster.cluster_name,
+            data: templayerGroup,
+          });
+        }
       });
     })
     .catch((e) => {

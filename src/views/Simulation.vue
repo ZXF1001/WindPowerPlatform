@@ -49,7 +49,7 @@ export default {
       this.map = map;
 
       this.drawContour();
-      this.drawMarkers();
+      myMapFunc.drawMarker(this, { isAddToMap: false });
     },
     drawContour() {
       function handleRawData(rawData) {
@@ -74,12 +74,12 @@ export default {
         return obj;
       }
       function createArrayBufferData(csvDataObj) {
-        const canvas = document.createElement("canvas");
         let exampledata = new Float32Array(csvDataObj.n_row * csvDataObj.n_col);
         for (let y = 0; y <= csvDataObj.n_row; y++) {
           for (let x = 0; x <= csvDataObj.n_col; x++) {
             // Save the sine.
-            exampledata[y * csvDataObj.n_col + x] = csvDataObj.data[y][x];
+            exampledata[y * csvDataObj.n_col + x] =
+              csvDataObj.data[csvDataObj.n_row - y][x];
           }
         }
         return exampledata;
