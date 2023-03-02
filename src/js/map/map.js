@@ -116,9 +116,7 @@ export const drawContour = (that, layerControlObj) => {
     //   [40.7, 114],
     //   [41.8, 115.8],
     // ],
-    onError: (error) => {
-      console.log(error);
-    },
+    onError: console.error,
     useWorker: true,
     noDataValue: -32768,
     sourceFunction: GeoTIFF.fromUrl,

@@ -38,7 +38,7 @@
             width="100%"
             height="20"
             draggable="false"
-            :src="colorbarData ? colorbarData : emptyImg"
+            :src="colorbarData || emptyImg"
           />
         </div>
         <div id="label">

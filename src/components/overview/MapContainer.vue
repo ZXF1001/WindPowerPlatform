@@ -33,7 +33,7 @@
                 width="100%"
                 height="20"
                 draggable="false"
-                :src="colorbarData ? colorbarData : emptyImg"
+                :src="colorbarData || emptyImg"
               />
               <!-- 没有载入colormap时用透明图代替 -->
             </div>
@@ -89,18 +89,13 @@ export default {
       return this.$store.state.tab.isCollapse;
     },
     geotiffMinAndMax() {
-      if (this.geolayer ? this.geolayer.min : false) {
+      if (this.geolayer ? this.geolayer.min : false)
         return [this.geolayer.min, this.geolayer.max];
-      } else {
-        return null;
-      }
+      return null;
     },
     colorbarVisible() {
-      if (this.contourSelected) {
-        return this.geotiffMinAndMax[0] || false;
-      } else {
-        return false;
-      }
+      if (this.contourSelected) return this.geotiffMinAndMax[0] || false;
+      return false;
     },
   },
   watch: {

@@ -1,8 +1,28 @@
 <template>
   <div>
     <h1>这是Simulation</h1>
-    <p>这个暂时用于地图arraybuffer可视化的测试</p>
-    <div id="map" />
+    <p>这个暂时用于地图上风速可视化的测试</p>
+    <!-- map地图容器 -->
+    <div id="map">
+      <!-- 地图内部显示colorbar的div -->
+      <div id="colorbar">
+        <div id="colorbar-img">
+          <!-- 有colorbar数据就显示colorbar，没有就显示透明图 -->
+          <img
+            width="100%"
+            height="20"
+            draggable="false"
+            :src="colorbarData || emptyImg"
+          />
+        </div>
+        <div id="label">
+          <!-- colorbar的刻度标注 -->
+          <span v-for="i in [0, 1, 2, 3, 4]" :key="i">{{
+            dataMin + ((dataMax - dataMin) * i) / 4
+          }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -18,29 +38,13 @@ export default {
   data() {
     return {
       map: null,
-      colormap: "viridis",
-      geolayer: null,
+      colorbarData: null,
+      dataMin: null,
+      dataMax: null,
+      // 一张空白图片的数据，用于在没有colorbar数据时显示
+      emptyImg:
+        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
     };
-  },
-  computed: {
-    geotiffMinAndMax() {
-      if (this.geolayer && this.geolayer.min)
-        return [this.geolayer.min, this.geolayer.max];
-      return null;
-    },
-  },
-  watch: {
-    geotiffMinAndMax() {
-      // 与computed中的geotiffMinAndMax配合使用，使得geotiff
-      // 读取到最大最小值的时候定义contour渲染器的最大最小值
-      if (this.geotiffMinAndMax && this.geotiffMinAndMax[0]) {
-        this.geolayer.options.renderer.setDisplayRange(
-          this.geotiffMinAndMax[0],
-          this.geotiffMinAndMax[1]
-        );
-        this.geolayer.addTo(this.map);
-      }
-    },
   },
   methods: {
     showMap() {
@@ -109,39 +113,42 @@ export default {
         ]);
 
         const { exampledata, max, min } = createArrayBufferData(csvDataObj);
+        this.dataMin = min;
+        this.dataMax = max;
         const canvas = document.createElement("canvas");
         const plotty = require("plotty");
-
-        plotty.addColorScale(
-          "mycolorscale",
-          ["rgba(8, 52, 113, 1)", "rgba(141, 193, 221,0)"],
-          [0, 1]
-        );
+        const color1 = "rgba(8, 52, 113, 1)";
+        const color2 = "rgba(47, 127, 188,0)";
+        plotty.addColorScale("blueblur", [color1, color2], [0, 1]);
         let plot = new plotty.plot({
           canvas: canvas,
           data: exampledata,
           width: csvDataObj.n_col,
           height: csvDataObj.n_row,
           domain: [min, max],
-          colorScale: "mycolorscale",
+          // noDataValue: 10,
+          colorScale: "blueblur",
         });
-
+        console.log(plot);
         // Render the plot.
         plot.render();
+        const colorBarImg = plot.getColorScaleImage();
+        console.log(colorBarImg);
+        // add a canvas to the page
+        this.colorbarData = colorBarImg.toDataURL("image/png");
 
-        const canvasUrl = canvas.toDataURL("image/png");
+        const imgUrl = canvas.toDataURL("image/png");
 
         const imgBounds = L.latLngBounds(
           L.latLng(csvDataObj.lat_north, csvDataObj.lng_west),
           L.latLng(csvDataObj.lat_south, csvDataObj.lng_east)
         );
         const options = { opacity: 1 };
-        L.imageOverlay(canvasUrl, imgBounds, options).addTo(this.map);
+        L.imageOverlay(imgUrl, imgBounds, options).addTo(this.map);
       });
     },
   },
   mounted() {
-    // this.showMap();
     this.showMap();
   },
 };
@@ -150,5 +157,22 @@ export default {
 #map {
   height: 700px;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  #colorbar {
+    position: absolute;
+    bottom: 5px;
+    width: 40%;
+    padding: 10px;
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(0, 0, 0, 0.5);
+    #colorbar-img,
+    #label {
+      display: flex;
+      justify-content: space-between;
+      user-select: none; // 文字不可选
+    }
+  }
 }
 </style>
