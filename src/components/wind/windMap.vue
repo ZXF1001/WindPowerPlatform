@@ -144,7 +144,7 @@ export default {
     myMapFunc.drawContour(this, layerControl);
     myMapFunc.drawStream(this, layerControl);
     // 画标记点
-    myMapFunc.drawMarker(this, { isAddToMap: true });
+    myMapFunc.drawMarker(this, { isAddToSelector: true });
   },
   beforeDestroy() {
     if (this.map) {

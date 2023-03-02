@@ -265,7 +265,7 @@ function handleMarkerList(cluster, icon) {
 }
 
 export const drawMarker = (that, options) => {
-  const isAddToSelector = options.isAddToSelector || false;
+  const isAddToSelector = options.isAddToSelector;
   const site = ["zb", "ss2"];
   const postData = { site };
   post4MyTurbineData(postData)

@@ -97,7 +97,7 @@ export default {
     },
     colorbarVisible() {
       if (this.contourSelected) {
-        return this.geotiffMinAndMax ? this.geotiffMinAndMax[0] : false;
+        return this.geotiffMinAndMax[0] || false;
       } else {
         return false;
       }
@@ -113,7 +113,7 @@ export default {
     geotiffMinAndMax() {
       // 与computed中的geotiffMinAndMax配合使用，使得geotiff
       // 读取到最大最小值的时候定义contour渲染器的最大最小值
-      if (this.geotiffMinAndMax ? this.geotiffMinAndMax[0] : false) {
+      if (this.geotiffMinAndMax[0] || false) {
         if (this.contourLoading) this.contourLoading.close();
         this.$message({ message: "加载标量云图完成", type: "success" });
         this.geolayer.options.renderer.setDisplayRange(
@@ -138,7 +138,7 @@ export default {
     myMapFunc.drawContour(this, layerControl);
     myMapFunc.drawStream(this, layerControl);
     // 画标记点
-    myMapFunc.drawMarker(this, { isAddToMap: true });
+    myMapFunc.drawMarker(this, { isAddToSelector: true });
   },
   beforeDestroy() {
     if (this.map) {
