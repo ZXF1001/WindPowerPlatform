@@ -18,7 +18,7 @@
         <div id="label">
           <!-- colorbar的刻度标注 -->
           <span v-for="i in [0, 1, 2, 3, 4]" :key="i">{{
-            dataMin + ((dataMax - dataMin) * i) / 4
+            (dataMin + ((dataMax - dataMin) * i) / 4).toFixed(2)
           }}</span>
         </div>
       </div>
