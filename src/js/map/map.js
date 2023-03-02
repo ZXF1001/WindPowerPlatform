@@ -20,7 +20,7 @@ import importAllSVG from "@/assets/windTurbineSvg/import.js";
 import baseLayersData from "@/json/map/baseLayers.json";
 import { rootURL } from "/rootURL.js";
 //对baseLayersData底图列表进行处理（路网、标注合并到纯底图上）
-export const handleBaseLayers = () => {
+function handleBaseLayers() {
   const baseLayers = [];
   // 从底图列表baseLayers.json文件中读取底图
   for (let i = 0; i < baseLayersData.length; i++) {
@@ -45,10 +45,11 @@ export const handleBaseLayers = () => {
     }
   }
   return baseLayers;
-};
+}
 
 // 创建leaflet总体框架控件，返回这些组件（map和layerControl）到vue部件中
-export const mapInit = (baseLayers) => {
+export const mapInit = () => {
+  const baseLayers = handleBaseLayers();
   const mapOptions = {
     attributionControl: false,
     zoomControl: false,

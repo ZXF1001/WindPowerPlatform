@@ -127,8 +127,7 @@ export default {
     },
   },
   mounted() {
-    const baseLayers = myMapFunc.handleBaseLayers();
-    const { map, layerControl } = myMapFunc.mapInit(baseLayers);
+    const { map, layerControl } = myMapFunc.mapInit();
     this.map = map;
     // 画流线图和云图
     myMapFunc.drawContour(this, layerControl);

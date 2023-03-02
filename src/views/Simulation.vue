@@ -44,8 +44,7 @@ export default {
   },
   methods: {
     showMap() {
-      const baseLayers = myMapFunc.handleBaseLayers();
-      const { map, layerControl } = myMapFunc.mapInit(baseLayers);
+      const { map, layerControl } = myMapFunc.mapInit();
       this.map = map;
 
       this.drawContour();
