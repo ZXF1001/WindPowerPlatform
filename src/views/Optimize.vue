@@ -4,6 +4,7 @@
     <p>
       这个暂时用于plotty可视化的测试，详见http://santilland.github.io/plotty/
     </p>
+    <p>本机</p>
     <el-button @click="showGeotiff">click</el-button>
     <canvas id="canvas" />
   </div>
